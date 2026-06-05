@@ -10,18 +10,22 @@ const GAME_TONES = [
 ];
 
 const GAMES = [
-  { path: "/games/multiple-choice",    num: 1,  title: "Multiple Choice Quiz",       desc: "4 choices with sound-alike distractors" },
-  { path: "/games/typing-quiz",        num: 2,  title: "Typing Input Quiz",          desc: "Type the medical term, typos normalized" },
-  { path: "/games/linguistic-autopsy", num: 3,  title: "Linguistic Autopsy",         desc: "Arrange scrambled word-parts in correct order" },
-  { path: "/games/chart-triage",       num: 4,  title: "Chart Triage",               desc: "Match patient complaint to term before time runs out" },
-  { path: "/games/textbook-trap",      num: 5,  title: "Textbook Trap",              desc: "True/False: spot intentionally altered definitions" },
-  { path: "/games/root-race",          num: 6,  title: "Root Race",                  desc: "Link every valid suffix to a combining form root" },
-  { path: "/games/root-swap",          num: 7,  title: "Root Swap",                  desc: "Swap suffixes as clinical scenarios change" },
-  { path: "/games/structural-hole",    num: 8,  title: "Fill the Structural Hole",   desc: "Repair an anatomy chain with one link missing" },
-  { path: "/games/textbook-defender",  num: 9,  title: "Textbook Defender",          desc: "Destroy incorrect definitions before they reach you" },
-  { path: "/games/combining-linker",   num: 10, title: "Combining Form Linker",      desc: "Domino chain: each card must share a root or suffix" },
-  { path: "/games/chart-auditor",      num: 11, title: "Chart Auditor",              desc: "Find and replace incorrect terms in clinical text" },
-  { path: "/games/ischemic-countdown", num: 12, title: "Ischemic Countdown",         desc: "Survival mode: right gains time, wrong speeds it up" },
+  { path: "/games/multiple-choice",    num: 1,  title: "Multiple Choice Quiz",       desc: "4 choices with sound-alike distractors",            tag: "" },
+  { path: "/games/typing-quiz",        num: 2,  title: "Typing Input Quiz",          desc: "Type the medical term, typos normalized",            tag: "" },
+  { path: "/games/linguistic-autopsy", num: 3,  title: "Linguistic Autopsy",         desc: "Arrange scrambled word-parts in correct order",      tag: "" },
+  { path: "/games/chart-triage",       num: 4,  title: "Chart Triage",               desc: "Match patient complaint to term before time runs out", tag: "" },
+  { path: "/games/textbook-trap",      num: 5,  title: "Textbook Trap",              desc: "True/False: spot intentionally altered definitions",  tag: "" },
+  { path: "/games/root-race",          num: 6,  title: "Root Race",                  desc: "Link every valid suffix to a combining form root",   tag: "" },
+  { path: "/games/root-swap",          num: 7,  title: "Root Swap",                  desc: "Swap suffixes as clinical scenarios change",          tag: "" },
+  { path: "/games/structural-hole",    num: 8,  title: "Fill the Structural Hole",   desc: "Repair an anatomy chain with one link missing",      tag: "" },
+  { path: "/games/textbook-defender",  num: 9,  title: "Textbook Defender",          desc: "Destroy incorrect definitions before they reach you", tag: "" },
+  { path: "/games/combining-linker",   num: 10, title: "Combining Form Linker",      desc: "Domino chain: each card must share a root or suffix", tag: "" },
+  { path: "/games/chart-auditor",      num: 11, title: "Chart Auditor",              desc: "Find and replace incorrect terms in clinical text",   tag: "" },
+  { path: "/games/ischemic-countdown", num: 12, title: "Ischemic Countdown",         desc: "Survival mode: right gains time, wrong speeds it up", tag: "" },
+  { path: "/boss-round",               num: 13, title: "Boss Round",                 desc: "15 hardest clinical and procedure terms back-to-back", tag: "hard" },
+  { path: "/games/spelling-bee",       num: 14, title: "Spelling Bee",               desc: "Type the exact spelling from the definition alone",   tag: "" },
+  { path: "/games/hangman",            num: 15, title: "Hangman",                    desc: "Guess the medical term letter by letter, 6 lives",    tag: "" },
+  { path: "/games/memory-match",       num: 16, title: "Memory Match",               desc: "Flip card pairs linking terms to definitions",        tag: "" },
 ];
 
 const CHAPTER_TONES = [
@@ -56,7 +60,7 @@ export default function GameSelector() {
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
         <button onClick={() => navigate("/")} style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" }}>← Dashboard</button>
-        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>12 Game Modes</span>
+        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>16 Game Modes</span>
       </div>
 
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "28px 24px" }}>
@@ -127,7 +131,10 @@ export default function GameSelector() {
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "none"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                  <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.75rem", fontWeight: "700" }}>#{g.num}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.75rem", fontWeight: "700" }}>#{g.num}</span>
+                    {g.tag === "hard" && <span style={{ backgroundColor: "rgba(200,60,60,0.4)", color: "#fcfaf7", fontSize: "0.62rem", fontWeight: "700", padding: "1px 5px", borderRadius: "4px", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>hard</span>}
+                  </div>
                   {best !== undefined && <span style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.72rem" }}>Best: {best}</span>}
                 </div>
                 <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.95rem", marginBottom: "6px" }}>{g.title}</div>
