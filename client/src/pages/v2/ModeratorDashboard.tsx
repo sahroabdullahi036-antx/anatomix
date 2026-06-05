@@ -612,7 +612,7 @@ export default function ModeratorDashboard() {
                     disabled={aiLookupLoading || !newTermForm.term.trim()}
                     style={{ padding: "9px 12px", borderRadius: "7px", backgroundColor: "rgba(192,144,240,0.12)", color: "#c090f0", border: "1px solid rgba(192,144,240,0.3)", cursor: (aiLookupLoading || !newTermForm.term.trim()) ? "default" : "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.78rem", whiteSpace: "nowrap" as const, opacity: (aiLookupLoading || !newTermForm.term.trim()) ? 0.45 : 1, transition: "opacity 0.15s" }}
                   >
-                    {aiLookupLoading ? "Looking up…" : "ℹ Info"}
+                    {aiLookupLoading ? "Looking up…" : "✦ Chabner"}
                   </button>
                 </div>
               </div>
