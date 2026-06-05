@@ -16,19 +16,6 @@ const SYSTEMS = [
   { id: "special-senses",  label: "Special Senses",  color: "#508868", region: { type: "senses" }, desc: "Eyes, ears, nose, tongue, and vestibular system" },
 ];
 
-const ILLUSTRATIONS: Record<string, string> = {
-  cardiovascular:  "https://commons.wikimedia.org/wiki/Special:FilePath/Diagram_of_the_human_heart_(cropped).svg",
-  respiratory:     "https://commons.wikimedia.org/wiki/Special:FilePath/Respiratory_system_complete_en.svg",
-  digestive:       "https://commons.wikimedia.org/wiki/Special:FilePath/Digestive_system_diagram_en.svg",
-  nervous:         "https://commons.wikimedia.org/wiki/Special:FilePath/Gray728.svg",
-  musculoskeletal: "https://commons.wikimedia.org/wiki/Special:FilePath/Gray_skeleton_front_en.svg",
-  urinary:         "https://commons.wikimedia.org/wiki/Special:FilePath/Illu_urinary_system.svg",
-  endocrine:       "https://commons.wikimedia.org/wiki/Special:FilePath/Illu_endocrine_system.png",
-  integumentary:   "https://commons.wikimedia.org/wiki/Special:FilePath/Layers_of_epidermis.png",
-  lymphatic:       "https://commons.wikimedia.org/wiki/Special:FilePath/Illu_lymphatic_system.png",
-  reproductive:    "https://commons.wikimedia.org/wiki/Special:FilePath/Reproductive_endocrinology_and_infertility_-_male_female.svg",
-  "special-senses":"https://commons.wikimedia.org/wiki/Special:FilePath/Schematic_diagram_of_the_human_eye_en.svg",
-};
 
 function SystemDiagram({ id }: { id: string }) {
   switch (id) {
@@ -666,22 +653,9 @@ export default function BodyReference() {
         {path.length === 1 && currentSystem && uiSystem && (
           <div>
             <div style={{ display: "flex", gap: "28px", marginBottom: "28px", flexWrap: "wrap" as const }}>
-              {/* Illustration + SVG */}
-              <div style={{ flex: "0 0 250px", minWidth: "200px" }}>
-                {ILLUSTRATIONS[path[0]] && (
-                  <div style={{ borderRadius: "11px", overflow: "hidden", border: "1px solid rgba(252,250,247,0.08)", backgroundColor: "rgba(255,255,255,0.96)", marginBottom: "12px" }}>
-                    <img
-                      src={ILLUSTRATIONS[path[0]]}
-                      alt={`${uiSystem.label} illustration`}
-                      style={{ width: "100%", display: "block", maxHeight: "220px", objectFit: "contain", padding: "8px" }}
-                      onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
-                    />
-                    <div style={{ backgroundColor: "rgba(0,0,0,0.55)", padding: "4px 8px", fontSize: "0.63rem", color: "rgba(252,250,247,0.4)", textAlign: "center" as const }}>
-                      Wikimedia Commons — public domain / CC-BY-SA
-                    </div>
-                  </div>
-                )}
-                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.65rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: "5px" }}>Diagram</div>
+              {/* SVG Diagram */}
+              <div style={{ flex: "0 0 240px", minWidth: "180px" }}>
+                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.65rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: "8px" }}>Diagram</div>
                 <SystemDiagram id={path[0]} />
               </div>
 
