@@ -117,6 +117,11 @@ export default function LoginGate() {
     e.preventDefault();
     const trimmed = username.trim();
     if (!trimmed) return;
+    if (hasPassword(trimmed)) {
+      setError("This account already has a password. Please sign in instead.");
+      setStep("password");
+      return;
+    }
     if (!newPassword) { setError("A password is required to protect your account."); return; }
     if (newPassword.length < 4) { setError("Password must be at least 4 characters."); return; }
     if (newPassword !== newConfirm) { setError("Passwords do not match."); return; }
