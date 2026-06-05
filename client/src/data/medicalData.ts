@@ -231,18 +231,18 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'p1', term: 'a-, an-', type: 'prefix', meaning: 'without, not', casualMeaning: 'none of it / missing completely', system: 'General', example: 'anemia (without enough blood cells), apnea (without breathing)', definition: 'Prefix meaning without or absence of', wordParts: [] },
   { id: 'p2', term: 'ab-', type: 'prefix', meaning: 'away from', casualMeaning: 'moving away from something', system: 'General', example: 'abduction (moving limb away from body midline)', definition: 'Prefix meaning away from' },
   { id: 'p3', term: 'ad-', type: 'prefix', meaning: 'toward, near', casualMeaning: 'moving closer to something', system: 'General', example: 'adduction (moving limb toward body midline)', definition: 'Prefix meaning toward' },
-  { id: 'p4', term: 'ante-', type: 'prefix', meaning: 'before, forward', casualMeaning: 'in front of or before', system: 'General', example: 'antepartum (before birth)', definition: 'Prefix meaning before in time or place' },
+  { id: 'p4', term: 'auto-', type: 'prefix', meaning: 'self', casualMeaning: 'happening by or to itself', system: 'General', example: 'autoimmune (against self), autopsy (self-examination)', definition: 'Prefix meaning self' },
   { id: 'p5', term: 'anti-', type: 'prefix', meaning: 'against', casualMeaning: 'fighting against', system: 'General', example: 'antibiotic (against bacteria)', definition: 'Prefix meaning against' },
   { id: 'p6', term: 'bi-', type: 'prefix', meaning: 'two', casualMeaning: 'two of them', system: 'General', example: 'bilateral (both sides)', definition: 'Prefix meaning two' },
   { id: 'p7', term: 'brady-', type: 'prefix', meaning: 'slow', casualMeaning: 'going slow', system: 'Cardiovascular', example: 'bradycardia (slow heart rate)', definition: 'Prefix meaning slow' },
-  { id: 'p8', term: 'dys-', type: 'prefix', meaning: 'bad, painful, difficult', casualMeaning: 'something wrong or hard', system: 'General', example: 'dyspnea (difficult breathing), dysphagia (difficult swallowing)', definition: 'Prefix meaning bad, painful, or difficult' },
+  { id: 'p8', term: 'dys-', type: 'prefix', meaning: 'abnormal or difficult', casualMeaning: 'something wrong or hard', system: 'General', example: 'dyspnea (difficult breathing), dysphagia (difficult swallowing)', definition: 'Prefix meaning abnormal or difficult' },
   { id: 'p9', term: 'endo-', type: 'prefix', meaning: 'within', casualMeaning: 'deep inside', system: 'General', example: 'endoscopy (viewing within), endocardium (inner heart lining)', definition: 'Prefix meaning within' },
   { id: 'p10', term: 'epi-', type: 'prefix', meaning: 'upon, above', casualMeaning: 'sitting on top of', system: 'General', example: 'epidermis (upon the skin), epiglottis (upon the glottis)', definition: 'Prefix meaning upon or above' },
   { id: 'p11', term: 'eu-', type: 'prefix', meaning: 'good, normal', casualMeaning: 'normal and healthy', system: 'General', example: 'eupnea (normal breathing)', definition: 'Prefix meaning good or normal' },
   { id: 'p12', term: 'ex-, exo-', type: 'prefix', meaning: 'out, outside', casualMeaning: 'coming out', system: 'General', example: 'exocrine (secreting outward), exostosis (bone growth outward)', definition: 'Prefix meaning out or outside' },
   { id: 'p13', term: 'hemi-', type: 'prefix', meaning: 'half', casualMeaning: 'only half of it', system: 'General', example: 'hemiplegia (paralysis of one side)', definition: 'Prefix meaning half' },
-  { id: 'p14', term: 'hyper-', type: 'prefix', meaning: 'above, excessive', casualMeaning: 'too much of it', system: 'General', example: 'hypertension (high blood pressure), hyperglycemia (high blood sugar)', definition: 'Prefix meaning excessive or above normal' },
-  { id: 'p15', term: 'hypo-', type: 'prefix', meaning: 'below, deficient', casualMeaning: 'not enough of it', system: 'General', example: 'hypotension (low blood pressure), hypothyroidism (underactive thyroid)', definition: 'Prefix meaning below or deficient' },
+  { id: 'p14', term: 'hyper-', type: 'prefix', meaning: 'above, excessive, increase', casualMeaning: 'too much of it', system: 'General', example: 'hypertension (high blood pressure), hyperglycemia (high blood sugar)', definition: 'Prefix meaning excessive or above normal' },
+  { id: 'p15', term: 'hypo-', type: 'prefix', meaning: 'below, deficient, decrease', casualMeaning: 'not enough of it', system: 'General', example: 'hypotension (low blood pressure), hypothyroidism (underactive thyroid)', definition: 'Prefix meaning below or deficient' },
   { id: 'p16', term: 'inter-', type: 'prefix', meaning: 'between', casualMeaning: 'in the middle of two things', system: 'General', example: 'intercostal (between the ribs)', definition: 'Prefix meaning between' },
   { id: 'p17', term: 'intra-', type: 'prefix', meaning: 'within', casualMeaning: 'right inside it', system: 'General', example: 'intramuscular (within muscle), intravenous (within a vein)', definition: 'Prefix meaning within' },
   { id: 'p18', term: 'macro-', type: 'prefix', meaning: 'large', casualMeaning: 'bigger than normal', system: 'General', example: 'macrophage (large eating cell)', definition: 'Prefix meaning large' },
@@ -257,7 +257,7 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'p27', term: 'pro-', type: 'prefix', meaning: 'before, forward', casualMeaning: 'moving forward or before', system: 'General', example: 'prognosis (before knowing outcome)', definition: 'Prefix meaning before or forward' },
   { id: 'p28', term: 'retro-', type: 'prefix', meaning: 'behind, backward', casualMeaning: 'going backwards', system: 'General', example: 'retroperitoneal (behind the peritoneum)', definition: 'Prefix meaning behind or backward' },
   { id: 'p29', term: 'sub-', type: 'prefix', meaning: 'under, below', casualMeaning: 'under or beneath', system: 'General', example: 'subcutaneous (under the skin)', definition: 'Prefix meaning under or below' },
-  { id: 'p30', term: 'supra-', type: 'prefix', meaning: 'above, upon', casualMeaning: 'above or on top', system: 'General', example: 'suprarenal (above the kidney)', definition: 'Prefix meaning above' },
+  { id: 'p30', term: 'supra-, super-', type: 'prefix', meaning: 'above, upon', casualMeaning: 'above or on top', system: 'General', example: 'suprarenal (above the kidney)', definition: 'Prefix meaning above' },
   { id: 'p31', term: 'syn-, sym-', type: 'prefix', meaning: 'together, joined', casualMeaning: 'joined together', system: 'General', example: 'syndrome (symptoms occurring together)', definition: 'Prefix meaning together or joined' },
   { id: 'p32', term: 'tachy-', type: 'prefix', meaning: 'fast, rapid', casualMeaning: 'racing fast', system: 'Cardiovascular', example: 'tachycardia (fast heart rate)', definition: 'Prefix meaning rapid' },
   { id: 'p33', term: 'trans-', type: 'prefix', meaning: 'across, through', casualMeaning: 'passing completely through', system: 'General', example: 'transdermal (through the skin)', definition: 'Prefix meaning across or through' },
@@ -276,19 +276,19 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 's8', term: '-emia', type: 'suffix', meaning: 'blood condition', casualMeaning: 'a condition in the blood', system: 'Blood', example: 'anemia (reduced red blood cell condition), leukemia (white blood cell condition), septicemia (bacteria in the blood)', definition: 'Suffix meaning blood condition; describes the state of the blood or a substance found in it' },
   { id: 's9', term: '-genesis', type: 'suffix', meaning: 'origin, formation', casualMeaning: 'where it all begins', system: 'General', example: 'carcinogenesis (origin of cancer)', definition: 'Suffix meaning origin or production' },
   { id: 's10', term: '-gram', type: 'suffix', meaning: 'record, image', casualMeaning: 'the picture or printout', system: 'General', example: 'electrocardiogram (heart electrical record)', definition: 'Suffix meaning record or image' },
-  { id: 's11', term: '-graph, -graphy', type: 'suffix', meaning: 'instrument/process of recording', casualMeaning: 'the machine/method making the picture', system: 'General', example: 'echocardiography (ultrasound recording of heart)', definition: 'Suffix meaning instrument or process of recording' },
+  { id: 's11', term: '-graph', type: 'suffix', meaning: 'instrument to record', casualMeaning: 'the machine that makes the recording', system: 'General', example: 'electrocardiograph (instrument recording heart activity)', definition: 'Suffix meaning instrument to record' },
   { id: 's12', term: '-ia, -iasis', type: 'suffix', meaning: 'condition', casualMeaning: 'having that condition', system: 'General', example: 'pneumonia (lung condition), cholelithiasis (gallstone condition)', definition: 'Suffix meaning condition or state' },
   { id: 's13', term: '-itis', type: 'suffix', meaning: 'inflammation', casualMeaning: 'inflamed and angry', system: 'General', example: 'appendicitis (inflammation of appendix), arthritis (inflammation of joints)', definition: 'Suffix meaning inflammation' },
   { id: 's14', term: '-logy', type: 'suffix', meaning: 'study of', casualMeaning: 'the science of studying it', system: 'General', example: 'cardiology (study of the heart), neurology (study of the nervous system)', definition: 'Suffix meaning study of' },
-  { id: 's15', term: '-lysis', type: 'suffix', meaning: 'separation, destruction', casualMeaning: 'breaking it apart', system: 'General', example: 'hemolysis (destruction of red blood cells)', definition: 'Suffix meaning separation or destruction' },
+  { id: 's15', term: '-lysis', type: 'suffix', meaning: 'destruction', casualMeaning: 'breaking it apart', system: 'General', example: 'hemolysis (destruction of red blood cells)', definition: 'Suffix meaning destruction or dissolution' },
   { id: 's16', term: '-malacia', type: 'suffix', meaning: 'softening', casualMeaning: 'becoming soft and weak', system: 'General', example: 'osteomalacia (softening of bones)', definition: 'Suffix meaning softening of tissue' },
   { id: 's17', term: '-megaly', type: 'suffix', meaning: 'enlargement', casualMeaning: 'growing way too big', system: 'General', example: 'cardiomegaly (enlarged heart), splenomegaly (enlarged spleen)', definition: 'Suffix meaning enlargement' },
   { id: 's18', term: '-oid', type: 'suffix', meaning: 'resembling', casualMeaning: 'looks like it but isn\'t', system: 'General', example: 'osteoid (resembling bone)', definition: 'Suffix meaning resembling' },
   { id: 's19', term: '-oma', type: 'suffix', meaning: 'tumor', casualMeaning: 'a tumor or abnormal growth', system: 'General', example: 'carcinoma (cancerous tumor), melanoma (tumor of melanocytes)', definition: 'Suffix meaning tumor' },
   { id: 's20', term: '-opia, -opsia', type: 'suffix', meaning: 'vision condition', casualMeaning: 'a vision problem', system: 'General', example: 'myopia (nearsightedness), diplopia (double vision)', definition: 'Suffix meaning vision or vision condition' },
-  { id: 's21', term: '-osis', type: 'suffix', meaning: 'abnormal condition', casualMeaning: 'an abnormal process happening', system: 'General', example: 'arteriosclerosis (hardening of arteries), cyanosis (bluish skin)', definition: 'Suffix meaning abnormal condition' },
+  { id: 's21', term: '-osis', type: 'suffix', meaning: 'condition', casualMeaning: 'an abnormal process happening', system: 'General', example: 'arteriosclerosis (hardening of arteries), cyanosis (bluish skin)', definition: 'Suffix meaning condition' },
   { id: 's22', term: '-pathy', type: 'suffix', meaning: 'disease', casualMeaning: 'a disease of that organ', system: 'General', example: 'neuropathy (nerve disease), cardiomyopathy (heart muscle disease)', definition: 'Suffix meaning disease or suffering' },
-  { id: 's23', term: '-penia', type: 'suffix', meaning: 'deficiency', casualMeaning: 'dangerously low levels', system: 'Blood', example: 'leukopenia (decrease in white blood cells), thrombocytopenia (low platelets)', definition: 'Suffix meaning deficiency or abnormal decrease' },
+  { id: 's23', term: '-penia', type: 'suffix', meaning: 'deficiency, few', casualMeaning: 'dangerously low levels', system: 'Blood', example: 'leukopenia (decrease in white blood cells), thrombocytopenia (low platelets)', definition: 'Suffix meaning deficiency or abnormal decrease' },
   { id: 's24', term: '-phasia', type: 'suffix', meaning: 'speech', casualMeaning: 'speech ability', system: 'Nervous', example: 'aphasia (without speech)', definition: 'Suffix meaning speech' },
   { id: 's25', term: '-phobia', type: 'suffix', meaning: 'fear', casualMeaning: 'being scared of it', system: 'General', example: 'hydrophobia (fear of water)', definition: 'Suffix meaning fear or sensitivity' },
   { id: 's26', term: '-plasty', type: 'suffix', meaning: 'surgical repair', casualMeaning: 'surgically fixing or reshaping', system: 'General', example: 'rhinoplasty (nose job), arthroplasty (joint repair)', definition: 'Suffix meaning surgical repair or reconstruction' },
@@ -297,7 +297,7 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 's29', term: '-ptosis', type: 'suffix', meaning: 'drooping, prolapse, sagging', casualMeaning: 'drooping or falling down', system: 'General', example: 'blepharoptosis (drooping eyelid)', definition: 'Suffix meaning drooping or prolapse' },
   { id: 's30', term: '-rrhage, -rrhagia', type: 'suffix', meaning: 'bursting forth', casualMeaning: 'bleeding or gushing out suddenly', system: 'General', example: 'hemorrhage (bursting forth of blood), menorrhagia (heavy menstrual flow)', definition: 'Suffix meaning bursting forth of blood; sudden profuse flow from a vessel' },
   { id: 's31', term: '-rrhaphy', type: 'suffix', meaning: 'surgical suturing', casualMeaning: 'stitching it back together', system: 'General', example: 'herniorrhaphy (stitching a hernia)', definition: 'Suffix meaning surgical suturing' },
-  { id: 's32', term: '-rrhea', type: 'suffix', meaning: 'excessive flow, discharge', casualMeaning: 'fluid flowing or draining out', system: 'General', example: 'diarrhea (flow through intestines), rhinorrhea (runny nose)', definition: 'Suffix meaning excessive flow or discharge' },
+  { id: 's32', term: '-rrhea', type: 'suffix', meaning: 'flow or discharge', casualMeaning: 'fluid flowing or draining out', system: 'General', example: 'diarrhea (flow through intestines), rhinorrhea (runny nose)', definition: 'Suffix meaning flow or discharge' },
   { id: 's33', term: '-rrhexis', type: 'suffix', meaning: 'rupture', casualMeaning: 'tearing apart or bursting', system: 'General', example: 'cardiorrhexis (rupture of heart)', definition: 'Suffix meaning rupture or tearing' },
   { id: 's34', term: '-scope', type: 'suffix', meaning: 'instrument for visual examination', casualMeaning: 'the tool used to look inside', system: 'General', example: 'endoscope (instrument for looking inside body)', definition: 'Suffix meaning instrument for visual examination' },
   { id: 's35', term: '-scopy', type: 'suffix', meaning: 'process of visual examination', casualMeaning: 'using the scope to look inside', system: 'General', example: 'colonoscopy (examination of the colon)', definition: 'Suffix meaning visual examination process' },
@@ -511,6 +511,14 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'pr13', term: 'Lumbar Puncture (Spinal Tap)', type: 'procedure', meaning: 'Needle inserted into subarachnoid space to collect CSF', casualMeaning: 'spinal tap to collect fluid around the spinal cord', system: 'Nervous', example: 'Lumbar puncture for meningitis diagnosis', definition: 'Puncture of the subarachnoid space in the lumbar region of the spinal cord to obtain cerebrospinal fluid (CSF) for analysis' },
 ];
 
+function sortTerms(): void {
+  ALL_TERMS.sort((a, b) => {
+    const key = (t: MedicalTerm) => t.term.replace(/^[^a-zA-Z]*/, '').toLowerCase();
+    return key(a).localeCompare(key(b));
+  });
+}
+sortTerms();
+
 export const HOMONYM_TERMS = ALL_TERMS.filter(t => t.homonymWarning);
 
 export const getTermsBySystem = (systemId: string) =>
@@ -691,6 +699,7 @@ export function applyTermOverrides(overrides: Record<string, Partial<MedicalTerm
       ALL_TERMS[i] = { ...ALL_TERMS[i], ...patch };
     }
   }
+  sortTerms();
 }
 
 export function addCustomTerms(terms: MedicalTerm[]) {
@@ -702,6 +711,7 @@ export function addCustomTerms(terms: MedicalTerm[]) {
       ALL_TERMS.push(t);
     }
   }
+  sortTerms();
 }
 
 export function removeCustomTerm(termId: string) {
