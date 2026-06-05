@@ -102,15 +102,15 @@ export default function RootBuilder() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#8b4f58", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <div style={{ backgroundColor: "rgba(0,0,0,0.2)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.1)" }}>
-        <button onClick={() => navigate("/")} style={{ backgroundColor: "rgba(252,250,247,0.12)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.2)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" }}>← Dashboard</button>
+    <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
+      <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
+        <button onClick={() => navigate("/")} style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" }}>← Dashboard</button>
         <span style={{ color: "#fcfaf7", fontWeight: "700" }}>Root Builder Workspace</span>
       </div>
 
       <div style={{ maxWidth: "960px", margin: "0 auto", padding: "28px 24px" }}>
-        <h1 style={{ color: "#fcfaf7", fontSize: "1.6rem", fontWeight: "800", marginBottom: "6px" }}>🔬 Dynamic Root Builder</h1>
-        <p style={{ color: "rgba(252,250,247,0.6)", marginBottom: "24px" }}>Tap a fragment from each column to load it into its slot. A valid term will display below.</p>
+        <h1 style={{ color: "#fcfaf7", fontSize: "1.6rem", fontWeight: "800", marginBottom: "6px" }}>Dynamic Root Builder</h1>
+        <p style={{ color: "rgba(252,250,247,0.4)", marginBottom: "24px" }}>Select a fragment from each column to load it into its slot. A valid term will display below.</p>
 
         <div style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
           <div style={slotStyle(!!prefix, "#9c6f5e")}>
