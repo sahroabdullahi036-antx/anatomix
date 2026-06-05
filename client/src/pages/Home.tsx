@@ -33,7 +33,7 @@ export default function Home() {
         </Button>
 
         <p className="text-sm text-blue-200 mt-6">
-          No Account Required • Completely Private
+          Create an account to get started • Completely Private
         </p>
       </div>
     </div>
