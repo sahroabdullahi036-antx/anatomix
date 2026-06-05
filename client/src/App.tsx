@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { UserProvider, useUser } from "./contexts/UserContext";
 import { FirebaseProvider, useFirebase } from "./contexts/FirebaseContext";
+import { PaletteProvider, usePalette } from "./contexts/ThemeContext";
 import { useFirebaseSync } from "./hooks/useFirebaseSync";
 import { subscribeToTeachers } from "./firebase/firestoreService";
 import LoginGate from "./pages/v2/LoginGate";
@@ -95,11 +96,12 @@ function AppRoutes() {
 
 function InnerApp() {
   useFirebaseSync();
+  const { filter } = usePalette();
   return (
-    <>
+    <div style={{ filter, minHeight: "100vh", transition: "filter 0.3s ease" }}>
       <Toaster />
       <AppRoutes />
-    </>
+    </div>
   );
 }
 
@@ -108,7 +110,9 @@ function App() {
     <FirebaseProvider>
       <ErrorBoundary>
         <UserProvider>
-          <InnerApp />
+          <PaletteProvider>
+            <InnerApp />
+          </PaletteProvider>
         </UserProvider>
       </ErrorBoundary>
     </FirebaseProvider>

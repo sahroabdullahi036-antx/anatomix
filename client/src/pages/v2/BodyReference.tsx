@@ -16,6 +16,20 @@ const SYSTEMS = [
   { id: "special-senses",  label: "Special Senses",  color: "#508868", region: { type: "senses" }, desc: "Eyes, ears, nose, tongue, and vestibular system" },
 ];
 
+const ILLUSTRATIONS: Record<string, string> = {
+  cardiovascular:  "https://commons.wikimedia.org/wiki/Special:FilePath/Diagram_of_the_human_heart_(cropped).svg",
+  respiratory:     "https://commons.wikimedia.org/wiki/Special:FilePath/Respiratory_system_complete_en.svg",
+  digestive:       "https://commons.wikimedia.org/wiki/Special:FilePath/Digestive_system_diagram_en.svg",
+  nervous:         "https://commons.wikimedia.org/wiki/Special:FilePath/Gray728.svg",
+  musculoskeletal: "https://commons.wikimedia.org/wiki/Special:FilePath/Gray_skeleton_front_en.svg",
+  urinary:         "https://commons.wikimedia.org/wiki/Special:FilePath/Illu_urinary_system.svg",
+  endocrine:       "https://commons.wikimedia.org/wiki/Special:FilePath/Illu_endocrine_system.png",
+  integumentary:   "https://commons.wikimedia.org/wiki/Special:FilePath/Layers_of_epidermis.png",
+  lymphatic:       "https://commons.wikimedia.org/wiki/Special:FilePath/Illu_lymphatic_system.png",
+  reproductive:    "https://commons.wikimedia.org/wiki/Special:FilePath/Reproductive_endocrinology_and_infertility_-_male_female.svg",
+  "special-senses":"https://commons.wikimedia.org/wiki/Special:FilePath/Schematic_diagram_of_the_human_eye_en.svg",
+};
+
 function SystemDiagram({ id }: { id: string }) {
   switch (id) {
     case "cardiovascular": return <CardioSVG />;
@@ -554,6 +568,25 @@ export default function BodyReference() {
                 <div style={{ flex: "0 0 300px", minWidth: "240px" }}>
                   <h2 style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.3rem", marginBottom: "4px" }}>{system.label}</h2>
                   <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.88rem", marginBottom: "16px" }}>{system.desc}</p>
+
+                  {ILLUSTRATIONS[selected] && (
+                    <div style={{ marginBottom: "18px", borderRadius: "10px", overflow: "hidden", border: "1px solid rgba(252,250,247,0.08)", backgroundColor: "rgba(255,255,255,0.96)" }}>
+                      <img
+                        key={selected}
+                        src={ILLUSTRATIONS[selected]}
+                        alt={`${system.label} anatomy illustration`}
+                        style={{ width: "100%", display: "block", maxHeight: "280px", objectFit: "contain", padding: "8px" }}
+                        onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
+                      />
+                      <div style={{ backgroundColor: "rgba(0,0,0,0.6)", padding: "5px 10px", fontSize: "0.68rem", color: "rgba(252,250,247,0.5)", textAlign: "center" }}>
+                        Wikimedia Commons — public domain / CC-BY-SA
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: "8px" }}>
+                    Interactive Diagram
+                  </div>
                   <SystemDiagram id={selected} />
 
                   {/* Structures panel */}
