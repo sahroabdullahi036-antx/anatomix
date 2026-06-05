@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { CHAPTERS, getTermsByChapter } from "@/data/medicalData";
+import AccountSettings from "./AccountSettings";
 
 const MODULES = [
   { path: "/explorer",         title: "System Explorer",  color: "#374a5e" },
@@ -15,6 +17,7 @@ const MODULES = [
 export default function Dashboard() {
   const { user, logout } = useUser();
   const [, navigate] = useLocation();
+  const [showSettings, setShowSettings] = useState(false);
   const critCount = Object.keys(user?.criticalReview ?? {}).length;
   const cleared = new Set(user?.clearedTermIds ?? []);
   const streak = user?.studyStreak ?? 0;
@@ -39,6 +42,12 @@ export default function Dashboard() {
             </span>
           )}
           <span style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.9rem", fontWeight: "600" }}>{user?.username}</span>
+          <button
+            onClick={() => setShowSettings(true)}
+            style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}
+          >
+            Account
+          </button>
           <button
             onClick={logout}
             style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}
@@ -99,6 +108,7 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+      {showSettings && <AccountSettings onClose={() => setShowSettings(false)} />}
     </div>
   );
 }
