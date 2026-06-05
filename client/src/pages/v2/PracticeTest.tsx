@@ -113,7 +113,7 @@ export default function PracticeTest() {
               ))}
             </select>
             <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.8rem", marginTop: "8px" }}>
-              {pool.length} terms available — test will use {Math.min(Q_COUNT, pool.length)} questions
+              {pool.length} terms available, test will use {Math.min(Q_COUNT, pool.length)} questions
             </div>
           </div>
           <button

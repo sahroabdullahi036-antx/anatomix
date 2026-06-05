@@ -159,7 +159,6 @@ export default function ChatHub() {
       <div style={{ backgroundColor: "rgba(0,0,0,0.35)", padding: "10px 20px", display: "flex", alignItems: "center", gap: "14px", borderBottom: "1px solid rgba(252,250,247,0.07)", flexShrink: 0 }}>
         <button onClick={() => navigate("/")} style={{ background: "none", border: "none", color: "rgba(252,250,247,0.45)", cursor: "pointer", fontSize: "0.85rem", fontFamily: "inherit", padding: 0 }}>← Back</button>
         <span style={{ color: "#fcfaf7", fontWeight: 800, fontSize: "1rem" }}>Chat</span>
-        {isHost && <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.72rem", backgroundColor: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "4px" }}>Moderator — sees all channels & DMs</span>}
       </div>
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
@@ -241,7 +240,7 @@ export default function ChatHub() {
               </div>
 
               <div style={{ flex: 1, overflowY: "auto", padding: "16px 22px", display: "flex", flexDirection: "column" }}>
-                {messages.length === 0 && <div style={{ color: "rgba(252,250,247,0.2)", fontSize: "0.85rem", textAlign: "center", marginTop: "50px" }}>No messages yet — say hello! 👋</div>}
+                {messages.length === 0 && <div style={{ color: "rgba(252,250,247,0.2)", fontSize: "0.85rem", textAlign: "center", marginTop: "50px" }}>No messages yet. Say hello!</div>}
                 {messages.map((msg, i) => {
                   const prev = i > 0 ? messages[i - 1] : null;
                   const grouped = prev?.author === msg.author && msg.createdAt - (prev?.createdAt ?? 0) < 300_000;

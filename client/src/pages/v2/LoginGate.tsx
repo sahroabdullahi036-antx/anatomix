@@ -250,7 +250,7 @@ export default function LoginGate() {
           {step === "new-account" && (
             <>
               <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>
-                {isHost ? "Moderator Account Setup" : isExistingAccount ? `Set a Password — ${username}` : `Create Account — ${username}`}
+                {isHost ? "Moderator Account Setup" : isExistingAccount ? `Set a Password for ${username}` : `Create Account: ${username}`}
               </h2>
               <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "20px", textAlign: "center" }}>
                 {isHost

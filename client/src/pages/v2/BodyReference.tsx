@@ -663,7 +663,7 @@ export default function BodyReference() {
               <div style={{ flex: 1, minWidth: "260px" }}>
                 <h2 style={{ color: "#fcfaf7", fontSize: "1.35rem", fontWeight: "800", marginBottom: "3px" }}>{currentSystem.officialName}</h2>
                 <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.85rem", marginBottom: "18px" }}>{uiSystem.desc}</div>
-                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "10px" }}>Structures — click to explore inside</div>
+                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "10px" }}>Structures (click to explore inside)</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: "10px" }}>
                   {(currentSystem.structures as any[]).map((s: any) => (
                     <StructureCard key={s.id} structure={s} accentColor={uiSystem.color} onClick={() => drillInto(s.id)} />
@@ -689,7 +689,7 @@ export default function BodyReference() {
                   <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.86rem", lineHeight: 1.55 }}>{currentNode?.definition}</div>
                 </div>
                 <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "10px" }}>
-                  Inside {currentNode?.officialName?.split("(")[0].trim()} — click a part to zoom in
+                  Inside {currentNode?.officialName?.split("(")[0].trim()} (click a part to zoom in)
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px" }}>
                   {items.map((s: any) => (
