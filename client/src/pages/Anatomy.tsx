@@ -6,7 +6,7 @@ import { ChevronLeft } from "lucide-react";
 
 const ANATOMY_HIERARCHY = {
   "Cardiovascular": { label: "Cardiovascular System", term: "Cardio/Vascular", parts: { "Heart": { term: "Cardi/o", subparts: { "Ventricles": { term: "Ventricul/o", subparts: { "Left": { term: "LV" }, "Right": { term: "RV" } } }, "Atria": { term: "Atri/o", subparts: { "Left": { term: "LA" }, "Right": { term: "RA" } } }, "Valves": { term: "Valvul/o", subparts: { "Mitral": { term: "Mitral" }, "Aortic": { term: "Aortic" }, "Tricuspid": { term: "Tricuspid" }, "Pulmonary": { term: "Pulmonary" } } } } }, "Arteries": { term: "Arteri/o", subparts: { "Aorta": { term: "Aort/o" }, "Coronary": { term: "Coronary" }, "Carotid": { term: "Carotid" } } }, "Veins": { term: "Ven/o", subparts: { "Vena Cava": { term: "Cava" }, "Pulmonary": { term: "Pulmonary Vein" }, "Jugular": { term: "Jugular" } } } } },
-  "Respiratory": { label: "Respiratory System", term: "Pulmon/o", parts: { "Lungs": { term: "Pulmon/o", subparts: { "Right": { term: "Right Lung" }, "Left": { term: "Left Lung" }, "Lobes": { term: "Lob/o", subparts: { "Upper": { term: "Upper" }, "Middle": { term: "Middle" }, "Lower": { term: "Lower" } } } } }, "Airways": { term: "Bronch/o", subparts: { "Trachea": { term: "Trachea/o" }, "Bronchi": { term: "Bronch/o" }, "Bronchioles": { term: "Bronchiol/o" } } }, "Diaphragm": { term: "Diaphragm/o", subparts: {} } } },
+  "Respiratory": { label: "Respiratory System", term: "Pulmon/o", parts: { "Pharynx": { term: "Pharyn/o", subparts: { "Nasopharynx": { term: "Nasopharynx" }, "Oropharynx": { term: "Oropharynx" }, "Laryngopharynx": { term: "Laryngopharynx" } } }, "Larynx": { term: "Laryn/o", subparts: {} }, "Trachea": { term: "Trachea/o", subparts: {} }, "Lungs": { term: "Pulmon/o", subparts: { "Right": { term: "Right Lung" }, "Left": { term: "Left Lung" }, "Lobes": { term: "Lob/o", subparts: { "Upper": { term: "Upper" }, "Middle": { term: "Middle" }, "Lower": { term: "Lower" } } } } }, "Airways": { term: "Bronch/o", subparts: { "Bronchi": { term: "Bronch/o" }, "Bronchioles": { term: "Bronchiol/o" } } }, "Diaphragm": { term: "Diaphragm/o", subparts: {} } } },
   "Digestive": { label: "Digestive System", term: "Gastr/o", parts: { "Pharynx": { term: "Pharyn/o", subparts: { "Nasopharynx": { term: "Nasopharynx" }, "Oropharynx": { term: "Oropharynx" }, "Laryngopharynx": { term: "Laryngopharynx" } } }, "Esophagus": { term: "Esophag/o", subparts: {} }, "Mouth": { term: "Or/o", subparts: { "Teeth": { term: "Dent/o" }, "Tongue": { term: "Gloss/o" }, "Palate": { term: "Palat/o" } } }, "Stomach": { term: "Gastr/o", subparts: { "Fundus": { term: "Fundus" }, "Body": { term: "Body" }, "Pylorus": { term: "Pylor/o" } } }, "Small Intestine": { term: "Enter/o", subparts: { "Duodenum": { term: "Duoden/o" }, "Jejunum": { term: "Jejun/o" }, "Ileum": { term: "Ile/o" } } }, "Large Intestine": { term: "Col/o", subparts: { "Cecum": { term: "Cec/o" }, "Colon": { term: "Colon/o" }, "Rectum": { term: "Rect/o" }, "Anus": { term: "An/o" } } }, "Liver": { term: "Hepat/o", subparts: {} }, "Pancreas": { term: "Pancreat/o", subparts: {} }, "Gallbladder": { term: "Cholecyst/o", subparts: {} } } },
   "Urinary": { label: "Urinary System", term: "Ur/o", parts: { "Kidneys": { term: "Nephr/o", subparts: { "Cortex": { term: "Cortex" }, "Medulla": { term: "Medulla" }, "Pelvis": { term: "Pyel/o" } } }, "Ureters": { term: "Uret/o", subparts: {} }, "Bladder": { term: "Cyst/o", subparts: {} }, "Urethra": { term: "Urethr/o", subparts: {} } } },
   "Nervous": { label: "Nervous System", term: "Neur/o", parts: { "Brain": { term: "Encephal/o", subparts: { "Cerebrum": { term: "Cerebr/o" }, "Cerebellum": { term: "Cerebell/o" }, "Brainstem": { term: "Brainstem" } } }, "Spinal Cord": { term: "Myel/o", subparts: {} }, "Nerves": { term: "Neur/o", subparts: {} } } },
@@ -15,7 +15,7 @@ const ANATOMY_HIERARCHY = {
   "Integumentary": { label: "Integumentary System", term: "Derm/o", parts: { "Epidermis": { term: "Epiderm/o", subparts: {} }, "Dermis": { term: "Derm/o", subparts: {} }, "Hypodermis": { term: "Hypoderm/o", subparts: {} }, "Hair": { term: "Pil/o", subparts: {} }, "Nails": { term: "Onyx/o", subparts: {} }, "Glands": { term: "Gland/o", subparts: { "Sebaceous": { term: "Sebac/o" }, "Sweat": { term: "Sudor/o" } } } } },
   "Sensory": { label: "Sensory System", term: "Sens/o", parts: { "Eyes": { term: "Ophthalm/o", subparts: { "Cornea": { term: "Kerat/o" }, "Iris": { term: "Iris/o" }, "Lens": { term: "Lens" }, "Retina": { term: "Retin/o" } } }, "Ears": { term: "Ot/o", subparts: { "Outer Ear": { term: "Aur/o" }, "Eardrum": { term: "Tympan/o" }, "Cochlea": { term: "Cochle/o" } } }, "Nose": { term: "Nas/o", subparts: {} }, "Tongue": { term: "Gloss/o", subparts: {} }, "Skin": { term: "Derm/o", subparts: {} } } },
   "Immune": { label: "Immune/Lymphatic System", term: "Lymph/o", parts: { "Lymph Nodes": { term: "Lymphaden/o", subparts: {} }, "Spleen": { term: "Splen/o", subparts: {} }, "Thymus": { term: "Thym/o", subparts: {} }, "Tonsils": { term: "Tonsill/o", subparts: {} }, "Lymph Vessels": { term: "Lymph/o", subparts: {} } } },
-  "Reproductive": { label: "Reproductive System", term: "Genit/o", parts: { "Male": { term: "Orchi/o", subparts: { "Testes": { term: "Orchi/o", subparts: {} }, "Epididymis": { term: "Epididym/o", subparts: {} }, "Vas Deferens": { term: "Vas/o", subparts: {} }, "Prostate": { term: "Prostat/o", subparts: {} }, "Penis": { term: "Phall/o", subparts: {} } } }, "Female": { term: "Gynec/o", subparts: { "Ovaries": { term: "Oophor/o", subparts: {} }, "Fallopian Tubes": { term: "Salping/o", subparts: {} }, "Uterus": { term: "Hyster/o", subparts: { "Endometrium": { term: "Endometri/o" }, "Myometrium": { term: "Myometri/o" }, "Cervix": { term: "Cervic/o" } } }, "Vagina": { term: "Colp/o", subparts: {} }, "Vulva": { term: "Vulv/o", subparts: {} } } } } }
+  "Reproductive": { label: "Reproductive System", term: "Genit/o", parts: { "Male": { term: "Orchi/o", subparts: { "Testes": { term: "Orchi/o", subparts: {} }, "Epididymis": { term: "Epididym/o", subparts: {} }, "Vas Deferens": { term: "Vas/o", subparts: {} }, "Prostate": { term: "Prostat/o", subparts: {} }, "Penis": { term: "Phall/o", subparts: {} } } }, "Female": { term: "Gynec/o", subparts: { "Ovaries": { term: "Oophor/o", subparts: {} }, "Fallopian Tubes": { term: "Salping/o", subparts: {} }, "Uterus": { term: "Hyster/o", subparts: { "Endometrium": { term: "Endometri/o" }, "Myometrium": { term: "Myometri/o" }, "Cervix": { term: "Cervic/o" } } }, "Vagina": { term: "Colp/o", subparts: {} }, "Vulva": { term: "Vulv/o", subparts: {} }, "Breasts": { term: "Mamm/o", subparts: {} } } } } }
 };
 
 export default function Anatomy() {
@@ -57,22 +57,22 @@ export default function Anatomy() {
 
   if (currentPath.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-slate-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
           <Link href="/main-menu">
             <Button variant="outline" className="mb-8 flex items-center gap-2">
               <ChevronLeft className="w-4 h-4" /> Main Menu
             </Button>
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Anatomy Explorer</h1>
-          <p className="text-gray-600 mb-8">Select a body system to explore</p>
+          <h1 className="text-4xl font-bold text-slate-800 mb-2">Anatomy Explorer</h1>
+          <p className="text-slate-600 mb-8">Select a body system to explore</p>
           
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {Object.keys(ANATOMY_HIERARCHY).map(system => (
               <Button
                 key={system}
                 onClick={() => handleClick(system)}
-                className="bg-green-600 hover:bg-green-700 text-white py-6 text-lg h-auto"
+                className="bg-amber-200 hover:bg-amber-300 text-slate-800 py-6 text-lg h-auto font-semibold transition-colors"
               >
                 {system}
               </Button>
@@ -85,18 +85,18 @@ export default function Anatomy() {
 
   if (!currentLevel || Object.keys(currentLevel).length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-slate-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
           <Button onClick={handleBack} variant="outline" className="mb-8 flex items-center gap-2">
             <ChevronLeft className="w-4 h-4" /> Back
           </Button>
           
-          <Card className="p-8 bg-white shadow-lg border-2 border-green-100">
+          <Card className="p-8 bg-amber-50 shadow-lg border-2 border-amber-200">
             <div className="text-center">
-              <p className="text-gray-500 text-sm mb-2">Current: {currentPath.join(" > ")}</p>
-              <p className="text-gray-900 text-2xl font-bold mb-4">{currentPath[currentPath.length - 1]}</p>
-              <p className="text-green-600 text-xl mb-6 font-semibold">Term: {currentInfo?.term}</p>
-              <p className="text-gray-600">This is the deepest level of detail for this part.</p>
+              <p className="text-slate-600 text-sm mb-2">Current: {currentPath.join(" > ")}</p>
+              <p className="text-slate-900 text-2xl font-bold mb-4">{currentPath[currentPath.length - 1]}</p>
+              <p className="text-amber-700 text-xl mb-6 font-semibold">Term: {currentInfo?.term}</p>
+              <p className="text-slate-600">This is the deepest level of detail for this part.</p>
             </div>
           </Card>
         </div>
@@ -105,16 +105,16 @@ export default function Anatomy() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-slate-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
         <Button onClick={handleBack} variant="outline" className="mb-8 flex items-center gap-2">
           <ChevronLeft className="w-4 h-4" /> Back
         </Button>
         
         <div className="mb-8">
-          <p className="text-gray-500 text-sm mb-2">Path: {currentPath.join(" > ")}</p>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">{currentPath[currentPath.length - 1]}</h1>
-          <p className="text-green-600 text-xl font-semibold">Term: {currentInfo?.term}</p>
+          <p className="text-slate-600 text-sm mb-2">Path: {currentPath.join(" > ")}</p>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">{currentPath[currentPath.length - 1]}</h1>
+          <p className="text-amber-700 text-xl font-semibold">Term: {currentInfo?.term}</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -122,7 +122,7 @@ export default function Anatomy() {
             <Button
               key={key}
               onClick={() => handleClick(key)}
-              className="bg-green-600 hover:bg-green-700 text-white py-6 text-lg h-auto flex flex-col"
+              className="bg-amber-200 hover:bg-amber-300 text-slate-800 py-6 text-lg h-auto flex flex-col font-semibold transition-colors"
             >
               <span>{key}</span>
               <span className="text-xs opacity-80 mt-1">{currentLevel[key].term}</span>
