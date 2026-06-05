@@ -1,20 +1,23 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
+import { getAuth, signInAnonymously, Auth } from "firebase/auth";
 
 interface FirebaseContextType {
   app: FirebaseApp | null;
   db: Firestore | null;
+  auth: Auth | null;
   ready: boolean;
 }
 
-const FirebaseContext = createContext<FirebaseContextType>({ app: null, db: null, ready: false });
+const FirebaseContext = createContext<FirebaseContextType>({ app: null, db: null, auth: null, ready: false });
 
 export const useFirebase = () => useContext(FirebaseContext);
 
 export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [app, setApp] = useState<FirebaseApp | null>(null);
   const [db, setDb] = useState<Firestore | null>(null);
+  const [auth, setAuth] = useState<Auth | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -29,9 +32,13 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       const firebaseApp = getApps().length ? getApps()[0] : initializeApp(config);
       const firestore = getFirestore(firebaseApp);
+      const firebaseAuth = getAuth(firebaseApp);
       setApp(firebaseApp);
       setDb(firestore);
-      setReady(true);
+      setAuth(firebaseAuth);
+      signInAnonymously(firebaseAuth)
+        .then(() => setReady(true))
+        .catch(() => setReady(true));
     } catch (err) {
       console.error("Firebase init error:", err);
       setReady(false);
@@ -39,7 +46,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   return (
-    <FirebaseContext.Provider value={{ app, db, ready }}>
+    <FirebaseContext.Provider value={{ app, db, auth, ready }}>
       {children}
     </FirebaseContext.Provider>
   );

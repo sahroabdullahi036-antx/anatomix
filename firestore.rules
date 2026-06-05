@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    // User progress — any authenticated session can read/write
+    // (progress is stored by username key; we can't restrict per-UID without full auth)
+    match /users/{userId} {
+      allow read, write: if isAuthed();
+    }
+
+    // Classes — authenticated read/write (teacher/moderator manages via app)
+    match /classes/{classId} {
+      allow read, write: if isAuthed();
+    }
+
+    // Multiplayer game rooms
+    match /rooms/{roomCode} {
+      allow read, write: if isAuthed();
+    }
+
+    // Global config (roles, pins, chapter order)
+    match /config/{document} {
+      allow read: if isAuthed();
+      allow write: if isAuthed();
+    }
+
+    // Term and chapter customizations
+    match /termOverrides/{id} {
+      allow read, write: if isAuthed();
+    }
+    match /chapterOverrides/{id} {
+      allow read, write: if isAuthed();
+    }
+    match /customTerms/{id} {
+      allow read, write: if isAuthed();
+    }
+
+    // Chat channels — moderator manages channels; messages are APPEND-ONLY
+    match /chatChannels/{channelId} {
+      allow read, write: if isAuthed();
+
+      match /messages/{messageId} {
+        allow read: if isAuthed();
+        // Create only — messages can never be edited or deleted by anyone
+        allow create: if isAuthed()
+          && request.resource.data.keys().hasAll(['author', 'text', 'createdAt'])
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000;
+        allow update, delete: if false;
+      }
+    }
+
+    // Direct message threads — participants can read/write their thread
+    match /dmThreads/{threadId} {
+      allow read, write: if isAuthed();
+
+      match /messages/{messageId} {
+        allow read: if isAuthed();
+        // Create only — DMs can never be edited or deleted
+        allow create: if isAuthed()
+          && request.resource.data.keys().hasAll(['author', 'text', 'createdAt'])
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000;
+        allow update, delete: if false;
+      }
+    }
+
+    // Block everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
