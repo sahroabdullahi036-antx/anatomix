@@ -77,6 +77,7 @@ const UserContext = createContext<UserContextType | null>(null);
 
 const storageKey = (u: string) => `anatomix_user_${u.toLowerCase().replace(/\s+/g, '_')}`;
 const RECENT_KEY = 'anatomix_recent_users';
+const SESSION_KEY = 'anatomix_active_user';
 
 function todayStr() { return new Date().toISOString().split('T')[0]; }
 function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; }
@@ -133,7 +134,13 @@ function checkAchievements(user: UserData, earned: string[]): string[] {
 }
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(() => {
+    try {
+      const saved = localStorage.getItem(SESSION_KEY);
+      if (saved) return loadUser(saved);
+    } catch {}
+    return null;
+  });
   const [recentUsers, setRecentUsers] = useState<string[]>(getRecentUsers);
   const syncListeners = useRef<Set<(u: UserData) => void>>(new Set());
 
@@ -148,12 +155,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const data = loadUser(trimmed);
     saveUser(data);
     setUser(data);
+    try { localStorage.setItem(SESSION_KEY, trimmed); } catch {}
     const updated = [trimmed, ...recentUsers.filter(u => u !== trimmed)];
     setRecentUsers(updated);
     saveRecentUsers(updated);
   }, [recentUsers]);
 
-  const logout = useCallback(() => setUser(null), []);
+  const logout = useCallback(() => {
+    try { localStorage.removeItem(SESSION_KEY); } catch {}
+    setUser(null);
+  }, []);
 
   const update = useCallback((fn: (prev: UserData) => UserData) => {
     setUser(prev => {
