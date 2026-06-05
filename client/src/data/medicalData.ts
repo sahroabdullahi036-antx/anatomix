@@ -645,6 +645,22 @@ CHAPTERS.forEach(ch => ch.termIds.forEach(id => { _chapterMap[id] = ch.num; }));
 const _originalChapters: Record<number, { title: string; subtitle: string; termIds: string[] }> = {};
 CHAPTERS.forEach(ch => { _originalChapters[ch.num] = { title: ch.title, subtitle: ch.subtitle, termIds: [...ch.termIds] }; });
 
+// Track which chapter nums came from the base data (not created by the owner)
+const _baseChapterNums = new Set<number>(CHAPTERS.map(c => c.num));
+
+export const isBaseChapter = (num: number) => _baseChapterNums.has(num);
+
+export function getNextChapterNum(): number {
+  return CHAPTERS.reduce((m, c) => Math.max(m, c.num), 0) + 1;
+}
+
+export function deleteCustomChapter(num: number) {
+  if (_baseChapterNums.has(num)) return;
+  const idx = CHAPTERS.findIndex(c => c.num === num);
+  if (idx >= 0) CHAPTERS.splice(idx, 1);
+  _rebuildChapterMap();
+}
+
 function _rebuildChapterMap() {
   for (const key of Object.keys(_chapterMap)) delete _chapterMap[key];
   CHAPTERS.forEach(ch => ch.termIds.forEach(id => { _chapterMap[id] = ch.num; }));
@@ -653,11 +669,15 @@ function _rebuildChapterMap() {
 export function applyChapterOverrides(overrides: Record<string, { termIds?: string[]; title?: string; subtitle?: string }>) {
   for (const [key, override] of Object.entries(overrides)) {
     const num = parseInt(key.replace('ch_', ''));
-    const ch = CHAPTERS.find(c => c.num === num);
-    if (!ch) continue;
+    let ch = CHAPTERS.find(c => c.num === num);
+    if (!ch) {
+      ch = { num, title: override.title ?? `Chapter ${num}`, subtitle: override.subtitle ?? '', color: '#4a6080', termIds: [] };
+      CHAPTERS.push(ch);
+      CHAPTERS.sort((a, b) => a.num - b.num);
+    }
     if (Array.isArray(override.termIds)) ch.termIds = [...override.termIds];
-    if (override.title) ch.title = override.title;
-    if (override.subtitle) ch.subtitle = override.subtitle;
+    if (override.title !== undefined) ch.title = override.title;
+    if (override.subtitle !== undefined) ch.subtitle = override.subtitle;
   }
   _rebuildChapterMap();
 }
