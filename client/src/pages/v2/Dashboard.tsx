@@ -1,9 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser, ACHIEVEMENTS } from "@/contexts/UserContext";
 import { CHAPTERS, getTermsByChapter, ALL_TERMS } from "@/data/medicalData";
 import { hasPassword } from "@/utils/auth";
 import AccountSettings from "./AccountSettings";
+import OnboardingTour from "./OnboardingTour";
+
+const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
+const tourKey = (u: string) => `anatomix_toured_${toKey(u)}`;
 
 const MODULES = [
   { path: "/body-reference",     title: "Body Explorer",    color: "#374a5e", tag: "" },
@@ -58,6 +62,20 @@ export default function Dashboard() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [spotlightFlipped, setSpotlightFlipped] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const key = tourKey(user.username);
+    if (!localStorage.getItem(key)) {
+      setShowTour(true);
+    }
+  }, [user?.username]);
+
+  const finishTour = () => {
+    if (user) localStorage.setItem(tourKey(user.username), "1");
+    setShowTour(false);
+  };
 
   const critCount = Object.keys(user?.criticalReview ?? {}).length;
   const cleared = useMemo(() => new Set(user?.clearedTermIds ?? []), [user?.clearedTermIds]);
@@ -78,7 +96,8 @@ export default function Dashboard() {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <header style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
+      {showTour && <OnboardingTour onDone={finishTour} />}
+      <header id="tour-header" style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
         <div>
           <span style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.2rem" }}>AnatomiX</span>
           <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", display: "block", lineHeight: 1.2 }}>Medical Terminology</span>
@@ -126,7 +145,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div onClick={() => setSpotlightFlipped(s => !s)} style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,250,247,0.07)", borderRadius: "12px", padding: "18px 20px", cursor: "pointer" }}>
+          <div id="tour-spotlight" onClick={() => setSpotlightFlipped(s => !s)} style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,250,247,0.07)", borderRadius: "12px", padding: "18px 20px", cursor: "pointer" }}>
             <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Clinical Spotlight</div>
             {!spotlightFlipped ? (
               <>
@@ -143,7 +162,7 @@ export default function Dashboard() {
           </div>
 
           {!onboardingDone && (
-            <div style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,250,247,0.07)", borderRadius: "12px", padding: "18px 20px" }}>
+            <div id="tour-checklist" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,250,247,0.07)", borderRadius: "12px", padding: "18px 20px" }}>
               <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Getting Started ({onboardingProgress}/{onboardingItems.length})</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 {onboardingItems.map(item => (
@@ -167,7 +186,7 @@ export default function Dashboard() {
         </div>
 
         <h2 style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.72rem", fontWeight: "700", marginBottom: "14px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Study Modules</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: "12px" }}>
+        <div id="tour-modules" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: "12px" }}>
           {MODULES.map(m => (
             <button
               key={m.path}
