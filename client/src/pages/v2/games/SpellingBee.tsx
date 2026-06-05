@@ -5,6 +5,7 @@ import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/dat
 import { shuffle, WrongAnswer, WrongAnswerReview } from "./shared";
 import { checkAnswer } from "@/lib/answerUtils";
 import { SpeakButton } from "@/components/SpeakButton";
+import { termToSpeakText } from "@/lib/speakUtils";
 
 export default function SpellingBee() {
   const [, navigate] = useLocation();
@@ -120,7 +121,7 @@ export default function SpellingBee() {
               <div style={{ color: isCorrect ? "#7aaa7a" : "#c07070", fontWeight: "700", marginBottom: "10px" }}>{isCorrect ? "Correct!" : "Incorrect"}</div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
                 <div style={{ color: "#fcfaf7", fontFamily: "monospace", fontSize: "1.2rem", fontWeight: "800" }}>{current.term}</div>
-                <SpeakButton text={current.term.split(",")[0].replace(/[\/\-]/g, "")} size="md" />
+                <SpeakButton text={termToSpeakText(current.term, current.meaning)} size="md" />
               </div>
               {!isCorrect && <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", marginTop: "6px" }}>You typed: {typed}</div>}
             </div>

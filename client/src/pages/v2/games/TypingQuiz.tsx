@@ -4,6 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { GameShell, shuffle, useGameTerms } from "./shared";
 import { checkAnswer } from "@/lib/answerUtils";
 import { SpeakButton } from "@/components/SpeakButton";
+import { termToSpeakText } from "@/lib/speakUtils";
 
 export default function TypingQuiz() {
   const [, navigate] = useLocation();
@@ -81,7 +82,7 @@ export default function TypingQuiz() {
                 {result === "wrong" && <>Correct answer: </>}
                 <strong style={{ fontFamily: "monospace" }}>{current.term}</strong>
               </div>
-              <SpeakButton text={current.term.split(",")[0].replace(/[\/\-]/g, "")} size="sm" />
+              <SpeakButton text={termToSpeakText(current.term, current.meaning)} size="sm" />
             </div>
             {result === "correct" && current.wordParts && current.wordParts.length > 0 && (
               <div style={{ marginTop: "8px", color: "rgba(252,250,247,0.7)", fontSize: "0.82rem" }}>
