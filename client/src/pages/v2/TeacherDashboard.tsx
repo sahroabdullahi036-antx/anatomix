@@ -126,6 +126,7 @@ export default function TeacherDashboard() {
                         </div>
                         <div style={{ display: "flex", gap: "8px" }}>
                           <button onClick={e => { e.stopPropagation(); setAssignModal(s.username); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Assign Class</button>
+                          <button onClick={e => { e.stopPropagation(); if (!db) return; myClasses.filter(c => c.memberUsernames.includes(s.username)).forEach(c => removeStudentFromClass(db!, c.id, s.username)); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(160,70,70,0.25)", color: "#e09090", border: "1px solid rgba(160,70,70,0.2)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Remove</button>
                           <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.72rem", alignSelf: "center" }}>{new Date(s.lastSeen ?? 0).toLocaleDateString()}</span>
                         </div>
                       </div>
