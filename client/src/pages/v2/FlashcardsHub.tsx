@@ -359,7 +359,7 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
               <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.type} - {card.system}</div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", marginBottom: "4px" }}>
                 <div style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", fontFamily: "monospace" }}>{card.term}</div>
-                <SpeakButton text={termToSpeakText(card.term, card.meaning, card.example)} />
+                <SpeakButton text={termToSpeakText(card.term)} />
               </div>
               <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.85rem", marginTop: "14px" }}>Tap to reveal definition</div>
             </>
@@ -367,7 +367,7 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
             <>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "center", marginBottom: "12px" }}>
                 <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)" }}>{card.term}</div>
-                <SpeakButton text={termToSpeakText(card.term, card.meaning, card.example)} size="sm" />
+                <SpeakButton text={termToSpeakText(card.term)} size="sm" />
               </div>
               <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "10px" }}>{card.meaning}</div>
               <div style={{ color: "rgba(252,250,247,0.65)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{card.definition}</div>
@@ -387,7 +387,7 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
               <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.type} - {card.system}</div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
                 <div style={{ color: "#fcfaf7", fontSize: "2rem", fontWeight: "800", fontFamily: "monospace" }}>{card.term}</div>
-                <SpeakButton text={termToSpeakText(card.term, card.meaning, card.example)} />
+                <SpeakButton text={termToSpeakText(card.term)} />
               </div>
             </>
           )

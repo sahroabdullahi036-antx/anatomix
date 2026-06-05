@@ -1,33 +1,26 @@
 /**
- * Convert a medical term string into a TTS-friendly string.
+ * Convert a medical term string into the best TTS-pronounceable form.
  *
- * Strategy:
- * - Strip combining-form slashes (hem/o → hemo) and leading/trailing hyphens.
- * - For very short results that TTS mispronounces (≤4 chars), use the first
- *   word of the example sentence instead — e.g. "abduction" for "ab-".
- * - Longer terms (hyper, brady, hemo, …) are spoken as-is.
+ * For multi-form terms like "a-, an-" or "hem/o, hemat/o", takes the
+ * longest cleaned form — "an" and "hemat" respectively — because longer
+ * strings are less likely to be read as single letters or abbreviations.
+ * Never uses example sentences or meaning text.
  */
-export function termToSpeakText(
-  term: string,
-  _meaning?: string,
-  example?: string,
-): string {
-  const first = term.split(",")[0].trim();
+export function termToSpeakText(term: string): string {
+  const forms = term
+    .split(",")
+    .map(f =>
+      f.trim()
+        .replace(/\/[a-z]{0,2}$/i, "") // strip combining-form vowel: /o, /i, /a
+        .replace(/\//g, "")            // any remaining slashes
+        .replace(/^-+/, "")            // leading hyphen (suffix marker)
+        .replace(/-+$/, "")            // trailing hyphen (prefix marker)
+        .trim()
+    )
+    .filter(f => f.length > 0);
 
-  const cleaned = first
-    .replace(/\/[a-z]{0,2}$/i, "") // /o, /i, /a combining-form vowel
-    .replace(/\//g, "")             // remaining slashes
-    .replace(/^-+/, "")             // leading hyphens (suffix marker)
-    .replace(/-+$/, "")             // trailing hyphens (prefix marker)
-    .trim();
+  if (forms.length === 0) return term;
 
-  // Short strings confuse TTS — speak the first example word instead
-  if (cleaned.length <= 4 && example) {
-    const firstWord = example.match(/^([a-zA-Z]+)/)?.[1];
-    if (firstWord && firstWord.length > cleaned.length) {
-      return firstWord;
-    }
-  }
-
-  return cleaned;
+  // Pick the longest form — more syllables = better TTS pronunciation
+  return forms.reduce((best, curr) => (curr.length > best.length ? curr : best));
 }
