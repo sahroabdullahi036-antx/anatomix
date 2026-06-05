@@ -24,7 +24,6 @@ export default function FlashcardsHub() {
   const [srsIdx, setSrsIdx] = useState(0);
   const [srsFlipped, setSrsFlipped] = useState(false);
   const [deckSearch, setDeckSearch] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const cleared = useMemo(() => new Set(user?.clearedTermIds ?? []), [user?.clearedTermIds]);
 
@@ -62,7 +61,7 @@ export default function FlashcardsHub() {
   }, [deckSearch, studyTerms]);
 
   const jumpToCard = (idx: number) => {
-    setCardIndex(idx); setFlipped(false); setDeckSearch(""); setSearchOpen(false);
+    setCardIndex(idx); setFlipped(false); setDeckSearch("");
   };
 
   const dueTerms = useMemo(() => {
@@ -215,22 +214,35 @@ export default function FlashcardsHub() {
             </div>
 
             <div style={{ position: "relative", marginBottom: "14px" }}>
-              <input
-                placeholder="Search flashcards by term or meaning…"
-                value={deckSearch}
-                onChange={e => { setDeckSearch(e.target.value); setSearchOpen(true); }}
-                onFocus={() => setSearchOpen(true)}
-                onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
-                style={{ width: "100%", padding: "9px 14px", borderRadius: "9px", backgroundColor: "rgba(255,255,255,0.06)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.88rem", boxSizing: "border-box" as const, outline: "none" }}
-              />
-              {searchOpen && searchMatches.length > 0 && (
-                <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, backgroundColor: "#2a2e3a", borderRadius: "10px", border: "1px solid rgba(252,250,247,0.1)", overflow: "hidden", zIndex: 50, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
-                  {searchMatches.map(({ t, i }) => (
-                    <div key={t.id} onMouseDown={() => jumpToCard(i)} style={{ padding: "10px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(252,250,247,0.05)" }}>
-                      <span style={{ color: "#fcfaf7", fontWeight: "600", fontSize: "0.88rem" }}>{t.term}</span>
-                      <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem" }}>{t.meaning}</span>
+              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                <input
+                  placeholder="Search flashcards by term or meaning…"
+                  value={deckSearch}
+                  onChange={e => setDeckSearch(e.target.value)}
+                  style={{ flex: 1, padding: "9px 14px", borderRadius: "9px", backgroundColor: "rgba(255,255,255,0.06)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.88rem", boxSizing: "border-box" as const, outline: "none" }}
+                />
+                {deckSearch && (
+                  <button onClick={() => setDeckSearch("")} style={{ padding: "9px 10px", borderRadius: "9px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.5)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem" }}>✕</button>
+                )}
+              </div>
+              {deckSearch.trim() && (
+                <div style={{ marginTop: "6px", backgroundColor: "#2a2e3a", borderRadius: "10px", border: "1px solid rgba(252,250,247,0.1)", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.3)" }}>
+                  {searchMatches.length > 0 ? (
+                    searchMatches.map(({ t, i }) => (
+                      <div key={t.id} onClick={() => jumpToCard(i)} style={{ padding: "10px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(252,250,247,0.05)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ color: "#7aaa7a", fontSize: "0.7rem" }}>✓</span>
+                          <span style={{ color: "#fcfaf7", fontWeight: "600", fontSize: "0.88rem" }}>{t.term}</span>
+                        </div>
+                        <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem" }}>{t.meaning}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ color: "#c07070", fontSize: "0.7rem" }}>✗</span>
+                      <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem" }}>Not found in this deck</span>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
