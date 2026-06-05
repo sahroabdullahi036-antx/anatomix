@@ -171,6 +171,99 @@ export async function joinRoom(db: Firestore, roomCode: string, player: RoomPlay
   });
 }
 
+export interface UserPinEntry {
+  pin: string;
+  locked: boolean;
+}
+
+export function subscribeToUserPins(
+  db: Firestore,
+  cb: (pins: Record<string, UserPinEntry>) => void
+): Unsubscribe {
+  return onSnapshot(doc(db, "config", "pins"), snap => {
+    cb(snap.exists() ? (snap.data() as Record<string, UserPinEntry>) : {});
+  });
+}
+
+export async function setUserPin(db: Firestore, username: string, pin: string, locked = false): Promise<void> {
+  const key = userKey(username);
+  await setDoc(doc(db, "config", "pins"), { [key]: { pin, locked } }, { merge: true });
+}
+
+export async function clearUserPin(db: Firestore, username: string): Promise<void> {
+  const ref = doc(db, "config", "pins");
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const data = { ...(snap.data() as Record<string, UserPinEntry>) };
+  delete data[userKey(username)];
+  await setDoc(ref, data);
+}
+
+export async function setUsernameLocked(db: Firestore, username: string, locked: boolean): Promise<void> {
+  const ref = doc(db, "config", "pins");
+  const snap = await getDoc(ref);
+  const data = snap.exists() ? (snap.data() as Record<string, UserPinEntry>) : {};
+  const key = userKey(username);
+  if (!data[key]) return;
+  await setDoc(ref, { [key]: { ...data[key], locked } }, { merge: true });
+}
+
+export async function renameUser(
+  db: Firestore,
+  oldUsername: string,
+  newUsername: string,
+  allClasses: FirestoreClass[]
+): Promise<void> {
+  const oldKey = userKey(oldUsername);
+  const newKey = userKey(newUsername);
+  const oldRef = doc(db, "users", oldKey);
+  const snap = await getDoc(oldRef);
+  if (snap.exists()) {
+    await setDoc(doc(db, "users", newKey), { ...snap.data(), username: newUsername });
+    await deleteDoc(oldRef);
+  }
+  for (const cls of allClasses) {
+    if (cls.memberUsernames.includes(oldUsername)) {
+      await updateDoc(doc(db, "classes", cls.id), {
+        memberUsernames: cls.memberUsernames.map(u => u === oldUsername ? newUsername : u),
+      });
+    }
+  }
+  const rolesRef = doc(db, "config", "roles");
+  const rolesSnap = await getDoc(rolesRef);
+  if (rolesSnap.exists()) {
+    const teachers: string[] = (rolesSnap.data() as any).teacherUsernames ?? [];
+    if (teachers.includes(oldKey)) {
+      await setDoc(rolesRef, { teacherUsernames: teachers.map(t => t === oldKey ? newKey : t) }, { merge: true });
+    }
+  }
+  const pinsRef = doc(db, "config", "pins");
+  const pinsSnap = await getDoc(pinsRef);
+  if (pinsSnap.exists()) {
+    const pins = { ...(pinsSnap.data() as Record<string, UserPinEntry>) };
+    if (pins[oldKey]) {
+      pins[newKey] = pins[oldKey];
+      delete pins[oldKey];
+      await setDoc(pinsRef, pins);
+    }
+  }
+}
+
+export async function removeUserEntirely(
+  db: Firestore,
+  username: string,
+  allClasses: FirestoreClass[]
+): Promise<void> {
+  await deleteDoc(doc(db, "users", userKey(username)));
+  for (const cls of allClasses) {
+    if (cls.memberUsernames.includes(username)) {
+      await removeStudentFromClass(db, cls.id, username);
+    }
+  }
+  await removeTeacher(db, username);
+  await clearUserPin(db, username);
+}
+
 export function subscribeToTeachers(db: Firestore, cb: (usernames: string[]) => void): Unsubscribe {
   return onSnapshot(doc(db, "config", "roles"), snap => {
     cb(snap.exists() ? ((snap.data() as any).teacherUsernames ?? []) : []);

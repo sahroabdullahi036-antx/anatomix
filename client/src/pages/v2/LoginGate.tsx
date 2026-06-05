@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
+import { useFirebase } from "@/contexts/FirebaseContext";
 import { accountExists, hasPassword, verifyPassword, setPassword } from "@/utils/auth";
+import { subscribeToUserPins, UserPinEntry } from "@/firebase/firestoreService";
 
-type Step = "username" | "password" | "new-account";
+type Step = "username" | "password" | "pin" | "new-account";
 
 const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
+const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "14px 16px", borderRadius: "10px", fontSize: "1rem",
@@ -28,31 +31,61 @@ const ghostBtn: React.CSSProperties = {
 
 export default function LoginGate() {
   const { login, recentUsers } = useUser();
+  const { db } = useFirebase();
   const [step, setStep] = useState<Step>("username");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [pinInput, setPinInput] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newConfirm, setNewConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pins, setPins] = useState<Record<string, UserPinEntry>>({});
+
+  useEffect(() => {
+    if (!db) return;
+    const unsub = subscribeToUserPins(db, setPins);
+    return unsub;
+  }, [db]);
 
   const reset = () => {
-    setStep("username"); setUsername(""); setPassword("");
+    setStep("username"); setUsername(""); setPassword(""); setPinInput("");
     setNewPassword(""); setNewConfirm(""); setError("");
   };
 
-  const handleUsernameSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = username.trim();
-    if (!trimmed) return;
-    const isHost = IS_HOST(trimmed);
+  const getPinEntry = (u: string) => pins[toKey(u)] ?? null;
+
+  const proceedAfterPinCheck = (trimmed: string) => {
     const exists = accountExists(trimmed);
+    const isHost = IS_HOST(trimmed);
     if (exists && hasPassword(trimmed)) {
       setStep("password"); setError("");
     } else if (!exists || (isHost && !hasPassword(trimmed))) {
       setStep("new-account"); setError("");
     } else {
       login(trimmed);
+    }
+  };
+
+  const handleUsernameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = username.trim();
+    if (!trimmed) return;
+    const pinEntry = getPinEntry(trimmed);
+    if (pinEntry?.pin) {
+      setStep("pin"); setError(""); return;
+    }
+    proceedAfterPinCheck(trimmed);
+  };
+
+  const handlePinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const pinEntry = getPinEntry(username.trim());
+    if (!pinEntry) { login(username.trim()); return; }
+    if (pinInput.trim() === pinEntry.pin) {
+      setPinInput(""); proceedAfterPinCheck(username.trim());
+    } else {
+      setError("Incorrect PIN."); setPinInput("");
     }
   };
 
@@ -83,6 +116,8 @@ export default function LoginGate() {
   };
 
   const handleRecentUser = (u: string) => {
+    const pinEntry = getPinEntry(u);
+    if (pinEntry?.pin) { setUsername(u); setStep("pin"); setError(""); return; }
     if (hasPassword(u)) { setUsername(u); setStep("password"); setError(""); }
     else { login(u); }
   };
@@ -111,15 +146,42 @@ export default function LoginGate() {
                 <div style={{ marginTop: "24px" }}>
                   <p style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.75rem", marginBottom: "10px", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.06em" }}>Recent Profiles</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
-                    {recentUsers.map(u => (
-                      <button key={u} onClick={() => handleRecentUser(u)} style={{ padding: "6px 14px", borderRadius: "20px", fontSize: "0.85rem", fontWeight: "600", backgroundColor: "rgba(255,255,255,0.08)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.12)", cursor: "pointer", fontFamily: "inherit" }}>
-                        {u}{hasPassword(u) ? " *" : ""}
-                      </button>
-                    ))}
+                    {recentUsers.map(u => {
+                      const hasPIN = !!getPinEntry(u)?.pin;
+                      const hasPwd = hasPassword(u);
+                      return (
+                        <button key={u} onClick={() => handleRecentUser(u)} style={{ padding: "6px 14px", borderRadius: "20px", fontSize: "0.85rem", fontWeight: "600", backgroundColor: "rgba(255,255,255,0.08)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.12)", cursor: "pointer", fontFamily: "inherit" }}>
+                          {u}{hasPIN ? " #" : hasPwd ? " *" : ""}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <p style={{ color: "rgba(252,250,247,0.2)", fontSize: "0.7rem", textAlign: "center", marginTop: "8px" }}>* password protected</p>
+                  <p style={{ color: "rgba(252,250,247,0.2)", fontSize: "0.7rem", textAlign: "center", marginTop: "8px" }}># pin protected  * password protected</p>
                 </div>
               )}
+            </>
+          )}
+
+          {step === "pin" && (
+            <>
+              <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>Enter PIN</h2>
+              <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "24px", textAlign: "center" }}>{username}</p>
+              <form onSubmit={handlePinSubmit}>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  value={pinInput}
+                  onChange={e => { setPinInput(e.target.value); setError(""); }}
+                  placeholder="PIN..."
+                  autoFocus
+                  style={inputStyle}
+                />
+                {error && <div style={{ color: "#e09090", fontSize: "0.85rem", marginBottom: "12px" }}>{error}</div>}
+                <button type="submit" disabled={!pinInput.trim()} style={primaryBtn(!pinInput.trim())}>Continue</button>
+              </form>
+              <div style={{ textAlign: "center", marginTop: "16px" }}>
+                <button onClick={reset} style={ghostBtn}>Back</button>
+              </div>
             </>
           )}
 

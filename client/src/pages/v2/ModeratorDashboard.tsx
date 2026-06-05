@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
 import { CHAPTERS } from "@/data/medicalData";
 
 const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
@@ -25,6 +25,14 @@ export default function ModeratorDashboard() {
   const [assignModal, setAssignModal] = useState<string | null>(null);
   const [teachers, setTeachers] = useState<string[]>([]);
   const [newTeacher, setNewTeacher] = useState("");
+  const [pins, setPins] = useState<Record<string, UserPinEntry>>({});
+  const [manageModal, setManageModal] = useState<string | null>(null);
+  const [renameInput, setRenameInput] = useState("");
+  const [pinInputModal, setPinInputModal] = useState("");
+  const [pinSaving, setPinSaving] = useState(false);
+  const [renameSaving, setRenameSaving] = useState(false);
+  const [removeConfirm, setRemoveConfirm] = useState(false);
+  const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
 
   useEffect(() => {
     if (!IS_HOST(user?.username ?? "")) navigate("/");
@@ -35,7 +43,8 @@ export default function ModeratorDashboard() {
     const u1 = subscribeToUsers(db, s => setStudents(s.filter(s => !IS_HOST(s.username))));
     const u2 = subscribeToClasses(db, setClasses);
     const u3 = subscribeToTeachers(db, setTeachers);
-    return () => { u1(); u2(); u3(); };
+    const u4 = subscribeToUserPins(db, setPins);
+    return () => { u1(); u2(); u3(); u4(); };
   }, [db]);
 
   const filteredStudents = filterClass === "all" ? students : students.filter(s => {
@@ -119,10 +128,12 @@ export default function ModeratorDashboard() {
                             <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem" }}>{s.criticalReviewCount} in review</span>
                           </div>
                         </div>
-                        <div style={{ display: "flex", gap: "8px" }}>
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          {pins[toKey(s.username)]?.pin && <span style={{ backgroundColor: "rgba(74,96,128,0.4)", color: "#7aabcc", fontSize: "0.68rem", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>PIN</span>}
+                          {pins[toKey(s.username)]?.locked && <span style={{ backgroundColor: "rgba(160,100,40,0.4)", color: "#d4a843", fontSize: "0.68rem", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>LOCKED</span>}
                           <button onClick={e => { e.stopPropagation(); setAssignModal(s.username); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Assign Class</button>
-                          <button onClick={e => { e.stopPropagation(); if (!db) return; classes.filter(c => c.memberUsernames.includes(s.username)).forEach(c => removeStudentFromClass(db!, c.id, s.username)); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(160,70,70,0.25)", color: "#e09090", border: "1px solid rgba(160,70,70,0.2)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Remove All</button>
-                          <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.72rem", alignSelf: "center" }}>{new Date(s.lastSeen).toLocaleDateString()}</span>
+                          <button onClick={e => { e.stopPropagation(); setManageModal(s.username); setRenameInput(s.username); setPinInputModal(""); setRemoveConfirm(false); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Manage</button>
+                          <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.72rem" }}>{new Date(s.lastSeen).toLocaleDateString()}</span>
                         </div>
                       </div>
                       {exp && (
@@ -207,11 +218,15 @@ export default function ModeratorDashboard() {
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {teachers.map(t => (
                   <div key={t} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "10px", padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(252,250,247,0.06)" }}>
-                    <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <span style={{ color: "#fcfaf7", fontWeight: "700" }}>{t}</span>
-                      <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.78rem", marginLeft: "10px" }}>Teacher</span>
+                      <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.78rem" }}>Teacher</span>
+                      {pins[toKey(t)]?.pin && <span style={{ backgroundColor: "rgba(74,96,128,0.4)", color: "#7aabcc", fontSize: "0.68rem", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>PIN</span>}
                     </div>
-                    <button onClick={() => revokeTeacher(t)} style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(160,70,70,0.3)", color: "#e09090", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Revoke</button>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button onClick={() => { setManageModal(t); setRenameInput(t); setPinInputModal(""); setRemoveConfirm(false); }} style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Manage</button>
+                      <button onClick={() => revokeTeacher(t)} style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(160,70,70,0.3)", color: "#e09090", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Revoke</button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -219,6 +234,74 @@ export default function ModeratorDashboard() {
           </>
         )}
       </div>
+
+      {manageModal && (() => {
+        const u = manageModal;
+        const pinEntry = pins[toKey(u)];
+        const isTeacher = teachers.includes(toKey(u));
+        return (
+          <div onClick={() => setManageModal(null)} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "16px" }}>
+            <div onClick={e => e.stopPropagation()} style={{ backgroundColor: "#2e3240", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "400px", border: "1px solid rgba(252,250,247,0.1)", display: "flex", flexDirection: "column", gap: "18px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3 style={{ color: "#fcfaf7", fontWeight: "700", margin: 0 }}>Manage User</h3>
+                {isTeacher && <span style={{ backgroundColor: "rgba(74,96,128,0.4)", color: "#7aabcc", fontSize: "0.72rem", padding: "2px 8px", borderRadius: "4px", fontWeight: "700" }}>Teacher</span>}
+              </div>
+
+              <div>
+                <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "8px" }}>Rename</div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <input value={renameInput} onChange={e => setRenameInput(e.target.value)} style={{ flex: 1, padding: "9px 12px", borderRadius: "7px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem" }} />
+                  <button disabled={renameSaving || !renameInput.trim() || renameInput.trim() === u} onClick={async () => { if (!db) return; setRenameSaving(true); await renameUser(db, u, renameInput.trim(), classes); setRenameSaving(false); setManageModal(null); }} style={{ padding: "9px 14px", borderRadius: "7px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.82rem", opacity: (renameSaving || !renameInput.trim() || renameInput.trim() === u) ? 0.4 : 1 }}>
+                    {renameSaving ? "..." : "Rename"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "8px" }}>
+                  PIN {pinEntry?.pin ? <span style={{ color: "#7aabcc", textTransform: "none" as const, fontWeight: "400" }}>- currently set</span> : <span style={{ color: "rgba(252,250,247,0.3)", textTransform: "none" as const, fontWeight: "400" }}>- not set</span>}
+                </div>
+                <div style={{ display: "flex", gap: "8px", marginBottom: pinEntry?.pin ? "8px" : "0" }}>
+                  <input value={pinInputModal} onChange={e => setPinInputModal(e.target.value)} placeholder={pinEntry?.pin ? "New PIN..." : "Set PIN..."} style={{ flex: 1, padding: "9px 12px", borderRadius: "7px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem" }} />
+                  <button disabled={pinSaving || !pinInputModal.trim()} onClick={async () => { if (!db) return; setPinSaving(true); await setUserPin(db, u, pinInputModal.trim(), pinEntry?.locked ?? false); setPinSaving(false); setPinInputModal(""); }} style={{ padding: "9px 14px", borderRadius: "7px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.82rem", opacity: (pinSaving || !pinInputModal.trim()) ? 0.4 : 1 }}>
+                    {pinSaving ? "..." : "Set PIN"}
+                  </button>
+                </div>
+                {pinEntry?.pin && (
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button onClick={async () => { if (!db) return; await setUsernameLocked(db, u, !pinEntry.locked); }} style={{ padding: "7px 12px", borderRadius: "7px", backgroundColor: pinEntry.locked ? "rgba(160,100,40,0.3)" : "rgba(255,255,255,0.06)", color: pinEntry.locked ? "#d4a843" : "rgba(252,250,247,0.55)", border: "1px solid rgba(252,250,247,0.08)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>
+                      {pinEntry.locked ? "Unlock" : "Lock Username"}
+                    </button>
+                    <button onClick={async () => { if (!db) return; await clearUserPin(db, u); }} style={{ padding: "7px 12px", borderRadius: "7px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.5)", border: "1px solid rgba(252,250,247,0.08)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>
+                      Clear PIN
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ borderTop: "1px solid rgba(252,250,247,0.06)", paddingTop: "14px" }}>
+                <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "8px" }}>Danger Zone</div>
+                {!removeConfirm ? (
+                  <button onClick={() => setRemoveConfirm(true)} style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "rgba(160,60,60,0.25)", color: "#e09090", border: "1px solid rgba(160,60,60,0.3)", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.85rem" }}>
+                    Remove User Entirely
+                  </button>
+                ) : (
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button onClick={async () => { if (!db) return; await removeUserEntirely(db, u, classes); setManageModal(null); }} style={{ flex: 1, padding: "10px", borderRadius: "8px", backgroundColor: "rgba(180,50,50,0.5)", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.85rem" }}>
+                      Confirm Delete
+                    </button>
+                    <button onClick={() => setRemoveConfirm(false)} style={{ padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem" }}>
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button onClick={() => setManageModal(null)} style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Close</button>
+            </div>
+          </div>
+        );
+      })()}
 
       {assignModal && (
         <div onClick={() => setAssignModal(null)} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>

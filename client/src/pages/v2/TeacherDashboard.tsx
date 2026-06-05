@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToUserPins, setUserPin, clearUserPin, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
 import { CHAPTERS } from "@/data/medicalData";
 
 function StatBar({ value, max, color }: { value: number; max: number; color: string }) {
@@ -20,12 +20,18 @@ export default function TeacherDashboard() {
   const [newClassName, setNewClassName] = useState("");
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [assignModal, setAssignModal] = useState<string | null>(null);
+  const [pins, setPins] = useState<Record<string, UserPinEntry>>({});
+  const [pinModal, setPinModal] = useState<string | null>(null);
+  const [pinInput, setPinInput] = useState("");
+  const [pinSaving, setPinSaving] = useState(false);
+  const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
 
   useEffect(() => {
     if (!db) return;
     const u1 = subscribeToUsers(db, setAllStudents);
     const u2 = subscribeToClasses(db, setAllClasses);
-    return () => { u1(); u2(); };
+    const u3 = subscribeToUserPins(db, setPins);
+    return () => { u1(); u2(); u3(); };
   }, [db]);
 
   const myUsername = user?.username.toLowerCase() ?? "";
@@ -124,8 +130,10 @@ export default function TeacherDashboard() {
                             <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem" }}>{s.studyStreak ?? 0} day streak</span>
                           </div>
                         </div>
-                        <div style={{ display: "flex", gap: "8px" }}>
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          {pins[toKey(s.username)]?.pin && <span style={{ backgroundColor: "rgba(74,96,128,0.4)", color: "#7aabcc", fontSize: "0.68rem", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>PIN</span>}
                           <button onClick={e => { e.stopPropagation(); setAssignModal(s.username); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Assign Class</button>
+                          <button onClick={e => { e.stopPropagation(); setPinModal(s.username); setPinInput(""); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(60,80,120,0.3)", color: "#7aabcc", border: "1px solid rgba(74,96,128,0.25)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>{pins[toKey(s.username)]?.pin ? "Reset PIN" : "Set PIN"}</button>
                           <button onClick={e => { e.stopPropagation(); if (!db) return; myClasses.filter(c => c.memberUsernames.includes(s.username)).forEach(c => removeStudentFromClass(db!, c.id, s.username)); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(160,70,70,0.25)", color: "#e09090", border: "1px solid rgba(160,70,70,0.2)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Remove</button>
                           <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.72rem", alignSelf: "center" }}>{new Date(s.lastSeen ?? 0).toLocaleDateString()}</span>
                         </div>
@@ -164,6 +172,34 @@ export default function TeacherDashboard() {
           </div>
         )}
       </div>
+
+      {pinModal && (
+        <div onClick={() => setPinModal(null)} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "16px" }}>
+          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: "#2e3240", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "340px", border: "1px solid rgba(252,250,247,0.1)" }}>
+            <h3 style={{ color: "#fcfaf7", fontWeight: "700", marginBottom: "4px" }}>{pins[toKey(pinModal)]?.pin ? "Reset PIN" : "Set PIN"}</h3>
+            <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "16px" }}>{pinModal}</p>
+            <input
+              value={pinInput}
+              onChange={e => setPinInput(e.target.value)}
+              placeholder="Enter new PIN..."
+              inputMode="numeric"
+              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem", boxSizing: "border-box" as const, marginBottom: "12px" }}
+            />
+            <p style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.78rem", marginBottom: "14px" }}>Share this PIN with the student. They will need it to log in.</p>
+            <div style={{ display: "flex", gap: "8px", flexDirection: "column" as const }}>
+              <button disabled={pinSaving || !pinInput.trim()} onClick={async () => { if (!db) return; setPinSaving(true); await setUserPin(db, pinModal!, pinInput.trim()); setPinSaving(false); setPinModal(null); }} style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", opacity: (pinSaving || !pinInput.trim()) ? 0.5 : 1 }}>
+                {pinSaving ? "Saving..." : "Set PIN"}
+              </button>
+              {pins[toKey(pinModal)]?.pin && (
+                <button onClick={async () => { if (!db) return; await clearUserPin(db, pinModal!); setPinModal(null); }} style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "rgba(160,70,70,0.3)", color: "#e09090", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                  Clear PIN (no PIN required)
+                </button>
+              )}
+              <button onClick={() => setPinModal(null)} style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {assignModal && (
         <div onClick={() => setAssignModal(null)} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
