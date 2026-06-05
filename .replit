@@ -38,3 +38,12 @@ externalPort = 80
 deploymentTarget = "autoscale"
 run = ["node", "dist/index.js"]
 build = ["pnpm", "build"]
+
+[userenv]
+
+[userenv.shared]
+VITE_FIREBASE_AUTH_DOMAIN = "anatomix-c3885.firebaseapp.com"
+VITE_FIREBASE_PROJECT_ID = "anatomix-c3885"
+VITE_FIREBASE_STORAGE_BUCKET = "anatomix-c3885.firebasestorage.app"
+VITE_FIREBASE_MESSAGING_SENDER_ID = "31474037206"
+VITE_FIREBASE_APP_ID = "1:31474037206:web:db3cf1ac01a67d4105b477"
