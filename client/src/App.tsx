@@ -6,8 +6,8 @@ import { UserProvider, useUser } from "./contexts/UserContext";
 import { FirebaseProvider, useFirebase } from "./contexts/FirebaseContext";
 import { PaletteProvider, usePalette } from "./contexts/ThemeContext";
 import { useFirebaseSync } from "./hooks/useFirebaseSync";
-import { subscribeToTeachers, getTermOverrides, getChapterOverrides, getCustomTerms } from "./firebase/firestoreService";
-import { applyTermOverrides, applyChapterOverrides, addCustomTerms } from "./data/medicalData";
+import { subscribeToTeachers, getTermOverrides, getChapterOverrides, getCustomTerms, getChapterOrder } from "./firebase/firestoreService";
+import { applyTermOverrides, applyChapterOverrides, addCustomTerms, applyChapterOrder } from "./data/medicalData";
 import LoginGate from "./pages/v2/LoginGate";
 import Dashboard from "./pages/v2/Dashboard";
 import TeacherDashboard from "./pages/v2/TeacherDashboard";
@@ -114,6 +114,9 @@ function InnerApp() {
     });
     getCustomTerms(db).then(terms => {
       if (terms.length > 0) addCustomTerms(terms);
+    });
+    getChapterOrder(db).then(nums => {
+      if (nums.length > 0) applyChapterOrder(nums);
     });
   }, [db]);
 

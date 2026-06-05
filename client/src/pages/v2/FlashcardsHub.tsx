@@ -23,6 +23,8 @@ export default function FlashcardsHub() {
   const [hideMastered, setHideMastered] = useState(false);
   const [srsIdx, setSrsIdx] = useState(0);
   const [srsFlipped, setSrsFlipped] = useState(false);
+  const [deckSearch, setDeckSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const cleared = useMemo(() => new Set(user?.clearedTermIds ?? []), [user?.clearedTermIds]);
 
@@ -49,6 +51,19 @@ export default function FlashcardsHub() {
     if (!hideMastered) return baseStudyTerms;
     return baseStudyTerms.filter(t => !cleared.has(t.id));
   }, [baseStudyTerms, hideMastered, cleared]);
+
+  const searchMatches = useMemo(() => {
+    if (!deckSearch.trim()) return [];
+    const q = deckSearch.toLowerCase();
+    return studyTerms
+      .map((t, i) => ({ t, i }))
+      .filter(({ t }) => t.term.toLowerCase().includes(q) || t.meaning.toLowerCase().includes(q))
+      .slice(0, 10);
+  }, [deckSearch, studyTerms]);
+
+  const jumpToCard = (idx: number) => {
+    setCardIndex(idx); setFlipped(false); setDeckSearch(""); setSearchOpen(false);
+  };
 
   const dueTerms = useMemo(() => {
     const now = Date.now();
@@ -195,6 +210,27 @@ export default function FlashcardsHub() {
                     <span style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.85rem" }}>{activeChapter.subtitle}</span>
                   </div>
                   <span style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem" }}>{studyTerms.length} terms</span>
+                </div>
+              )}
+            </div>
+
+            <div style={{ position: "relative", marginBottom: "14px" }}>
+              <input
+                placeholder="Search flashcards by term or meaning…"
+                value={deckSearch}
+                onChange={e => { setDeckSearch(e.target.value); setSearchOpen(true); }}
+                onFocus={() => setSearchOpen(true)}
+                onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
+                style={{ width: "100%", padding: "9px 14px", borderRadius: "9px", backgroundColor: "rgba(255,255,255,0.06)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.88rem", boxSizing: "border-box" as const, outline: "none" }}
+              />
+              {searchOpen && searchMatches.length > 0 && (
+                <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, backgroundColor: "#2a2e3a", borderRadius: "10px", border: "1px solid rgba(252,250,247,0.1)", overflow: "hidden", zIndex: 50, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
+                  {searchMatches.map(({ t, i }) => (
+                    <div key={t.id} onMouseDown={() => jumpToCard(i)} style={{ padding: "10px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(252,250,247,0.05)" }}>
+                      <span style={{ color: "#fcfaf7", fontWeight: "600", fontSize: "0.88rem" }}>{t.term}</span>
+                      <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem" }}>{t.meaning}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
-import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal, addCustomTerms, removeCustomTerm } from "@/data/medicalData";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, saveChapterOrder, getChapterOrder, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
+import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal, addCustomTerms, removeCustomTerm, applyChapterOrder } from "@/data/medicalData";
 
 const TERM_SYSTEMS = ["General","Cardiovascular","Digestive","Respiratory","Nervous","Musculoskeletal","Urinary","Endocrine","Integumentary","Blood","Reproductive","Lymphatic"];
 const TERM_TYPES: MedicalTerm["type"][] = ["prefix","suffix","root","condition","procedure","word"];
@@ -53,6 +53,8 @@ export default function ModeratorDashboard() {
   const [chapterSearch, setChapterSearch] = useState("");
   const [chapterOverrideNums, setChapterOverrideNums] = useState<Set<number>>(new Set());
   const [chapterSaving, setChapterSaving] = useState(false);
+  const [chapterOrderNums, setChapterOrderNums] = useState<number[]>(() => CHAPTERS.map(c => c.num));
+  const [aiLookupLoading, setAiLookupLoading] = useState(false);
 
   useEffect(() => {
     if (!db) return;
@@ -63,6 +65,10 @@ export default function ModeratorDashboard() {
         addCustomTerms(terms);
         setCustomTermIds(new Set(terms.map(t => t.id)));
       }
+    });
+    getChapterOrder(db).then(nums => {
+      if (nums.length > 0) { applyChapterOrder(nums); setChapterOrderNums(nums); }
+      else setChapterOrderNums(CHAPTERS.map(c => c.num));
     });
   }, [db]);
 
@@ -89,6 +95,41 @@ export default function ModeratorDashboard() {
     resetChapterToOriginal(editingChapter);
     setChapterOverrideNums(s => { const n = new Set(s); n.delete(editingChapter); return n; });
     closeChapterModal();
+  };
+
+  const moveChapter = async (idx: number, dir: -1 | 1) => {
+    const newOrder = [...chapterOrderNums];
+    const swapIdx = idx + dir;
+    if (swapIdx < 0 || swapIdx >= newOrder.length) return;
+    [newOrder[idx], newOrder[swapIdx]] = [newOrder[swapIdx], newOrder[idx]];
+    setChapterOrderNums(newOrder);
+    applyChapterOrder(newOrder);
+    if (db) await saveChapterOrder(db, newOrder);
+  };
+
+  const handleAiLookup = async () => {
+    if (!newTermForm?.term.trim()) return;
+    setAiLookupLoading(true);
+    try {
+      const res = await fetch("/api/lookup-term", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ term: newTermForm.term.trim() })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNewTermForm(f => f && ({
+          ...f,
+          meaning: data.meaning ?? f.meaning,
+          type: TERM_TYPES.includes(data.type) ? data.type : f.type,
+          casualMeaning: data.casualMeaning ?? f.casualMeaning,
+          system: TERM_SYSTEMS.includes(data.system) ? data.system : f.system,
+          example: data.example ?? f.example,
+          definition: data.definition ?? f.definition,
+        }));
+      }
+    } catch {}
+    setAiLookupLoading(false);
   };
 
   useEffect(() => {
@@ -304,17 +345,33 @@ export default function ModeratorDashboard() {
         })()}
 
         {tab === "chapters" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "10px" }}>
-            {CHAPTERS.map(ch => (
-              <div key={ch.num} onClick={() => openChapterEdit(ch.num)} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 18px", border: `1px solid ${chapterOverrideNums.has(ch.num) ? "rgba(100,160,100,0.35)" : "rgba(252,250,247,0.06)"}`, cursor: "pointer", display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <span style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.95rem" }}>{ch.title}</span>
-                  {chapterOverrideNums.has(ch.num) && <span style={{ color: "#7aaa7a", fontSize: "0.68rem", fontWeight: "700", flexShrink: 0, marginLeft: "8px" }}>EDITED</span>}
+          <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
+            <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.75rem", marginBottom: "4px" }}>Drag order with ▲▼ — saved automatically for all users.</div>
+            {chapterOrderNums.map((num, idx) => {
+              const ch = CHAPTERS.find(c => c.num === num);
+              if (!ch) return null;
+              const isFirst = idx === 0;
+              const isLast = idx === chapterOrderNums.length - 1;
+              const btnBase: React.CSSProperties = { width: "26px", height: "26px", borderRadius: "5px", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center" };
+              return (
+                <div key={ch.num} style={{ display: "flex", alignItems: "stretch", gap: "7px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "3px", justifyContent: "center" }}>
+                    <button onClick={() => moveChapter(idx, -1)} disabled={isFirst} style={{ ...btnBase, backgroundColor: isFirst ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.07)", color: isFirst ? "rgba(252,250,247,0.15)" : "rgba(252,250,247,0.7)", cursor: isFirst ? "default" : "pointer" }}>▲</button>
+                    <button onClick={() => moveChapter(idx, 1)} disabled={isLast} style={{ ...btnBase, backgroundColor: isLast ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.07)", color: isLast ? "rgba(252,250,247,0.15)" : "rgba(252,250,247,0.7)", cursor: isLast ? "default" : "pointer" }}>▼</button>
+                  </div>
+                  <div onClick={() => openChapterEdit(ch.num)} style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "10px", padding: "12px 16px", border: `1px solid ${chapterOverrideNums.has(ch.num) ? "rgba(100,160,100,0.35)" : "rgba(252,250,247,0.06)"}`, cursor: "pointer", display: "flex", alignItems: "center", gap: "14px" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.9rem" }}>{ch.title}</span>
+                        {chapterOverrideNums.has(ch.num) && <span style={{ color: "#7aaa7a", fontSize: "0.65rem", fontWeight: "700" }}>EDITED</span>}
+                      </div>
+                      <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem", marginTop: "2px" }}>{ch.subtitle}</div>
+                    </div>
+                    <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.73rem", whiteSpace: "nowrap" as const }}>{ch.termIds.length} cards</span>
+                  </div>
                 </div>
-                <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem", lineHeight: "1.3" }}>{ch.subtitle}</div>
-                <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.75rem", marginTop: "2px" }}>{ch.termIds.length} flashcards</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -546,7 +603,19 @@ export default function ModeratorDashboard() {
                 <span style={{ color: "#c090f0", fontSize: "0.72rem", fontWeight: "700" }}>CUSTOM</span>
               </div>
 
-              {field3("term", "Term (e.g. cardi/o, -itis, brady-)")}
+              <div>
+                <span style={lbl3}>Term (e.g. cardi/o, -itis, brady-)</span>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <input value={newTermForm.term} onChange={e => setNewTermForm(f => f && ({ ...f, term: e.target.value }))} style={{ ...inp3, flex: 1 }} />
+                  <button
+                    onClick={handleAiLookup}
+                    disabled={aiLookupLoading || !newTermForm.term.trim()}
+                    style={{ padding: "9px 12px", borderRadius: "7px", backgroundColor: "rgba(192,144,240,0.12)", color: "#c090f0", border: "1px solid rgba(192,144,240,0.3)", cursor: (aiLookupLoading || !newTermForm.term.trim()) ? "default" : "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.78rem", whiteSpace: "nowrap" as const, opacity: (aiLookupLoading || !newTermForm.term.trim()) ? 0.45 : 1, transition: "opacity 0.15s" }}
+                  >
+                    {aiLookupLoading ? "Looking up…" : "✦ Chabner"}
+                  </button>
+                </div>
+              </div>
 
               <div>
                 <span style={lbl3}>Type</span>

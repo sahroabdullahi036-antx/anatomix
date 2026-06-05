@@ -519,6 +519,21 @@ function sortTerms(): void {
 }
 sortTerms();
 
+function dedupeTerms(): void {
+  const seen = new Map<string, number>();
+  const toRemove = new Set<number>();
+  for (let i = 0; i < ALL_TERMS.length; i++) {
+    const key = ALL_TERMS[i].term.replace(/^[^a-zA-Z]*/, '').toLowerCase();
+    if (seen.has(key)) {
+      const prevI = seen.get(key)!;
+      if (ALL_TERMS[i].id.startsWith('ct_')) { toRemove.add(prevI); seen.set(key, i); }
+      else toRemove.add(i);
+    } else { seen.set(key, i); }
+  }
+  [...toRemove].sort((a, b) => b - a).forEach(i => ALL_TERMS.splice(i, 1));
+}
+dedupeTerms();
+
 export const HOMONYM_TERMS = ALL_TERMS.filter(t => t.homonymWarning);
 
 export const getTermsBySystem = (systemId: string) =>
@@ -737,4 +752,13 @@ export function addCustomTerms(terms: MedicalTerm[]) {
 export function removeCustomTerm(termId: string) {
   const idx = ALL_TERMS.findIndex(t => t.id === termId);
   if (idx >= 0) ALL_TERMS.splice(idx, 1);
+}
+
+export function applyChapterOrder(nums: number[]): void {
+  if (!nums || nums.length === 0) return;
+  const map = new Map(CHAPTERS.map(c => [c.num, c]));
+  const ordered: typeof CHAPTERS[0][] = [];
+  for (const n of nums) { const c = map.get(n); if (c) { ordered.push(c); map.delete(n); } }
+  for (const c of map.values()) ordered.push(c);
+  CHAPTERS.splice(0, CHAPTERS.length, ...ordered);
 }

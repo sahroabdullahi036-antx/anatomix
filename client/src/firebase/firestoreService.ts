@@ -348,3 +348,14 @@ export async function saveChapterOverride(db: Firestore, chapterNum: number, dat
 export async function deleteChapterOverride(db: Firestore, chapterNum: number): Promise<void> {
   await deleteDoc(doc(db, "chapterOverrides", `ch_${chapterNum}`));
 }
+
+export async function getChapterOrder(db: Firestore): Promise<number[]> {
+  try {
+    const snap = await getDoc(doc(db, "config", "chapterOrder"));
+    return snap.exists() ? ((snap.data().nums as number[]) ?? []) : [];
+  } catch { return []; }
+}
+
+export async function saveChapterOrder(db: Firestore, nums: number[]): Promise<void> {
+  await setDoc(doc(db, "config", "chapterOrder"), { nums });
+}
