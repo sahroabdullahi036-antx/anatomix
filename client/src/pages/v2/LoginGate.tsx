@@ -69,11 +69,27 @@ export default function LoginGate() {
     e.preventDefault();
     const trimmed = username.trim();
     if (!trimmed) return;
+
     const pinEntry = getPinEntry(trimmed);
     if (pinEntry?.pin) {
       setStep("pin"); setError(""); return;
     }
-    proceedAfterPinCheck(trimmed);
+
+    if (loginMode === "login") {
+      if (hasPassword(trimmed)) {
+        setStep("password"); setError("");
+      } else if (accountExists(trimmed)) {
+        setStep("new-account"); setError("");
+      } else {
+        setError("No account found with that username. Use \"Create Account\" to sign up.");
+      }
+    } else {
+      if (hasPassword(trimmed)) {
+        setError("That username already has an account. Please use Sign In instead.");
+      } else {
+        setStep("new-account"); setError("");
+      }
+    }
   };
 
   const handlePinSubmit = (e: React.FormEvent) => {
