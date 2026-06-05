@@ -32,7 +32,7 @@ function buildQuestions(chapter: number, count = 20) {
   });
 }
 
-const IS_HOST = (u: string) => u.toLowerCase() === "gameshowhost";
+const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 
 export default function MultiplayerHub() {
   const [, navigate] = useLocation();

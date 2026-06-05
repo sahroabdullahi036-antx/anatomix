@@ -4,7 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
 import { FirestoreRoom, RoomPlayer, subscribeToRoom, updateRoom, deleteRoom } from "@/firebase/firestoreService";
 
-const IS_HOST = (u: string) => u.toLowerCase() === "gameshowhost";
+const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 const Q_TIMEOUT = 15000;
 
 export default function GameRoom() {

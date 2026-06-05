@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
 import { CHAPTERS } from "@/data/medicalData";
 
-const IS_HOST = (u: string) => u.toLowerCase() === "gameshowhost";
+const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 
 function StatBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min(1, value / max) : 0;
@@ -18,11 +18,13 @@ export default function ModeratorDashboard() {
   const { db, ready } = useFirebase();
   const [students, setStudents] = useState<FirestoreUserProgress[]>([]);
   const [classes, setClasses] = useState<FirestoreClass[]>([]);
-  const [tab, setTab] = useState<"roster" | "classes" | "games">("roster");
+  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers">("roster");
   const [filterClass, setFilterClass] = useState<string>("all");
   const [newClassName, setNewClassName] = useState("");
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [assignModal, setAssignModal] = useState<string | null>(null);
+  const [teachers, setTeachers] = useState<string[]>([]);
+  const [newTeacher, setNewTeacher] = useState("");
 
   useEffect(() => {
     if (!IS_HOST(user?.username ?? "")) navigate("/");
@@ -32,7 +34,8 @@ export default function ModeratorDashboard() {
     if (!db) return;
     const u1 = subscribeToUsers(db, s => setStudents(s.filter(s => !IS_HOST(s.username))));
     const u2 = subscribeToClasses(db, setClasses);
-    return () => { u1(); u2(); };
+    const u3 = subscribeToTeachers(db, setTeachers);
+    return () => { u1(); u2(); u3(); };
   }, [db]);
 
   const filteredStudents = filterClass === "all" ? students : students.filter(s => {
@@ -42,9 +45,20 @@ export default function ModeratorDashboard() {
 
   const createClass = async () => {
     if (!db || !newClassName.trim()) return;
-    const cls: FirestoreClass = { id: Date.now().toString(), name: newClassName.trim(), memberUsernames: [], createdAt: Date.now() };
+    const cls: FirestoreClass = { id: Date.now().toString(), name: newClassName.trim(), memberUsernames: [], createdAt: Date.now(), ownerUsername: "anatomixowner" };
     await saveClass(db, cls);
     setNewClassName("");
+  };
+
+  const grantTeacher = async () => {
+    if (!db || !newTeacher.trim()) return;
+    await addTeacher(db, newTeacher.trim());
+    setNewTeacher("");
+  };
+
+  const revokeTeacher = async (username: string) => {
+    if (!db) return;
+    await removeTeacher(db, username);
   };
 
   const hdr: React.CSSProperties = { backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)", justifyContent: "space-between" };
@@ -56,7 +70,7 @@ export default function ModeratorDashboard() {
       <div style={hdr}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.1rem" }}>AnatomiX Moderator</span>
-          <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", backgroundColor: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "4px" }}>GameshowHost</span>
+          <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", backgroundColor: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "4px" }}>AnatomiXOwner</span>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
           <button onClick={() => navigate("/multiplayer")} style={backBtn}>Host a Game</button>
@@ -71,6 +85,7 @@ export default function ModeratorDashboard() {
           <button onClick={() => setTab("roster")} style={tabBtn("roster")}>Student Roster ({students.length})</button>
           <button onClick={() => setTab("classes")} style={tabBtn("classes")}>Classes ({classes.length})</button>
           <button onClick={() => setTab("games")} style={tabBtn("games")}>Game Rooms</button>
+          <button onClick={() => setTab("teachers")} style={tabBtn("teachers")}>Teachers ({teachers.length})</button>
         </div>
 
         {tab === "roster" && (
@@ -173,6 +188,34 @@ export default function ModeratorDashboard() {
             <p style={{ color: "rgba(252,250,247,0.45)", marginBottom: "24px" }}>Create and manage live game rooms for your class.</p>
             <button onClick={() => navigate("/multiplayer")} style={{ padding: "14px 32px", borderRadius: "12px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Create a Game Room</button>
           </div>
+        )}
+
+        {tab === "teachers" && (
+          <>
+            <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "18px", marginBottom: "20px", border: "1px solid rgba(252,250,247,0.06)" }}>
+              <div style={{ color: "#fcfaf7", fontWeight: "700", marginBottom: "4px" }}>Grant Teacher Access</div>
+              <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem", marginBottom: "12px" }}>Teachers can manage their own classes, view student progress, and host games. They cannot manage other teachers or view all students.</div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <input value={newTeacher} onChange={e => setNewTeacher(e.target.value)} onKeyDown={e => e.key === "Enter" && grantTeacher()} placeholder="Enter username exactly as they log in..." style={{ flex: 1, padding: "10px 12px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit" }} />
+                <button onClick={grantTeacher} style={{ padding: "10px 18px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Grant Access</button>
+              </div>
+            </div>
+            {teachers.length === 0 ? (
+              <div style={{ textAlign: "center", color: "rgba(252,250,247,0.3)", padding: "60px" }}>No teachers yet. Grant access above to add them.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {teachers.map(t => (
+                  <div key={t} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "10px", padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(252,250,247,0.06)" }}>
+                    <div>
+                      <span style={{ color: "#fcfaf7", fontWeight: "700" }}>{t}</span>
+                      <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.78rem", marginLeft: "10px" }}>Teacher</span>
+                    </div>
+                    <button onClick={() => revokeTeacher(t)} style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(160,70,70,0.3)", color: "#e09090", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Revoke</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 

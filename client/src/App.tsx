@@ -1,12 +1,14 @@
 import { Toaster } from "@/components/ui/sonner";
 import { Route, Switch } from "wouter";
+import { useState, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { UserProvider, useUser } from "./contexts/UserContext";
-import { FirebaseProvider } from "./contexts/FirebaseContext";
+import { FirebaseProvider, useFirebase } from "./contexts/FirebaseContext";
 import { useFirebaseSync } from "./hooks/useFirebaseSync";
+import { subscribeToTeachers } from "./firebase/firestoreService";
 import LoginGate from "./pages/v2/LoginGate";
 import Dashboard from "./pages/v2/Dashboard";
-import SystemExplorer from "./pages/v2/SystemExplorer";
+import TeacherDashboard from "./pages/v2/TeacherDashboard";
 import DictionarySearch from "./pages/v2/DictionarySearch";
 import RootBuilder from "./pages/v2/RootBuilder";
 import FlashcardsHub from "./pages/v2/FlashcardsHub";
@@ -35,25 +37,38 @@ import MultiplayerHub from "./pages/v2/multiplayer/MultiplayerHub";
 import GameRoom from "./pages/v2/multiplayer/GameRoom";
 import BodyReference from "./pages/v2/BodyReference";
 
-const IS_HOST = (u: string) => u.toLowerCase() === "gameshowhost";
+const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 
 function AppRoutes() {
   const { user } = useUser();
+  const { db } = useFirebase();
+  const [teachers, setTeachers] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!db) return;
+    const unsub = subscribeToTeachers(db, setTeachers);
+    return unsub;
+  }, [db]);
+
   if (!user) return <LoginGate />;
   const isHost = IS_HOST(user.username);
+  const isTeacher = !isHost && teachers.includes(user.username.toLowerCase());
+
+  const HomeComponent = isHost ? ModeratorDashboard : isTeacher ? TeacherDashboard : Dashboard;
 
   return (
     <Switch>
-      <Route path="/" component={isHost ? ModeratorDashboard : Dashboard} />
+      <Route path="/" component={HomeComponent} />
       <Route path="/moderator" component={ModeratorDashboard} />
+      <Route path="/teacher" component={TeacherDashboard} />
       <Route path="/multiplayer" component={MultiplayerHub} />
       <Route path="/game-room/:code" component={GameRoom} />
       <Route path="/body-reference" component={BodyReference} />
+      <Route path="/explorer" component={BodyReference} />
       <Route path="/boss-round" component={BossRound} />
       <Route path="/games/spelling-bee" component={SpellingBee} />
       <Route path="/games/hangman" component={HangmanGame} />
       <Route path="/games/memory-match" component={MemoryMatch} />
-      <Route path="/explorer" component={SystemExplorer} />
       <Route path="/dictionary" component={DictionarySearch} />
       <Route path="/root-builder" component={RootBuilder} />
       <Route path="/flashcards" component={FlashcardsHub} />
@@ -73,7 +88,7 @@ function AppRoutes() {
       <Route path="/games/combining-linker" component={CombiningFormLinker} />
       <Route path="/games/chart-auditor" component={ChartAuditor} />
       <Route path="/games/ischemic-countdown" component={IschemicCountdown} />
-      <Route component={isHost ? ModeratorDashboard : Dashboard} />
+      <Route component={HomeComponent} />
     </Switch>
   );
 }

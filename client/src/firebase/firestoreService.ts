@@ -48,6 +48,7 @@ export interface FirestoreClass {
   name: string;
   memberUsernames: string[];
   createdAt: number;
+  ownerUsername?: string;
 }
 
 function userKey(username: string) {
@@ -168,4 +169,27 @@ export async function joinRoom(db: Firestore, roomCode: string, player: RoomPlay
   await updateDoc(ref, {
     [`players.${player.username}`]: player,
   });
+}
+
+export function subscribeToTeachers(db: Firestore, cb: (usernames: string[]) => void): Unsubscribe {
+  return onSnapshot(doc(db, "config", "roles"), snap => {
+    cb(snap.exists() ? ((snap.data() as any).teacherUsernames ?? []) : []);
+  });
+}
+
+export async function addTeacher(db: Firestore, username: string): Promise<void> {
+  const ref = doc(db, "config", "roles");
+  const snap = await getDoc(ref);
+  const existing: string[] = snap.exists() ? ((snap.data() as any).teacherUsernames ?? []) : [];
+  const lower = username.toLowerCase().trim();
+  if (!existing.includes(lower)) {
+    await setDoc(ref, { teacherUsernames: [...existing, lower] }, { merge: true });
+  }
+}
+
+export async function removeTeacher(db: Firestore, username: string): Promise<void> {
+  const ref = doc(db, "config", "roles");
+  const snap = await getDoc(ref);
+  const existing: string[] = snap.exists() ? ((snap.data() as any).teacherUsernames ?? []) : [];
+  await setDoc(ref, { teacherUsernames: existing.filter(u => u !== username.toLowerCase().trim()) }, { merge: true });
 }

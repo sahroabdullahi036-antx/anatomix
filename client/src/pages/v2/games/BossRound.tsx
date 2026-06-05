@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS } from "@/data/medicalData";
-import { shuffle } from "./shared";
+import { shuffle, WrongAnswer, WrongAnswerReview } from "./shared";
 
 const BOSS_COUNT = 15;
 
@@ -72,23 +72,27 @@ export default function BossRound() {
     </div>
   );
 
-  if (finished) return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <div style={hdr}><button onClick={() => navigate("/")} style={backBtn}>← Dashboard</button><span style={{ color: "#fcfaf7", fontWeight: "700" }}>Boss Round - Results</span></div>
-      <div style={{ maxWidth: "520px", margin: "0 auto", padding: "60px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: "3rem", fontWeight: "800", color: allCorrect ? "#7aaa7a" : "#c07070", marginBottom: "8px" }}>{score}/{BOSS_COUNT}</div>
-        <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "1.3rem", marginBottom: "8px" }}>{allCorrect ? "Boss Defeated" : "Not yet"}</div>
-        <div style={{ color: "rgba(252,250,247,0.4)", marginBottom: "32px" }}>{allCorrect ? "All terms mastered. Achievement unlocked." : `${BOSS_COUNT - score} terms added to Critical Review.`}</div>
-        <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap", marginBottom: "32px" }}>
-          {results.map((r, i) => <div key={i} style={{ width: "28px", height: "28px", borderRadius: "6px", backgroundColor: r ? "rgba(80,150,90,0.5)" : "rgba(160,70,70,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fcfaf7", fontSize: "0.7rem", fontWeight: "700" }}>{r ? "+" : "-"}</span></div>)}
-        </div>
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-          <button onClick={start} style={{ padding: "12px 24px", borderRadius: "10px", backgroundColor: "#6a3040", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Try Again</button>
-          <button onClick={() => navigate("/")} style={{ padding: "12px 24px", borderRadius: "10px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Dashboard</button>
+  if (finished) {
+    const wrongAnswers: WrongAnswer[] = bossterms
+      .filter((_, i) => !results[i])
+      .map(t => ({ term: t.term, meaning: t.meaning, definition: t.definition }));
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
+        <div style={hdr}><button onClick={() => navigate("/")} style={backBtn}>← Dashboard</button><button onClick={start} style={{ ...backBtn, marginLeft: "auto" }}>Try Again</button></div>
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <div style={{ padding: "48px 24px 16px", textAlign: "center" }}>
+            <div style={{ fontSize: "3rem", fontWeight: "800", color: allCorrect ? "#7aaa7a" : "#c07070", marginBottom: "8px" }}>{score}/{BOSS_COUNT}</div>
+            <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "1.3rem", marginBottom: "8px" }}>{allCorrect ? "Boss Defeated" : "Not yet"}</div>
+            <div style={{ color: "rgba(252,250,247,0.4)", marginBottom: "20px" }}>{allCorrect ? "All terms mastered. Achievement unlocked." : `${BOSS_COUNT - score} term${BOSS_COUNT - score !== 1 ? "s" : ""} added to Critical Review.`}</div>
+            <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" as const, marginBottom: "16px" }}>
+              {results.map((r, i) => <div key={i} style={{ width: "28px", height: "28px", borderRadius: "6px", backgroundColor: r ? "rgba(80,150,90,0.5)" : "rgba(160,70,70,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fcfaf7", fontSize: "0.7rem", fontWeight: "700" }}>{r ? "+" : "-"}</span></div>)}
+            </div>
+          </div>
+          <WrongAnswerReview wrongs={wrongAnswers} onDone={() => navigate("/")} />
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   const q = questions[idx];
   const isCorrect = selected === q.term.id;

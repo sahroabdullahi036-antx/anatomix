@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
-import { shuffle } from "./shared";
+import { shuffle, WrongAnswer, WrongAnswerReview } from "./shared";
 
 const MAX_WRONG = 6;
 const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -74,18 +74,29 @@ export default function HangmanGame() {
     </div>
   );
 
-  if (finished) return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <div style={hdr}><button onClick={() => { setStarted(false); setFinished(false); }} style={backBtn}>New Game</button><button onClick={() => navigate("/")} style={{ ...backBtn, marginLeft: "auto" }}>Dashboard</button></div>
-      <div style={{ maxWidth: "520px", margin: "0 auto", padding: "48px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: "3rem", fontWeight: "800", color: score >= 7 ? "#7aaa7a" : "#c07070" }}>{score}/{sessionResults.length}</div>
-        <div style={{ color: "#fcfaf7", fontWeight: "700", marginBottom: "24px" }}>{score === sessionResults.length ? "Flawless!" : score >= 7 ? "Well done" : "Keep at it"}</div>
-        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-          {sessionResults.map((r, i) => <div key={i} style={{ width: "28px", height: "28px", borderRadius: "6px", backgroundColor: r.won ? "rgba(80,150,90,0.5)" : "rgba(160,70,70,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fcfaf7", fontSize: "0.7rem", fontWeight: "700" }}>{r.won ? "+" : "-"}</span></div>)}
+  if (finished) {
+    const wrongAnswers: WrongAnswer[] = sessionResults
+      .filter(r => !r.won)
+      .map(r => {
+        const td = ALL_TERMS.find(t => t.term === r.term);
+        return { term: r.term, meaning: td?.meaning ?? "", definition: td?.definition ?? "" };
+      });
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
+        <div style={hdr}><button onClick={() => { setStarted(false); setFinished(false); }} style={backBtn}>New Game</button><button onClick={() => navigate("/")} style={{ ...backBtn, marginLeft: "auto" }}>Dashboard</button></div>
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <div style={{ padding: "48px 24px 16px", textAlign: "center" }}>
+            <div style={{ fontSize: "3rem", fontWeight: "800", color: score >= 7 ? "#7aaa7a" : "#c07070" }}>{score}/{sessionResults.length}</div>
+            <div style={{ color: "#fcfaf7", fontWeight: "700", marginBottom: "16px" }}>{score === sessionResults.length ? "Flawless!" : score >= 7 ? "Well done" : "Keep at it"}</div>
+            <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+              {sessionResults.map((r, i) => <div key={i} style={{ width: "28px", height: "28px", borderRadius: "6px", backgroundColor: r.won ? "rgba(80,150,90,0.5)" : "rgba(160,70,70,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fcfaf7", fontSize: "0.7rem", fontWeight: "700" }}>{r.won ? "+" : "-"}</span></div>)}
+            </div>
+          </div>
+          <WrongAnswerReview wrongs={wrongAnswers} onDone={() => navigate("/")} />
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   const healthPct = Math.max(0, (MAX_WRONG - wrongCount) / MAX_WRONG);
   const healthColor = wrongCount < 2 ? "#7aaa7a" : wrongCount < 4 ? "#d4a843" : "#c07070";

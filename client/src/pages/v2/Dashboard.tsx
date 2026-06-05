@@ -6,7 +6,7 @@ import { hasPassword } from "@/utils/auth";
 import AccountSettings from "./AccountSettings";
 
 const MODULES = [
-  { path: "/explorer",           title: "System Explorer",  color: "#374a5e", tag: "" },
+  { path: "/body-reference",     title: "Body Explorer",    color: "#374a5e", tag: "" },
   { path: "/dictionary",         title: "Dictionary",       color: "#3b4e64", tag: "" },
   { path: "/root-builder",       title: "Root Builder",     color: "#364860", tag: "" },
   { path: "/flashcards",         title: "Flashcards",       color: "#3d5068", tag: "" },
@@ -15,10 +15,7 @@ const MODULES = [
   { path: "/daily-challenge",    title: "Daily Challenge",  color: "#364a5e", tag: "" },
   { path: "/boss-round",         title: "Boss Round",       color: "#5a3040", tag: "hard" },
   { path: "/games/spelling-bee", title: "Spelling Bee",     color: "#3a4f5e", tag: "" },
-  { path: "/games/hangman",      title: "Hangman",          color: "#3b4960", tag: "" },
-  { path: "/games/memory-match", title: "Memory Match",     color: "#364a5c", tag: "" },
   { path: "/multiplayer",        title: "Multiplayer",      color: "#3d4e6a", tag: "live" },
-  { path: "/body-reference",     title: "Body Reference",   color: "#3a5050", tag: "" },
 ];
 
 function seededIdx(seed: number, len: number) {

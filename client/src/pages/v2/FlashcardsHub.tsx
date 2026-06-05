@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useUser } from "@/contexts/UserContext";
+import { useUser, SRSEntry } from "@/contexts/UserContext";
 import { ALL_TERMS, CHAPTERS, getTermsByChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
 
 const CHAPTER_TONES = [
@@ -9,11 +9,11 @@ const CHAPTER_TONES = [
   "#3a4d64","#364960","#3b4f66",
 ];
 
-type Tab = "study" | "critical" | "decks";
+type Tab = "study" | "srs" | "critical" | "decks";
 
 export default function FlashcardsHub() {
   const [, navigate] = useLocation();
-  const { user, recordCorrect, recordMiss, addDeck, removeDeck } = useUser();
+  const { user, recordCorrect, recordMiss, addDeck, removeDeck, updateSRS } = useUser();
   const [tab, setTab] = useState<Tab>("study");
   const [chapterFilter, setChapterFilter] = useState<number>(0);
   const [cardIndex, setCardIndex] = useState(0);
@@ -21,6 +21,8 @@ export default function FlashcardsHub() {
   const [newDeckName, setNewDeckName] = useState("");
   const [reversed, setReversed] = useState(false);
   const [hideMastered, setHideMastered] = useState(false);
+  const [srsIdx, setSrsIdx] = useState(0);
+  const [srsFlipped, setSrsFlipped] = useState(false);
 
   const cleared = useMemo(() => new Set(user?.clearedTermIds ?? []), [user?.clearedTermIds]);
 
@@ -50,6 +52,18 @@ export default function FlashcardsHub() {
     return Object.values(user?.criticalReview ?? {}).filter(e => e.nextReview <= now);
   }, [user?.criticalReview]);
 
+  const srsDueTerms = useMemo((): Array<{ entry: SRSEntry; term: typeof ALL_TERMS[0] }> => {
+    const now = Date.now();
+    const deck = user?.srsDeck ?? {};
+    return Object.values(deck)
+      .filter(e => e.nextReview <= now)
+      .sort((a, b) => a.nextReview - b.nextReview)
+      .map(e => ({ entry: e, term: ALL_TERMS.find(t => t.id === e.termId)! }))
+      .filter(x => x.term != null);
+  }, [user?.srsDeck]);
+
+  const srsAllCount = Object.keys(user?.srsDeck ?? {}).length;
+
   const allCritTerms = useMemo(() => {
     return Object.values(user?.criticalReview ?? {}).map(e => {
       const term = ALL_TERMS.find(t => t.id === e.termId);
@@ -72,8 +86,16 @@ export default function FlashcardsHub() {
 
   const handleNext = () => { setCardIndex(i => (i + 1) % Math.max(1, currentTerms.length)); setFlipped(false); };
   const handlePrev = () => { setCardIndex(i => (i - 1 + Math.max(1, currentTerms.length)) % Math.max(1, currentTerms.length)); setFlipped(false); };
-  const handleCorrect = () => { if (currentCard) recordCorrect(currentCard.id); handleNext(); };
-  const handleMiss    = () => { if (currentCard) recordMiss(currentCard.id, currentCard.term); handleNext(); };
+  const handleCorrect = () => { if (currentCard) { recordCorrect(currentCard.id); updateSRS(currentCard.id, "easy"); } handleNext(); };
+  const handleMiss    = () => { if (currentCard) { recordMiss(currentCard.id, currentCard.term); updateSRS(currentCard.id, "wrong"); } handleNext(); };
+
+  const handleSRS = (quality: "wrong" | "hard" | "easy") => {
+    const item = srsDueTerms[srsIdx];
+    if (!item) return;
+    updateSRS(item.entry.termId, quality);
+    setSrsFlipped(false);
+    setSrsIdx(i => (i + 1 >= srsDueTerms.length ? 0 : i + 1));
+  };
 
   const exportDeck = () => {
     const text = currentTerms.map(t => `${t.term}: ${t.meaning}\n${t.definition}`).join("\n\n");
@@ -83,7 +105,7 @@ export default function FlashcardsHub() {
 
   const tabBtn = (key: Tab, label: string, badge?: number) => (
     <button
-      onClick={() => { setTab(key); setCardIndex(0); setFlipped(false); }}
+      onClick={() => { setTab(key); setCardIndex(0); setFlipped(false); setSrsIdx(0); setSrsFlipped(false); }}
       style={{ padding: "10px 20px", borderRadius: "10px", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.9rem", backgroundColor: tab === key ? "#4a6080" : "rgba(255,255,255,0.06)", color: "#fcfaf7", transition: "all 0.15s" }}
     >
       {label}{badge !== undefined && badge > 0 ? ` (${badge})` : ""}
@@ -114,6 +136,7 @@ export default function FlashcardsHub() {
       <div style={{ maxWidth: "700px", margin: "0 auto", padding: "28px 24px" }}>
         <div style={{ display: "flex", gap: "10px", marginBottom: "28px", flexWrap: "wrap" }}>
           {tabBtn("study", "Study Deck")}
+          {tabBtn("srs", "Spaced Review", srsDueTerms.length || undefined)}
           {tabBtn("critical", "Critical Review", allCritTerms.length)}
           {tabBtn("decks", "Custom Decks", user?.decks.length)}
         </div>
@@ -188,6 +211,70 @@ export default function FlashcardsHub() {
             ) : (
               currentCard && <FlashCard card={currentCard} flipped={flipped} onFlip={() => setFlipped(!flipped)} onNext={handleNext} onPrev={handlePrev} onCorrect={handleCorrect} onMiss={handleMiss} index={effectiveIndex} total={currentTerms.length} critEntry={critEntry} reversed={reversed} />
             )}
+          </>
+        )}
+
+        {tab === "srs" && (
+          <>
+            <div style={{ backgroundColor: "rgba(60,90,120,0.2)", border: "1px solid rgba(80,110,150,0.25)", borderRadius: "12px", padding: "14px 18px", marginBottom: "24px" }}>
+              <div style={{ color: "#7aabcc", fontWeight: "700", marginBottom: "4px" }}>Spaced Review</div>
+              <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem" }}>Terms are reviewed at expanding intervals. They appear here after you study flashcards and rate them Correct or Missed.</div>
+              {srsAllCount > 0 && (
+                <div style={{ marginTop: "10px", color: "rgba(252,250,247,0.7)", fontSize: "0.82rem" }}>
+                  <span style={{ color: "#7aabcc", fontWeight: "700" }}>{srsDueTerms.length} due now</span>
+                  {srsAllCount > srsDueTerms.length && ` - ${srsAllCount - srsDueTerms.length} scheduled for later`}
+                </div>
+              )}
+            </div>
+            {srsDueTerms.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 24px", color: "rgba(252,250,247,0.3)" }}>
+                <div style={{ fontWeight: "700", fontSize: "1.1rem", marginBottom: "6px" }}>
+                  {srsAllCount === 0 ? "No terms tracked yet" : "All caught up"}
+                </div>
+                <div style={{ fontSize: "0.85rem" }}>
+                  {srsAllCount === 0 ? "Study flashcards and rate them -- they will appear here for spaced review." : `${srsAllCount} term${srsAllCount !== 1 ? "s" : ""} scheduled for future sessions.`}
+                </div>
+              </div>
+            ) : (() => {
+              const item = srsDueTerms[srsIdx] ?? srsDueTerms[0];
+              if (!item) return null;
+              const t = item.term;
+              const TYPE_COLORS: Record<string, string> = { prefix: "#5a4a3e", suffix: "#394d62", root: "#3d5a47", condition: "#4a3d62", procedure: "#424242", word: "#2e4e58" };
+              return (
+                <div>
+                  <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.8rem", textAlign: "center", marginBottom: "12px" }}>
+                    {srsIdx + 1} / {srsDueTerms.length}
+                    <span style={{ color: "#7aabcc", marginLeft: "12px" }}>interval: {item.entry.interval}d</span>
+                  </div>
+                  <div onClick={() => setSrsFlipped(f => !f)} style={{ backgroundColor: TYPE_COLORS[t.type] ?? "#394d62", borderRadius: "16px", padding: "40px 32px", minHeight: "220px", cursor: "pointer", textAlign: "center", marginBottom: "16px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", userSelect: "none", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
+                    {!srsFlipped ? (
+                      <>
+                        <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{t.type} - {t.system}</div>
+                        <div style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", fontFamily: "monospace" }}>{t.term}</div>
+                        <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.85rem", marginTop: "16px" }}>Tap to reveal definition</div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{t.term}</div>
+                        <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "10px" }}>{t.meaning}</div>
+                        <div style={{ color: "rgba(252,250,247,0.65)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{t.definition}</div>
+                      </>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                    {srsFlipped ? (
+                      <>
+                        <button onClick={() => handleSRS("wrong")} style={{ padding: "10px 20px", borderRadius: "8px", backgroundColor: "rgba(160,70,70,0.4)", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Wrong</button>
+                        <button onClick={() => handleSRS("hard")} style={{ padding: "10px 20px", borderRadius: "8px", backgroundColor: "rgba(180,140,50,0.4)", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Hard</button>
+                        <button onClick={() => handleSRS("easy")} style={{ padding: "10px 20px", borderRadius: "8px", backgroundColor: "rgba(60,130,80,0.4)", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Easy</button>
+                      </>
+                    ) : (
+                      <div style={{ color: "rgba(252,250,247,0.25)", fontSize: "0.82rem", padding: "10px" }}>Flip the card first, then rate your recall</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
 

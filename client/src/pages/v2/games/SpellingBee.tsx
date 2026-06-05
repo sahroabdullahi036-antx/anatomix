@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
-import { shuffle } from "./shared";
+import { shuffle, WrongAnswer, WrongAnswerReview } from "./shared";
 
 export default function SpellingBee() {
   const [, navigate] = useLocation();
@@ -71,26 +71,29 @@ export default function SpellingBee() {
     </div>
   );
 
-  if (finished) return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <div style={hdr}><button onClick={() => { setStarted(false); setFinished(false); }} style={backBtn}>New Game</button><button onClick={() => navigate("/")} style={{ ...backBtn, marginLeft: "auto" }}>Dashboard</button></div>
-      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "48px 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "3rem", fontWeight: "800", color: score >= 8 ? "#7aaa7a" : "#c07070" }}>{score}/10</div>
-          <div style={{ color: "#fcfaf7", fontWeight: "700", marginBottom: "4px" }}>{score === 10 ? "Perfect Spelling!" : score >= 7 ? "Well done" : "Keep practicing"}</div>
-        </div>
-        {results.map((r, i) => (
-          <div key={i} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "10px", padding: "12px 16px", marginBottom: "8px", display: "flex", justifyContent: "space-between", alignItems: "center", border: `1px solid ${r.correct ? "rgba(80,160,100,0.2)" : "rgba(160,80,80,0.2)"}` }}>
-            <div>
-              <span style={{ color: "#fcfaf7", fontFamily: "monospace", fontWeight: "700" }}>{r.term}</span>
-              {!r.correct && <span style={{ color: "#c07070", fontFamily: "monospace", fontSize: "0.85rem", marginLeft: "12px" }}>you typed: {r.typed}</span>}
+  if (finished) {
+    const wrongAnswers: WrongAnswer[] = results
+      .filter(r => !r.correct)
+      .map(r => {
+        const td = ALL_TERMS.find(t => t.term === r.term);
+        return { term: r.term, meaning: td?.meaning ?? "", definition: td?.definition ?? "", userAnswer: r.typed };
+      });
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
+        <div style={hdr}><button onClick={() => { setStarted(false); setFinished(false); }} style={backBtn}>New Game</button><button onClick={() => navigate("/")} style={{ ...backBtn, marginLeft: "auto" }}>Dashboard</button></div>
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <div style={{ padding: "40px 24px 12px", textAlign: "center" }}>
+            <div style={{ fontSize: "3rem", fontWeight: "800", color: score >= 8 ? "#7aaa7a" : "#c07070" }}>{score}/10</div>
+            <div style={{ color: "#fcfaf7", fontWeight: "700", marginBottom: "4px" }}>{score === 10 ? "Perfect Spelling!" : score >= 7 ? "Well done" : "Keep practicing"}</div>
+            <div style={{ display: "flex", gap: "5px", justifyContent: "center", marginTop: "16px", marginBottom: "8px" }}>
+              {results.map((r, i) => <div key={i} style={{ width: "22px", height: "22px", borderRadius: "5px", backgroundColor: r.correct ? "rgba(80,150,90,0.5)" : "rgba(160,70,70,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fcfaf7", fontSize: "0.65rem", fontWeight: "700" }}>{r.correct ? "+" : "-"}</span></div>)}
             </div>
-            <span style={{ color: r.correct ? "#7aaa7a" : "#c07070", fontWeight: "700" }}>{r.correct ? "+" : "-"}</span>
           </div>
-        ))}
+          <WrongAnswerReview wrongs={wrongAnswers} onDone={() => navigate("/")} />
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   const current = terms[idx];
   const isCorrect = normalize(typed) === normalize(current.term);

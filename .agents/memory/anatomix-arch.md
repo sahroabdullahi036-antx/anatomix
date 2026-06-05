@@ -3,7 +3,7 @@ name: AnatomiX architecture
 description: Key routing, auth, Firebase, and design decisions for the AnatomiX platform
 ---
 
-**Moderator account:** Username "GameshowHost" (IS_HOST = toLowerCase === "gameshowhost"). Password is REQUIRED (cannot skip). After login, AppRoutes renders ModeratorDashboard for "/" instead of Dashboard.
+**Moderator account:** Username "AnatomiXOwner" (IS_HOST = toLowerCase === "anatomixowner"). Password is REQUIRED (cannot skip). After login, AppRoutes renders ModeratorDashboard for "/" instead of Dashboard.
 
 **Why:** Class instructor needs a protected account that cannot accidentally be used by students.
 

@@ -4,6 +4,7 @@ export interface UserData {
   username: string;
   decks: CustomDeck[];
   criticalReview: Record<string, CriticalEntry>;
+  srsDeck: Record<string, SRSEntry>;
   gameScores: Record<string, number>;
   clearedTermIds: string[];
   studyStreak: number;
@@ -33,6 +34,13 @@ export interface CriticalEntry {
   nextReview: number;
 }
 
+export interface SRSEntry {
+  termId: string;
+  interval: number;
+  nextReview: number;
+  totalReviews: number;
+}
+
 export const ACHIEVEMENTS: Record<string, { label: string; description: string }> = {
   first_correct:  { label: "First Step",        description: "Answered your first term correctly" },
   streak_3:       { label: "3-Day Streak",       description: "Studied 3 days in a row" },
@@ -60,6 +68,7 @@ interface UserContextType {
   addDeck: (name: string, termIds: string[]) => void;
   removeDeck: (deckId: string) => void;
   updateScore: (gameKey: string, score: number) => void;
+  updateSRS: (termId: string, quality: "wrong" | "hard" | "easy") => void;
   recentUsers: string[];
   onSyncNeeded: (cb: (user: UserData) => void) => () => void;
 }
@@ -83,10 +92,10 @@ function loadUser(username: string): UserData {
         const e = v as any;
         criticalReview[k] = { termId: e.termId, term: e.term, errorCount: e.errorCount ?? 0, correctStreak: e.correctStreak ?? 0, addedAt: e.addedAt ?? Date.now(), interval: e.interval ?? 1, nextReview: e.nextReview ?? Date.now() };
       }
-      return { clearedTermIds: [], studyStreak: 0, lastStudyDate: '', dailyChallengeDate: '', dailyChallengeTermIds: [], earnedAchievements: [], studiedCount: 0, classIds: [], ...p, criticalReview };
+      return { clearedTermIds: [], studyStreak: 0, lastStudyDate: '', dailyChallengeDate: '', dailyChallengeTermIds: [], earnedAchievements: [], studiedCount: 0, classIds: [], srsDeck: {}, ...p, criticalReview };
     }
   } catch {}
-  return { username, decks: [], criticalReview: {}, gameScores: {}, clearedTermIds: [], studyStreak: 0, lastStudyDate: '', dailyChallengeDate: '', dailyChallengeTermIds: [], earnedAchievements: [], studiedCount: 0, classIds: [] };
+  return { username, decks: [], criticalReview: {}, srsDeck: {}, gameScores: {}, clearedTermIds: [], studyStreak: 0, lastStudyDate: '', dailyChallengeDate: '', dailyChallengeTermIds: [], earnedAchievements: [], studiedCount: 0, classIds: [] };
 }
 
 function saveUser(data: UserData) {
@@ -205,8 +214,24 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const removeDeck = useCallback((deckId: string) => { update(prev => ({ ...prev, decks: prev.decks.filter(d => d.id !== deckId) })); }, [update]);
   const updateScore = useCallback((gameKey: string, score: number) => { update(prev => ({ ...prev, gameScores: { ...prev.gameScores, [gameKey]: Math.max(prev.gameScores[gameKey] ?? 0, score) } })); }, [update]);
 
+  const updateSRS = useCallback((termId: string, quality: "wrong" | "hard" | "easy") => {
+    update(prev => {
+      const existing = (prev.srsDeck ?? {})[termId];
+      let interval = existing?.interval ?? 1;
+      if (quality === "wrong") interval = 1;
+      else if (quality === "easy") interval = Math.min(interval * 2, 90);
+      return {
+        ...prev,
+        srsDeck: {
+          ...(prev.srsDeck ?? {}),
+          [termId]: { termId, interval, nextReview: Date.now() + interval * 86_400_000, totalReviews: (existing?.totalReviews ?? 0) + 1 },
+        },
+      };
+    });
+  }, [update]);
+
   return (
-    <UserContext.Provider value={{ user, login, logout, recordMiss, recordCorrect, awardAchievement, savePath, addDeck, removeDeck, updateScore, recentUsers, onSyncNeeded }}>
+    <UserContext.Provider value={{ user, login, logout, recordMiss, recordCorrect, awardAchievement, savePath, addDeck, removeDeck, updateScore, updateSRS, recentUsers, onSyncNeeded }}>
       {children}
     </UserContext.Provider>
   );

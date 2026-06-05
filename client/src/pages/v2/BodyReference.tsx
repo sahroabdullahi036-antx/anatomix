@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
-import { ALL_TERMS } from "@/data/medicalData";
+import { ALL_TERMS, SYSTEMS as DATA_SYSTEMS } from "@/data/medicalData";
 
 const SYSTEMS = [
   { id: "cardiovascular",  label: "Cardiovascular",  color: "#c04848", region: { type: "ellipse", cx: 80, cy: 90, rx: 14, ry: 15 }, desc: "Heart, arteries, veins, and blood circulation" },
@@ -115,9 +115,12 @@ function DigestiveSVG() {
   return (
     <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
       <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
+      {/* Pharynx / Throat */}
+      <path d="M128,1 Q150,-1 172,1 L169,10 Q150,13 131,10 Z" fill="rgba(160,100,50,0.32)" stroke="rgba(252,250,247,0.14)" strokeWidth={1} />
+      <Label x={150} y={7} text="Pharynx" small />
       {/* Esophagus */}
-      <rect x="138" y="8" width="24" height="35" rx="4" fill="rgba(160,100,50,0.4)" stroke="rgba(252,250,247,0.18)" strokeWidth={1} />
-      <Label x={150} y={24} text="Esophagus" small />
+      <rect x="138" y="11" width="24" height="31" rx="4" fill="rgba(160,100,50,0.4)" stroke="rgba(252,250,247,0.18)" strokeWidth={1} />
+      <Label x={150} y={27} text="Esophagus" small />
       {/* Liver (right, large) */}
       <path d="M168,45 Q205,45 218,60 Q225,75 210,90 Q190,98 168,88 Z" fill="rgba(130,80,40,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
       <Label x={196} y={72} text="Liver" />
@@ -496,30 +499,44 @@ export default function BodyReference() {
   const [, navigate] = useLocation();
   const [selected, setSelected] = useState("cardiovascular");
   const [termSearch, setTermSearch] = useState("");
+  const [selectedStructure, setSelectedStructure] = useState<string | null>(null);
+
+  const handleSelect = (id: string) => { setSelected(id); setSelectedStructure(null); setTermSearch(""); };
 
   const system = SYSTEMS.find(s => s.id === selected);
+  const dataSystem = DATA_SYSTEMS.find(s => s.id === selected);
+
   const systemTerms = useMemo(() => {
     return ALL_TERMS.filter(t => t.system?.toLowerCase().includes(selected.replace("-", " ")) || t.system?.toLowerCase() === selected);
   }, [selected]);
 
   const filteredTerms = termSearch ? systemTerms.filter(t => t.term.toLowerCase().includes(termSearch.toLowerCase()) || t.meaning.toLowerCase().includes(termSearch.toLowerCase())) : systemTerms;
 
+  const selectedStructData = useMemo(() => {
+    if (!selectedStructure || !dataSystem) return null;
+    const allS: any[] = [
+      ...dataSystem.structures,
+      ...dataSystem.structures.flatMap((s: any) => s.children ?? []),
+    ];
+    return allS.find((s: any) => s.id === selectedStructure) ?? null;
+  }, [selectedStructure, dataSystem]);
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
         <button onClick={() => navigate("/")} style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" }}>← Dashboard</button>
-        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>Body Reference</span>
+        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>Body Explorer</span>
       </div>
 
       <div style={{ display: "flex", height: "calc(100vh - 57px)" }}>
-        {/* Left panel: system list + body overview */}
+        {/* Left panel: body overview + system list */}
         <div style={{ width: "220px", borderRight: "1px solid rgba(252,250,247,0.07)", overflowY: "auto", padding: "16px 12px", flexShrink: 0 }}>
           <div style={{ marginBottom: "16px" }}>
-            <BodyOverview selected={selected} onSelect={setSelected} />
+            <BodyOverview selected={selected} onSelect={handleSelect} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             {SYSTEMS.map(sys => (
-              <button key={sys.id} onClick={() => setSelected(sys.id)} style={{ textAlign: "left", padding: "8px 10px", borderRadius: "8px", border: selected === sys.id ? `1px solid ${sys.color}55` : "1px solid transparent", backgroundColor: selected === sys.id ? sys.color + "22" : "transparent", color: selected === sys.id ? "#fcfaf7" : "rgba(252,250,247,0.55)", cursor: "pointer", fontFamily: "inherit", fontWeight: selected === sys.id ? "700" : "500", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px" }}>
+              <button key={sys.id} onClick={() => handleSelect(sys.id)} style={{ textAlign: "left", padding: "8px 10px", borderRadius: "8px", border: selected === sys.id ? `1px solid ${sys.color}55` : "1px solid transparent", backgroundColor: selected === sys.id ? sys.color + "22" : "transparent", color: selected === sys.id ? "#fcfaf7" : "rgba(252,250,247,0.55)", cursor: "pointer", fontFamily: "inherit", fontWeight: selected === sys.id ? "700" : "500", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px" }}>
                 <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: sys.color, flexShrink: 0 }} />
                 {sys.label}
               </button>
@@ -527,33 +544,75 @@ export default function BodyReference() {
           </div>
         </div>
 
-        {/* Right panel: diagram + terms */}
+        {/* Right panel: diagram + structures + terms */}
         <div style={{ flex: 1, overflowY: "auto" }}>
           {system && (
             <div style={{ padding: "24px" }}>
-              <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", marginBottom: "24px" }}>
-                <div style={{ flex: "0 0 300px" }}>
+              <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" as const }}>
+
+                {/* Left col: diagram + structures drill-down */}
+                <div style={{ flex: "0 0 300px", minWidth: "240px" }}>
                   <h2 style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.3rem", marginBottom: "4px" }}>{system.label}</h2>
                   <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.88rem", marginBottom: "16px" }}>{system.desc}</p>
                   <SystemDiagram id={selected} />
+
+                  {/* Structures panel */}
+                  {dataSystem && dataSystem.structures.length > 0 && (
+                    <div style={{ marginTop: "18px" }}>
+                      <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: "8px" }}>
+                        Structures
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column" as const, gap: "3px" }}>
+                        {(dataSystem.structures as any[]).map((s: any) => (
+                          <button key={s.id} onClick={() => setSelectedStructure(selectedStructure === s.id ? null : s.id)}
+                            style={{ textAlign: "left" as const, padding: "6px 10px", borderRadius: "7px",
+                              border: selectedStructure === s.id ? `1px solid ${system.color}55` : "1px solid transparent",
+                              backgroundColor: selectedStructure === s.id ? system.color + "22" : "rgba(255,255,255,0.03)",
+                              color: selectedStructure === s.id ? "#fcfaf7" : "rgba(252,250,247,0.6)",
+                              cursor: "pointer", fontFamily: "inherit", fontSize: "0.8rem", fontWeight: selectedStructure === s.id ? "700" : "400" }}>
+                            {s.officialName}
+                          </button>
+                        ))}
+                      </div>
+
+                      {selectedStructData && (
+                        <div style={{ marginTop: "10px", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "9px", padding: "12px 14px", border: "1px solid rgba(252,250,247,0.07)" }}>
+                          <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.85rem", marginBottom: "2px" }}>{selectedStructData.officialName}</div>
+                          {selectedStructData.casualName && <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.75rem", marginBottom: "5px" }}>{selectedStructData.casualName}</div>}
+                          <div style={{ color: system.color, fontFamily: "monospace", fontSize: "0.77rem", marginBottom: "5px", fontWeight: "600" }}>{selectedStructData.combiningForm}</div>
+                          <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.78rem", lineHeight: 1.45 }}>{selectedStructData.definition}</div>
+                          {selectedStructData.children && selectedStructData.children.length > 0 && (
+                            <div style={{ marginTop: "8px", display: "flex", flexWrap: "wrap" as const, gap: "4px" }}>
+                              {(selectedStructData.children as any[]).map((c: any) => (
+                                <button key={c.id} onClick={() => setSelectedStructure(c.id)}
+                                  style={{ padding: "3px 8px", borderRadius: "5px", border: "1px solid rgba(252,250,247,0.1)", backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(252,250,247,0.65)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.72rem" }}>
+                                  {c.officialName}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
+
+                {/* Right col: terms list */}
                 <div style={{ flex: 1, minWidth: "280px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                    <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em" }}>{systemTerms.length} terms in this system</div>
-                  </div>
-                  <input value={termSearch} onChange={e => setTermSearch(e.target.value)} placeholder="Search terms..." style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem", outline: "none", boxSizing: "border-box", marginBottom: "12px" }} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    {filteredTerms.slice(0, 40).map(t => (
+                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "12px" }}>{systemTerms.length} terms in this system</div>
+                  <input value={termSearch} onChange={e => setTermSearch(e.target.value)} placeholder="Search terms..." style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem", outline: "none", boxSizing: "border-box" as const, marginBottom: "12px" }} />
+                  <div style={{ display: "flex", flexDirection: "column" as const, gap: "6px" }}>
+                    {filteredTerms.slice(0, 60).map(t => (
                       <div key={t.id} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "10px 14px", border: "1px solid rgba(252,250,247,0.05)" }}>
                         <div style={{ display: "flex", gap: "8px", alignItems: "baseline", marginBottom: "2px" }}>
                           <span style={{ color: "#fcfaf7", fontFamily: "monospace", fontWeight: "700", fontSize: "0.9rem" }}>{t.term}</span>
-                          <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.7rem", textTransform: "uppercase" }}>{t.type}</span>
+                          <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.7rem", textTransform: "uppercase" as const }}>{t.type}</span>
                         </div>
                         <div style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.82rem", fontWeight: "600", marginBottom: "2px" }}>{t.meaning}</div>
                         <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", lineHeight: 1.4 }}>{t.definition}</div>
                       </div>
                     ))}
-                    {filteredTerms.length === 0 && <div style={{ color: "rgba(252,250,247,0.3)", textAlign: "center", padding: "32px" }}>No terms match your search.</div>}
+                    {filteredTerms.length === 0 && <div style={{ color: "rgba(252,250,247,0.3)", textAlign: "center" as const, padding: "32px" }}>No terms match your search.</div>}
                   </div>
                 </div>
               </div>

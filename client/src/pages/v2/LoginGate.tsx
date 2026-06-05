@@ -4,7 +4,7 @@ import { accountExists, hasPassword, verifyPassword, setPassword } from "@/utils
 
 type Step = "username" | "password" | "new-account";
 
-const IS_HOST = (u: string) => u.toLowerCase() === "gameshowhost";
+const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "14px 16px", borderRadius: "10px", fontSize: "1rem",
