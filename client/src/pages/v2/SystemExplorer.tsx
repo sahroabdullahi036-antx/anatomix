@@ -6,7 +6,7 @@ const SYSTEM_COLORS: Record<string, string> = {
   digestive: "#3d5a47", cardiovascular: "#394d62", respiratory: "#5a4a3e",
   nervous: "#4a3d62", musculoskeletal: "#424242", urinary: "#2e4e58",
   endocrine: "#2e4e58", integumentary: "#3a4a5c", lymphatic: "#3a4a5c",
-  reproductive: "#52394a", blood: "#394d62",
+  reproductive: "#52394a", blood: "#394d62", "special-senses": "#3a5248",
 };
 
 type PathEntry = { label: string; systemId?: string };

@@ -197,6 +197,27 @@ export const SYSTEMS: BodySystem[] = [
       { id: 'bonemarrow', officialName: 'Bone Marrow (Medulla Ossium)', casualName: 'The Blood Cell Factory', combiningForm: 'myel/o', definition: 'Soft tissue inside bones; red marrow produces all blood cells (hematopoiesis); yellow marrow stores fat', homonymWarning: 'myel/o means bone marrow here, but also means spinal cord in neurology contexts' },
     ]
   },
+  {
+    id: 'special-senses', officialName: 'Special Senses', casualName: 'The Sensory Portals',
+    color: '#4a6e5a', emoji: '👁️',
+    structures: [
+      { id: 'eye', officialName: 'Eye (Oculus)', casualName: 'The Vision Camera', combiningForm: 'ocul/o, ophthalm/o', definition: 'Organ of sight; converts light into nerve impulses processed by the visual cortex of the brain', children: [
+        { id: 'cornea', officialName: 'Cornea', casualName: 'The Clear Window', combiningForm: 'corne/o, kerat/o', definition: 'Transparent, avascular dome at the front of the eye; primary site of light refraction', homonymWarning: 'kerat/o means cornea in ophthalmology but means hard or horny tissue in dermatology (keratosis = hardening of skin)' },
+        { id: 'iris_eye', officialName: 'Iris', casualName: 'The Color Ring', combiningForm: 'irid/o, ir/o', definition: 'Pigmented muscular ring behind the cornea; controls pupil size to regulate the amount of light entering the eye' },
+        { id: 'lens', officialName: 'Crystalline Lens', casualName: 'The Focusing Disc', combiningForm: 'phac/o, phak/o', definition: 'Transparent, biconvex structure that focuses light onto the retina; becomes less flexible with age (presbyopia)' },
+        { id: 'retina', officialName: 'Retina', casualName: 'The Film Screen', combiningForm: 'retin/o', definition: 'Innermost sensory layer of the eye containing rods (dim light) and cones (color) that convert light to electrical signals' },
+        { id: 'conjunctiva', officialName: 'Conjunctiva', casualName: 'The Moist Lining', combiningForm: 'conjunctiv/o', definition: 'Thin transparent mucous membrane covering the anterior sclera and inner eyelids; keeps the eye moist' },
+        { id: 'eyelid', officialName: 'Eyelid (Palpebra)', casualName: 'The Shutter', combiningForm: 'blephar/o', definition: 'Movable fold of skin covering and protecting the eye; spreads tears over the cornea with blinking' },
+      ]},
+      { id: 'ear', officialName: 'Ear (Auris)', casualName: 'The Sound Processor', combiningForm: 'aur/o, ot/o', definition: 'Organ of hearing and equilibrium; converts sound waves into nerve impulses and detects head position and rotation', children: [
+        { id: 'tympanic', officialName: 'Tympanic Membrane (Eardrum)', casualName: 'The Sound Drum', combiningForm: 'tympan/o, myring/o', definition: 'Thin membrane separating the outer and middle ear; vibrates in response to sound waves to transmit sound energy to the ossicles' },
+        { id: 'ossicles', officialName: 'Ossicles (Malleus, Incus, Stapes)', casualName: 'The Three Tiny Bones', combiningForm: 'ossicul/o', definition: 'The three smallest bones in the human body, located in the middle ear; amplify and transmit vibrations from the eardrum to the inner ear' },
+        { id: 'cochlea', officialName: 'Cochlea', casualName: 'The Hearing Coil', combiningForm: 'cochle/o', definition: 'Snail-shaped, fluid-filled structure in the inner ear; hair cells on the basilar membrane convert sound vibrations into nerve impulses' },
+        { id: 'semicircular', officialName: 'Semicircular Canals', casualName: 'The Balance Rings', combiningForm: 'vestibul/o', definition: 'Three fluid-filled loops in the inner ear oriented in perpendicular planes; detect rotational head movement and are essential for balance' },
+      ]},
+      { id: 'olfactory', officialName: 'Olfactory Epithelium', casualName: 'The Smell Detector', combiningForm: 'olfact/o, osm/o', definition: 'Specialized sensory epithelium in the roof of the nasal cavity; olfactory receptor neurons detect airborne chemical molecules and transmit signals to the brain' },
+    ]
+  },
 ];
 
 export const ALL_TERMS: MedicalTerm[] = [
@@ -379,6 +400,22 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'r73', term: 'leuk/o', type: 'root', meaning: 'white, white blood cell', casualMeaning: 'white blood cells', system: 'Blood', example: 'leukocyte, leukemia, leukopenia', definition: 'Combining form meaning white or white blood cell' },
   { id: 'r74', term: 'thrombocyt/o', type: 'root', meaning: 'platelet', casualMeaning: 'platelets that help blood clot', system: 'Blood', example: 'thrombocytopenia, thrombocytosis', definition: 'Combining form meaning platelet' },
   { id: 'r75', term: 'hemoglobin/o', type: 'root', meaning: 'hemoglobin', casualMeaning: 'the oxygen-carrying protein in red blood cells', system: 'Blood', example: 'hemoglobinopathy, hemoglobinuria', definition: 'Combining form meaning hemoglobin' },
+
+  // COMBINING FORMS – Special Senses (Eye)
+  { id: 'r76', term: 'ocul/o, ophthalm/o', type: 'root', meaning: 'eye', casualMeaning: 'the eye', system: 'Special Senses', example: 'ocular, ophthalmology, ophthalmoscope', definition: 'Combining forms meaning eye' },
+  { id: 'r77', term: 'blephar/o', type: 'root', meaning: 'eyelid', casualMeaning: 'the eyelid', system: 'Special Senses', example: 'blepharitis (inflammation of eyelid), blepharoptosis (drooping eyelid)', definition: 'Combining form meaning eyelid' },
+  { id: 'r78', term: 'kerat/o', type: 'root', meaning: 'cornea', casualMeaning: 'the cornea of the eye', system: 'Special Senses', example: 'keratitis (cornea inflammation), keratoplasty (cornea repair)', definition: 'Combining form meaning cornea', homonymWarning: 'kerat/o means cornea in ophthalmology (keratitis) but means hard/horny tissue in dermatology (keratosis = skin hardening). Check the context.' },
+  { id: 'r79', term: 'irid/o', type: 'root', meaning: 'iris', casualMeaning: 'the iris of the eye', system: 'Special Senses', example: 'iritis (iris inflammation), iridectomy', definition: 'Combining form meaning iris' },
+  { id: 'r80', term: 'retin/o', type: 'root', meaning: 'retina', casualMeaning: 'the retina', system: 'Special Senses', example: 'retinopathy (disease of retina), retinal detachment', definition: 'Combining form meaning retina' },
+  { id: 'r81', term: 'conjunctiv/o', type: 'root', meaning: 'conjunctiva', casualMeaning: 'the conjunctiva', system: 'Special Senses', example: 'conjunctivitis (pink eye)', definition: 'Combining form meaning conjunctiva' },
+
+  // COMBINING FORMS – Special Senses (Ear)
+  { id: 'r82', term: 'aur/o, ot/o', type: 'root', meaning: 'ear', casualMeaning: 'the ear', system: 'Special Senses', example: 'aural, otitis (ear inflammation), otoscope, otolaryngology', definition: 'Combining forms meaning ear' },
+  { id: 'r83', term: 'tympan/o, myring/o', type: 'root', meaning: 'eardrum', casualMeaning: 'the eardrum', system: 'Special Senses', example: 'tympanoplasty, myringotomy (surgical incision of eardrum)', definition: 'Combining forms meaning tympanic membrane (eardrum)' },
+  { id: 'r84', term: 'cochle/o', type: 'root', meaning: 'cochlea', casualMeaning: 'the cochlea', system: 'Special Senses', example: 'cochlear implant, cochleitis', definition: 'Combining form meaning cochlea' },
+
+  // COMBINING FORMS – Special Senses (Nose/Smell)
+  { id: 'r85', term: 'olfact/o', type: 'root', meaning: 'smell', casualMeaning: 'the sense of smell', system: 'Special Senses', example: 'olfactory nerve, olfaction', definition: 'Combining form meaning smell or the sense of smell' },
 
   // CLINICAL TERMS – Cardiovascular
   { id: 'c1', term: 'Myocardial Infarction', type: 'condition', meaning: 'Death of heart muscle tissue due to blocked blood supply', casualMeaning: 'a heart attack', system: 'Cardiovascular', example: 'Acute MI with ST elevation (STEMI)', definition: 'Death of myocardial cells (heart muscle) resulting from prolonged ischemia (inadequate blood supply), usually caused by occlusion of a coronary artery', wordParts: [{part:'myo', meaning:'muscle', type:'root'},{part:'cardi', meaning:'heart', type:'root'},{part:'-al', meaning:'pertaining to', type:'suffix'},{part:'infarct', meaning:'area of dead tissue', type:'root'},{part:'-ion', meaning:'process', type:'suffix'}] },
