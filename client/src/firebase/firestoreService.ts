@@ -3,6 +3,7 @@ import {
   onSnapshot, deleteDoc, updateDoc, Unsubscribe, query, orderBy
 } from "firebase/firestore";
 import type { UserData } from "@/contexts/UserContext";
+import type { MedicalTerm } from "@/data/medicalData";
 
 export interface FirestoreUserProgress {
   username: string;
@@ -304,6 +305,23 @@ export async function removeTeacher(db: Firestore, username: string): Promise<vo
   const snap = await getDoc(ref);
   const existing: string[] = snap.exists() ? ((snap.data() as any).teacherUsernames ?? []) : [];
   await setDoc(ref, { teacherUsernames: existing.filter(u => u !== username.toLowerCase().trim()) }, { merge: true });
+}
+
+// ── Custom terms (moderator-created flashcards) ──────────────────────────────
+
+export async function getCustomTerms(db: Firestore): Promise<MedicalTerm[]> {
+  try {
+    const snap = await getDocs(collection(db, "customTerms"));
+    return snap.docs.map(d => d.data() as MedicalTerm);
+  } catch { return []; }
+}
+
+export async function saveCustomTerm(db: Firestore, term: MedicalTerm): Promise<void> {
+  await setDoc(doc(db, "customTerms", term.id), term);
+}
+
+export async function deleteCustomTerm(db: Firestore, termId: string): Promise<void> {
+  await deleteDoc(doc(db, "customTerms", termId));
 }
 
 // ── Chapter overrides ────────────────────────────────────────────────────────

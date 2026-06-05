@@ -692,3 +692,19 @@ export function applyTermOverrides(overrides: Record<string, Partial<MedicalTerm
     }
   }
 }
+
+export function addCustomTerms(terms: MedicalTerm[]) {
+  for (const t of terms) {
+    const idx = ALL_TERMS.findIndex(x => x.id === t.id);
+    if (idx >= 0) {
+      ALL_TERMS[idx] = t;
+    } else {
+      ALL_TERMS.push(t);
+    }
+  }
+}
+
+export function removeCustomTerm(termId: string) {
+  const idx = ALL_TERMS.findIndex(t => t.id === termId);
+  if (idx >= 0) ALL_TERMS.splice(idx, 1);
+}

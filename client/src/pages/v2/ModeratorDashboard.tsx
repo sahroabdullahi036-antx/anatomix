@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
-import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal } from "@/data/medicalData";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
+import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal, addCustomTerms, removeCustomTerm } from "@/data/medicalData";
 
 const TERM_SYSTEMS = ["General","Cardiovascular","Digestive","Respiratory","Nervous","Musculoskeletal","Urinary","Endocrine","Integumentary","Blood","Reproductive","Lymphatic"];
 const TERM_TYPES: MedicalTerm["type"][] = ["prefix","suffix","root","condition","procedure","word"];
@@ -43,7 +43,10 @@ export default function ModeratorDashboard() {
   const [editingTerm, setEditingTerm] = useState<MedicalTerm | null>(null);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
   const [termOverrideIds, setTermOverrideIds] = useState<Set<string>>(new Set());
+  const [customTermIds, setCustomTermIds] = useState<Set<string>>(new Set());
   const [termSaving, setTermSaving] = useState(false);
+  const [creatingTerm, setCreatingTerm] = useState(false);
+  const [newTermForm, setNewTermForm] = useState<{ id: string } & EditForm | null>(null);
 
   const [editingChapter, setEditingChapter] = useState<number | null>(null);
   const [chapterForm, setChapterForm] = useState<{ title: string; subtitle: string; termIds: string[] } | null>(null);
@@ -55,6 +58,12 @@ export default function ModeratorDashboard() {
     if (!db) return;
     getTermOverrides(db).then(o => setTermOverrideIds(new Set(Object.keys(o))));
     getChapterOverrides(db).then(o => setChapterOverrideNums(new Set(Object.keys(o).map(k => parseInt(k.replace('ch_', ''))))));
+    getCustomTerms(db).then(terms => {
+      if (terms.length > 0) {
+        addCustomTerms(terms);
+        setCustomTermIds(new Set(terms.map(t => t.id)));
+      }
+    });
   }, [db]);
 
   const openChapterEdit = (num: number) => {
@@ -254,22 +263,41 @@ export default function ModeratorDashboard() {
             setEditingTerm(t);
             setEditForm({ term: t.term, type: t.type, meaning: t.meaning, casualMeaning: t.casualMeaning, system: t.system, example: t.example, definition: t.definition, homonymWarning: t.homonymWarning ?? "" });
           };
+          const openCreate = () => {
+            setCreatingTerm(true);
+            setNewTermForm({ id: `ct_${Date.now()}`, term: "", type: "root", meaning: "", casualMeaning: "", system: "General", example: "", definition: "", homonymWarning: "" });
+          };
+          const deleteCustom = async (e: React.MouseEvent, id: string) => {
+            e.stopPropagation();
+            if (!db) return;
+            await deleteCustomTerm(db, id);
+            removeCustomTerm(id);
+            setCustomTermIds(s => { const n = new Set(s); n.delete(id); return n; });
+          };
           return (
             <>
               <div style={{ display: "flex", gap: "10px", marginBottom: "18px", alignItems: "center" }}>
                 <input value={termSearch} onChange={e => setTermSearch(e.target.value)} placeholder="Search by term, meaning, type, or system..." style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem" }} />
                 <span style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.82rem", whiteSpace: "nowrap" }}>{filtered.length} terms</span>
+                <button onClick={openCreate} style={{ padding: "10px 16px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.88rem", whiteSpace: "nowrap" as const }}>+ New Term</button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "4px", maxHeight: "60vh", overflowY: "auto" }}>
-                {filtered.map(t => (
-                  <div key={t.id} onClick={() => openEdit(t)} style={{ padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${termOverrideIds.has(t.id) ? "rgba(100,160,100,0.35)" : "rgba(252,250,247,0.06)"}`, cursor: "pointer", display: "flex", alignItems: "center", gap: "12px" }}>
-                    <span style={{ color: "#fcfaf7", fontFamily: "monospace", fontWeight: "700", minWidth: "120px" }}>{t.term}</span>
-                    <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem", backgroundColor: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: "4px" }}>{t.type}</span>
-                    <span style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem", flex: 1 }}>{t.meaning}</span>
-                    <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.75rem" }}>{t.system}</span>
-                    {termOverrideIds.has(t.id) && <span style={{ color: "#7aaa7a", fontSize: "0.7rem", fontWeight: "700" }}>EDITED</span>}
-                  </div>
-                ))}
+                {filtered.map(t => {
+                  const isCustom = customTermIds.has(t.id);
+                  const isEdited = termOverrideIds.has(t.id);
+                  const borderColor = isCustom ? "rgba(160,120,200,0.45)" : isEdited ? "rgba(100,160,100,0.35)" : "rgba(252,250,247,0.06)";
+                  return (
+                    <div key={t.id} onClick={() => openEdit(t)} style={{ padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${borderColor}`, cursor: "pointer", display: "flex", alignItems: "center", gap: "12px" }}>
+                      <span style={{ color: "#fcfaf7", fontFamily: "monospace", fontWeight: "700", minWidth: "120px" }}>{t.term}</span>
+                      <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem", backgroundColor: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: "4px" }}>{t.type}</span>
+                      <span style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem", flex: 1 }}>{t.meaning}</span>
+                      <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.75rem" }}>{t.system}</span>
+                      {isCustom && <span style={{ color: "#c090f0", fontSize: "0.7rem", fontWeight: "700" }}>CUSTOM</span>}
+                      {isEdited && !isCustom && <span style={{ color: "#7aaa7a", fontSize: "0.7rem", fontWeight: "700" }}>EDITED</span>}
+                      {isCustom && <button onClick={e => deleteCustom(e, t.id)} style={{ padding: "3px 8px", borderRadius: "5px", backgroundColor: "rgba(160,70,70,0.35)", color: "#e09090", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.72rem", fontWeight: "700" }}>Delete</button>}
+                    </div>
+                  );
+                })}
               </div>
             </>
           );
@@ -469,6 +497,82 @@ export default function ModeratorDashboard() {
                   </button>
                 )}
                 <button onClick={() => { setEditingTerm(null); setEditForm(null); }} style={{ padding: "11px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {creatingTerm && newTermForm && (() => {
+        const inp3: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: "7px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem", boxSizing: "border-box" as const };
+        const lbl3: React.CSSProperties = { color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "5px", display: "block" };
+        const field3 = (key: keyof EditForm, label: string, multiline?: boolean) => (
+          <div>
+            <span style={lbl3}>{label}</span>
+            {multiline
+              ? <textarea rows={3} value={newTermForm[key]} onChange={e => setNewTermForm(f => f && ({ ...f, [key]: e.target.value }))} style={{ ...inp3, resize: "vertical" as const }} />
+              : <input value={newTermForm[key]} onChange={e => setNewTermForm(f => f && ({ ...f, [key]: e.target.value }))} style={inp3} />
+            }
+          </div>
+        );
+        const saveNew = async () => {
+          if (!db || !newTermForm || !newTermForm.term.trim()) return;
+          setTermSaving(true);
+          const term: MedicalTerm = {
+            id: newTermForm.id,
+            term: newTermForm.term.trim(),
+            type: newTermForm.type,
+            meaning: newTermForm.meaning.trim(),
+            casualMeaning: newTermForm.casualMeaning.trim(),
+            system: newTermForm.system,
+            example: newTermForm.example.trim(),
+            definition: newTermForm.definition.trim(),
+            ...(newTermForm.homonymWarning.trim() ? { homonymWarning: newTermForm.homonymWarning.trim() } : {}),
+          };
+          await saveCustomTerm(db, term);
+          addCustomTerms([term]);
+          setCustomTermIds(s => new Set([...s, term.id]));
+          setTermSaving(false);
+          setCreatingTerm(false);
+          setNewTermForm(null);
+        };
+        return (
+          <div onClick={() => { setCreatingTerm(false); setNewTermForm(null); }} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "16px" }}>
+            <div onClick={e => e.stopPropagation()} style={{ backgroundColor: "#2e3240", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "520px", border: "1px solid rgba(252,250,247,0.1)", display: "flex", flexDirection: "column", gap: "14px", maxHeight: "90vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3 style={{ color: "#fcfaf7", fontWeight: "700", margin: 0 }}>Create New Term</h3>
+                <span style={{ color: "#c090f0", fontSize: "0.72rem", fontWeight: "700" }}>CUSTOM</span>
+              </div>
+
+              {field3("term", "Term (e.g. cardi/o, -itis, brady-)")}
+
+              <div>
+                <span style={lbl3}>Type</span>
+                <select value={newTermForm.type} onChange={e => setNewTermForm(f => f && ({ ...f, type: e.target.value as MedicalTerm["type"] }))} style={inp3}>
+                  {TERM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <span style={lbl3}>System</span>
+                <select value={newTermForm.system} onChange={e => setNewTermForm(f => f && ({ ...f, system: e.target.value }))} style={inp3}>
+                  {TERM_SYSTEMS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              {field3("meaning", "Meaning (1–2 words, exact)")}
+              {field3("casualMeaning", "Casual Meaning")}
+              {field3("example", "Example words")}
+              {field3("definition", "Full Definition", true)}
+              {field3("homonymWarning", "Homonym Warning (optional)")}
+
+              <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                <button onClick={saveNew} disabled={termSaving || !newTermForm.term.trim()} style={{ flex: 1, padding: "11px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", opacity: (termSaving || !newTermForm.term.trim()) ? 0.5 : 1 }}>
+                  {termSaving ? "Saving..." : "Create Term"}
+                </button>
+                <button onClick={() => { setCreatingTerm(false); setNewTermForm(null); }} style={{ padding: "11px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                   Cancel
                 </button>
               </div>
