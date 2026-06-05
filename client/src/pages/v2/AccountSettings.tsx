@@ -171,14 +171,9 @@ export default function AccountSettings({ onClose }: Props) {
               </button>
             )}
             {pwSet && (
-              <>
-                <button onClick={() => { setMode("change"); setError(""); }} style={btnStyle("#4a6080")}>
-                  Change Password
-                </button>
-                <button onClick={() => { setMode("remove"); setError(""); }} style={btnStyle("rgba(160,70,70,0.5)")}>
-                  Remove Password
-                </button>
-              </>
+              <button onClick={() => { setMode("change"); setError(""); }} style={btnStyle("#4a6080")}>
+                Change Password
+              </button>
             )}
           </div>
         )}
