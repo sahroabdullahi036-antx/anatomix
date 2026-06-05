@@ -1,45 +1,45 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
+
+// Singleton voice cache so all SpeakButtons share the same loaded state
+let _voices: SpeechSynthesisVoice[] = [];
+let _voicesReady = false;
+
+function loadVoices(): Promise<SpeechSynthesisVoice[]> {
+  return new Promise(resolve => {
+    if (!("speechSynthesis" in window)) { resolve([]); return; }
+    const v = window.speechSynthesis.getVoices();
+    if (v.length > 0) { _voices = v; _voicesReady = true; resolve(v); return; }
+    const handler = () => {
+      _voices = window.speechSynthesis.getVoices();
+      _voicesReady = true;
+      window.speechSynthesis.removeEventListener("voiceschanged", handler);
+      resolve(_voices);
+    };
+    window.speechSynthesis.addEventListener("voiceschanged", handler);
+    // Fallback: if event never fires, speak anyway after 400ms
+    setTimeout(() => { if (!_voicesReady) { _voicesReady = true; resolve([]); } }, 400);
+  });
+}
 
 export function useSpeech() {
-  const voicesLoaded = useRef(false);
+  const speak = useCallback(async (text: string, rate = 0.84) => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
 
-  const getVoice = (): SpeechSynthesisVoice | null => {
-    const voices = window.speechSynthesis.getVoices();
-    return (
+    const voices = _voicesReady ? _voices : await loadVoices();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = rate;
+    u.pitch = 1.0;
+    u.lang = "en-US";
+
+    const preferred =
       voices.find(v => v.lang === "en-US" && v.localService) ??
       voices.find(v => v.lang.startsWith("en-US")) ??
       voices.find(v => v.lang.startsWith("en")) ??
-      null
-    );
-  };
+      null;
+    if (preferred) u.voice = preferred;
 
-  const speak = useCallback((text: string, rate = 0.82) => {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-
-    const doSpeak = () => {
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = rate;
-      u.pitch = 1.0;
-      const voice = getVoice();
-      if (voice) u.voice = voice;
-      window.speechSynthesis.speak(u);
-    };
-
-    if (!voicesLoaded.current) {
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        voicesLoaded.current = true;
-        doSpeak();
-      } else {
-        window.speechSynthesis.onvoiceschanged = () => {
-          voicesLoaded.current = true;
-          doSpeak();
-        };
-      }
-    } else {
-      doSpeak();
-    }
+    window.speechSynthesis.speak(u);
   }, []);
 
   return { speak };
