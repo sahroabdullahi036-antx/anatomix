@@ -58,8 +58,7 @@ export default function LoginGate() {
   const getPinEntry = (u: string) => pins[toKey(u)] ?? null;
 
   const proceedAfterPinCheck = (trimmed: string) => {
-    const exists = accountExists(trimmed);
-    if (exists && hasPassword(trimmed)) {
+    if (hasPassword(trimmed)) {
       setStep("password"); setError("");
     } else {
       setStep("new-account"); setError("");

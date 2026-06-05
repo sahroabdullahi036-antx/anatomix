@@ -146,6 +146,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const trimmed = username.trim();
     if (!trimmed) return;
     const data = loadUser(trimmed);
+    saveUser(data);
     setUser(data);
     const updated = [trimmed, ...recentUsers.filter(u => u !== trimmed)];
     setRecentUsers(updated);
