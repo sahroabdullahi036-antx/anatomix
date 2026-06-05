@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 export const PALETTES = {
-  slate:   { label: "Slate",   filter: "none",                                          bg: "#252830", accent: "#4a6080" },
-  ocean:   { label: "Ocean",   filter: "hue-rotate(25deg) saturate(1.15)",              bg: "#1e2838", accent: "#3a6090" },
-  emerald: { label: "Emerald", filter: "hue-rotate(88deg) saturate(0.85)",              bg: "#1e2820", accent: "#3a7050" },
-  violet:  { label: "Violet",  filter: "hue-rotate(258deg) saturate(0.9)",              bg: "#251e30", accent: "#6050a0" },
-  crimson: { label: "Crimson", filter: "hue-rotate(330deg) saturate(0.88)",             bg: "#2a1e1e", accent: "#803040" },
-  desert:  { label: "Desert",  filter: "hue-rotate(42deg) saturate(0.72) brightness(0.96)", bg: "#282418", accent: "#806030" },
+  slate:   { label: "Slate",   filter: "none",                                               bg: "#252830", accent: "#4a6080" },
+  ocean:   { label: "Ocean",   filter: "hue-rotate(25deg) saturate(1.15)",                   bg: "#1e2838", accent: "#3a6090" },
+  emerald: { label: "Emerald", filter: "hue-rotate(88deg) saturate(0.85)",                   bg: "#1e2820", accent: "#3a7050" },
+  violet:  { label: "Violet",  filter: "hue-rotate(258deg) saturate(0.9)",                   bg: "#251e30", accent: "#6050a0" },
+  rose:    { label: "Rose",    filter: "hue-rotate(100deg) saturate(1.12) brightness(0.98)", bg: "#28202a", accent: "#904070" },
+  crimson: { label: "Crimson", filter: "hue-rotate(330deg) saturate(0.88)",                  bg: "#2a1e1e", accent: "#803040" },
+  desert:  { label: "Desert",  filter: "hue-rotate(42deg) saturate(0.72) brightness(0.96)",  bg: "#282418", accent: "#806030" },
 } as const;
 
 export type PaletteName = keyof typeof PALETTES;

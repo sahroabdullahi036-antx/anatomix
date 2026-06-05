@@ -509,149 +509,224 @@ function BodyOverview({ selected, onSelect }: { selected: string; onSelect: (id:
   );
 }
 
+function findStructureByPath(system: typeof DATA_SYSTEMS[0], structPath: string[]): any {
+  let items: any[] = system.structures as any[];
+  let found: any = null;
+  for (const id of structPath) {
+    found = items.find((s: any) => s.id === id);
+    if (!found) return null;
+    items = found.children ?? [];
+  }
+  return found;
+}
+
+function StructureCard({ structure, accentColor, onClick }: { structure: any; accentColor: string; onClick: () => void }) {
+  const hasChildren = structure.children && structure.children.length > 0;
+  const baseName = structure.officialName.split("(")[0].trim();
+  const parenPart = structure.officialName.match(/\(([^)]+)\)/)?.[1];
+  return (
+    <button
+      onClick={onClick}
+      style={{ textAlign: "left", padding: "16px 18px", borderRadius: "13px", backgroundColor: "rgba(255,255,255,0.05)", border: `1px solid ${accentColor}33`, color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", width: "100%", transition: "background 0.14s" }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = accentColor + "28"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.05)"; }}
+    >
+      <div style={{ fontWeight: "700", fontSize: "0.92rem", marginBottom: "1px" }}>{baseName}</div>
+      {parenPart && <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.73rem", marginBottom: "3px" }}>{parenPart}</div>}
+      {structure.casualName && <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.76rem", marginBottom: "6px" }}>{structure.casualName}</div>}
+      {structure.combiningForm && (
+        <div style={{ color: accentColor, fontFamily: "monospace", fontSize: "0.74rem", fontWeight: "700", marginBottom: "5px" }}>{structure.combiningForm}</div>
+      )}
+      <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", lineHeight: 1.4, marginBottom: "6px" }}>
+        {structure.definition?.slice(0, 70)}{structure.definition?.length > 70 ? "..." : ""}
+      </div>
+      {hasChildren
+        ? <div style={{ color: accentColor, fontSize: "0.73rem", fontWeight: "700" }}>{structure.children.length} parts inside ›</div>
+        : <div style={{ color: "rgba(252,250,247,0.22)", fontSize: "0.72rem" }}>View details ›</div>
+      }
+    </button>
+  );
+}
+
+function LeafDetail({ node, accentColor }: { node: any; accentColor: string }) {
+  if (!node) return null;
+  return (
+    <div style={{ maxWidth: "580px" }}>
+      <div style={{ backgroundColor: accentColor + "22", border: `1px solid ${accentColor}55`, borderRadius: "16px", padding: "26px 28px" }}>
+        <div style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.25rem", marginBottom: "4px" }}>{node.officialName}</div>
+        {node.casualName && <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.88rem", marginBottom: "14px" }}>{node.casualName}</div>}
+        {node.combiningForm && (
+          <div style={{ marginBottom: "16px" }}>
+            <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "4px" }}>Combining Form</div>
+            <div style={{ color: accentColor, fontFamily: "monospace", fontSize: "1.05rem", fontWeight: "700" }}>{node.combiningForm}</div>
+          </div>
+        )}
+        <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "6px" }}>Definition</div>
+        <div style={{ color: "rgba(252,250,247,0.8)", fontSize: "0.92rem", lineHeight: 1.65 }}>{node.definition}</div>
+        {node.homonymWarning && (
+          <div style={{ marginTop: "16px", backgroundColor: "rgba(200,160,50,0.15)", border: "1px solid rgba(200,160,50,0.3)", borderRadius: "9px", padding: "11px 14px" }}>
+            <div style={{ color: "#d4a830", fontSize: "0.75rem", fontWeight: "700", marginBottom: "3px" }}>Note</div>
+            <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.8rem", lineHeight: 1.4 }}>{node.homonymWarning}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function BodyReference() {
   const [, navigate] = useLocation();
-  const [selected, setSelected] = useState("cardiovascular");
-  const [termSearch, setTermSearch] = useState("");
-  const [selectedStructure, setSelectedStructure] = useState<string | null>(null);
+  const [path, setPath] = useState<string[]>([]);
+  const [animKey, setAnimKey] = useState(0);
 
-  const handleSelect = (id: string) => { setSelected(id); setSelectedStructure(null); setTermSearch(""); };
+  const drillInto = (id: string) => { setPath(p => [...p, id]); setAnimKey(k => k + 1); };
+  const goToLevel = (idx: number) => { setPath(p => p.slice(0, idx)); setAnimKey(k => k + 1); };
 
-  const system = SYSTEMS.find(s => s.id === selected);
-  const dataSystem = DATA_SYSTEMS.find(s => s.id === selected);
+  const currentSystem = path.length > 0 ? DATA_SYSTEMS.find(s => s.id === path[0]) : null;
+  const uiSystem = path.length > 0 ? SYSTEMS.find(s => s.id === path[0]) : null;
 
-  const systemTerms = useMemo(() => {
-    return ALL_TERMS.filter(t => t.system?.toLowerCase().includes(selected.replace("-", " ")) || t.system?.toLowerCase() === selected);
-  }, [selected]);
+  const getCurrentItems = (): any[] => {
+    if (path.length === 0) return [];
+    if (path.length === 1) return (currentSystem?.structures as any[]) ?? [];
+    const node = findStructureByPath(currentSystem!, path.slice(1));
+    return node?.children ?? [];
+  };
 
-  const filteredTerms = termSearch ? systemTerms.filter(t => t.term.toLowerCase().includes(termSearch.toLowerCase()) || t.meaning.toLowerCase().includes(termSearch.toLowerCase())) : systemTerms;
+  const currentNode = path.length >= 2 ? findStructureByPath(currentSystem!, path.slice(1)) : null;
+  const items = getCurrentItems();
+  const isLeaf = path.length >= 2 && items.length === 0;
 
-  const selectedStructData = useMemo(() => {
-    if (!selectedStructure || !dataSystem) return null;
-    const allS: any[] = [
-      ...dataSystem.structures,
-      ...dataSystem.structures.flatMap((s: any) => s.children ?? []),
-    ];
-    return allS.find((s: any) => s.id === selectedStructure) ?? null;
-  }, [selectedStructure, dataSystem]);
+  const crumbs: Array<{ label: string; idx: number }> = [{ label: "Body Explorer", idx: 0 }];
+  if (path.length > 0 && currentSystem) {
+    crumbs.push({ label: currentSystem.officialName.replace(" System", ""), idx: 1 });
+  }
+  for (let i = 1; i < path.length; i++) {
+    const node = findStructureByPath(currentSystem!, path.slice(1, i + 1));
+    if (node) crumbs.push({ label: node.officialName.split("(")[0].trim(), idx: i + 1 });
+  }
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
-        <button onClick={() => navigate("/")} style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" }}>← Dashboard</button>
-        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>Body Explorer</span>
+      <style>{`
+        @keyframes drillZoom {
+          from { opacity: 0; transform: scale(0.93) translateY(6px); }
+          to   { opacity: 1; transform: scale(1)    translateY(0);   }
+        }
+        .drill-anim { animation: drillZoom 0.22s cubic-bezier(0.22,1,0.36,1) forwards; }
+      `}</style>
+
+      {/* Header / breadcrumb */}
+      <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "12px 24px", display: "flex", alignItems: "center", gap: "10px", borderBottom: "1px solid rgba(252,250,247,0.07)", flexWrap: "wrap" as const }}>
+        <button onClick={() => navigate("/")} style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem", flexShrink: 0 }}>Back</button>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" as const }}>
+          {crumbs.map((c, i) => (
+            <span key={i} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <button onClick={() => goToLevel(c.idx)} style={{ background: "none", border: "none", cursor: i < crumbs.length - 1 ? "pointer" : "default", fontFamily: "inherit", fontSize: "0.88rem", padding: "0", color: i === crumbs.length - 1 ? "#fcfaf7" : "rgba(252,250,247,0.4)", fontWeight: i === crumbs.length - 1 ? "700" : "400" }}>
+                {c.label}
+              </button>
+              {i < crumbs.length - 1 && <span style={{ color: "rgba(252,250,247,0.2)", fontSize: "0.8rem" }}>›</span>}
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div style={{ display: "flex", height: "calc(100vh - 57px)" }}>
-        {/* Left panel: body overview + system list */}
-        <div style={{ width: "220px", borderRight: "1px solid rgba(252,250,247,0.07)", overflowY: "auto", padding: "16px 12px", flexShrink: 0 }}>
-          <div style={{ marginBottom: "16px" }}>
-            <BodyOverview selected={selected} onSelect={handleSelect} />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            {SYSTEMS.map(sys => (
-              <button key={sys.id} onClick={() => handleSelect(sys.id)} style={{ textAlign: "left", padding: "8px 10px", borderRadius: "8px", border: selected === sys.id ? `1px solid ${sys.color}55` : "1px solid transparent", backgroundColor: selected === sys.id ? sys.color + "22" : "transparent", color: selected === sys.id ? "#fcfaf7" : "rgba(252,250,247,0.55)", cursor: "pointer", fontFamily: "inherit", fontWeight: selected === sys.id ? "700" : "500", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px" }}>
-                <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: sys.color, flexShrink: 0 }} />
-                {sys.label}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div key={animKey} className="drill-anim" style={{ maxWidth: "1100px", margin: "0 auto", padding: "28px 24px" }}>
 
-        {/* Right panel: diagram + structures + terms */}
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          {system && (
-            <div style={{ padding: "24px" }}>
-              <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" as const }}>
+        {/* ── Level 0: All 11 body systems ── */}
+        {path.length === 0 && (
+          <>
+            <div style={{ marginBottom: "24px" }}>
+              <h1 style={{ color: "#fcfaf7", fontSize: "1.5rem", fontWeight: "800", marginBottom: "4px" }}>Body Systems Explorer</h1>
+              <p style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.88rem" }}>Click any system to zoom in and explore its anatomy.</p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "13px" }}>
+              {DATA_SYSTEMS.map(sys => {
+                const ui = SYSTEMS.find(s => s.id === sys.id);
+                const col = ui?.color ?? "#4a5a6a";
+                return (
+                  <button
+                    key={sys.id}
+                    onClick={() => drillInto(sys.id)}
+                    style={{ textAlign: "left", padding: "20px 18px", borderRadius: "15px", backgroundColor: col + "22", border: `1px solid ${col}44`, color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", transition: "all 0.14s" }}
+                    onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.backgroundColor = col + "44"; b.style.borderColor = col + "88"; b.style.transform = "scale(1.02)"; }}
+                    onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.backgroundColor = col + "22"; b.style.borderColor = col + "44"; b.style.transform = "scale(1)"; }}
+                  >
+                    <div style={{ fontSize: "1.9rem", marginBottom: "9px", lineHeight: 1 }}>{sys.emoji}</div>
+                    <div style={{ fontWeight: "800", fontSize: "0.98rem", marginBottom: "2px" }}>{sys.officialName.replace(" System", "")}</div>
+                    <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.75rem", marginBottom: "7px" }}>{sys.casualName}</div>
+                    <div style={{ color: col, fontSize: "0.72rem", fontWeight: "700" }}>{sys.structures.length} structures › Explore</div>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
 
-                {/* Left col: diagram + structures drill-down */}
-                <div style={{ flex: "0 0 300px", minWidth: "240px" }}>
-                  <h2 style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.3rem", marginBottom: "4px" }}>{system.label}</h2>
-                  <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.88rem", marginBottom: "16px" }}>{system.desc}</p>
-
-                  {ILLUSTRATIONS[selected] && (
-                    <div style={{ marginBottom: "18px", borderRadius: "10px", overflow: "hidden", border: "1px solid rgba(252,250,247,0.08)", backgroundColor: "rgba(255,255,255,0.96)" }}>
-                      <img
-                        key={selected}
-                        src={ILLUSTRATIONS[selected]}
-                        alt={`${system.label} anatomy illustration`}
-                        style={{ width: "100%", display: "block", maxHeight: "280px", objectFit: "contain", padding: "8px" }}
-                        onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
-                      />
-                      <div style={{ backgroundColor: "rgba(0,0,0,0.6)", padding: "5px 10px", fontSize: "0.68rem", color: "rgba(252,250,247,0.5)", textAlign: "center" }}>
-                        Wikimedia Commons — public domain / CC-BY-SA
-                      </div>
+        {/* ── Level 1: Inside a body system ── */}
+        {path.length === 1 && currentSystem && uiSystem && (
+          <div>
+            <div style={{ display: "flex", gap: "28px", marginBottom: "28px", flexWrap: "wrap" as const }}>
+              {/* Illustration + SVG */}
+              <div style={{ flex: "0 0 250px", minWidth: "200px" }}>
+                {ILLUSTRATIONS[path[0]] && (
+                  <div style={{ borderRadius: "11px", overflow: "hidden", border: "1px solid rgba(252,250,247,0.08)", backgroundColor: "rgba(255,255,255,0.96)", marginBottom: "12px" }}>
+                    <img
+                      src={ILLUSTRATIONS[path[0]]}
+                      alt={`${uiSystem.label} illustration`}
+                      style={{ width: "100%", display: "block", maxHeight: "220px", objectFit: "contain", padding: "8px" }}
+                      onError={e => { (e.currentTarget as HTMLImageElement).parentElement!.style.display = "none"; }}
+                    />
+                    <div style={{ backgroundColor: "rgba(0,0,0,0.55)", padding: "4px 8px", fontSize: "0.63rem", color: "rgba(252,250,247,0.4)", textAlign: "center" as const }}>
+                      Wikimedia Commons — public domain / CC-BY-SA
                     </div>
-                  )}
-
-                  <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: "8px" }}>
-                    Interactive Diagram
                   </div>
-                  <SystemDiagram id={selected} />
+                )}
+                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.65rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: "5px" }}>Diagram</div>
+                <SystemDiagram id={path[0]} />
+              </div>
 
-                  {/* Structures panel */}
-                  {dataSystem && dataSystem.structures.length > 0 && (
-                    <div style={{ marginTop: "18px" }}>
-                      <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: "8px" }}>
-                        Structures
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" as const, gap: "3px" }}>
-                        {(dataSystem.structures as any[]).map((s: any) => (
-                          <button key={s.id} onClick={() => setSelectedStructure(selectedStructure === s.id ? null : s.id)}
-                            style={{ textAlign: "left" as const, padding: "6px 10px", borderRadius: "7px",
-                              border: selectedStructure === s.id ? `1px solid ${system.color}55` : "1px solid transparent",
-                              backgroundColor: selectedStructure === s.id ? system.color + "22" : "rgba(255,255,255,0.03)",
-                              color: selectedStructure === s.id ? "#fcfaf7" : "rgba(252,250,247,0.6)",
-                              cursor: "pointer", fontFamily: "inherit", fontSize: "0.8rem", fontWeight: selectedStructure === s.id ? "700" : "400" }}>
-                            {s.officialName}
-                          </button>
-                        ))}
-                      </div>
-
-                      {selectedStructData && (
-                        <div style={{ marginTop: "10px", backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "9px", padding: "12px 14px", border: "1px solid rgba(252,250,247,0.07)" }}>
-                          <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.85rem", marginBottom: "2px" }}>{selectedStructData.officialName}</div>
-                          {selectedStructData.casualName && <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.75rem", marginBottom: "5px" }}>{selectedStructData.casualName}</div>}
-                          <div style={{ color: system.color, fontFamily: "monospace", fontSize: "0.77rem", marginBottom: "5px", fontWeight: "600" }}>{selectedStructData.combiningForm}</div>
-                          <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.78rem", lineHeight: 1.45 }}>{selectedStructData.definition}</div>
-                          {selectedStructData.children && selectedStructData.children.length > 0 && (
-                            <div style={{ marginTop: "8px", display: "flex", flexWrap: "wrap" as const, gap: "4px" }}>
-                              {(selectedStructData.children as any[]).map((c: any) => (
-                                <button key={c.id} onClick={() => setSelectedStructure(c.id)}
-                                  style={{ padding: "3px 8px", borderRadius: "5px", border: "1px solid rgba(252,250,247,0.1)", backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(252,250,247,0.65)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.72rem" }}>
-                                  {c.officialName}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Right col: terms list */}
-                <div style={{ flex: 1, minWidth: "280px" }}>
-                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "12px" }}>{systemTerms.length} terms in this system</div>
-                  <input value={termSearch} onChange={e => setTermSearch(e.target.value)} placeholder="Search terms..." style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem", outline: "none", boxSizing: "border-box" as const, marginBottom: "12px" }} />
-                  <div style={{ display: "flex", flexDirection: "column" as const, gap: "6px" }}>
-                    {filteredTerms.slice(0, 60).map(t => (
-                      <div key={t.id} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "10px 14px", border: "1px solid rgba(252,250,247,0.05)" }}>
-                        <div style={{ display: "flex", gap: "8px", alignItems: "baseline", marginBottom: "2px" }}>
-                          <span style={{ color: "#fcfaf7", fontFamily: "monospace", fontWeight: "700", fontSize: "0.9rem" }}>{t.term}</span>
-                          <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.7rem", textTransform: "uppercase" as const }}>{t.type}</span>
-                        </div>
-                        <div style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.82rem", fontWeight: "600", marginBottom: "2px" }}>{t.meaning}</div>
-                        <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", lineHeight: 1.4 }}>{t.definition}</div>
-                      </div>
-                    ))}
-                    {filteredTerms.length === 0 && <div style={{ color: "rgba(252,250,247,0.3)", textAlign: "center" as const, padding: "32px" }}>No terms match your search.</div>}
-                  </div>
+              {/* System info + structure grid */}
+              <div style={{ flex: 1, minWidth: "260px" }}>
+                <h2 style={{ color: "#fcfaf7", fontSize: "1.35rem", fontWeight: "800", marginBottom: "3px" }}>{currentSystem.officialName}</h2>
+                <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.85rem", marginBottom: "18px" }}>{uiSystem.desc}</div>
+                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "10px" }}>Structures — click to explore inside</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: "10px" }}>
+                  {(currentSystem.structures as any[]).map((s: any) => (
+                    <StructureCard key={s.id} structure={s} accentColor={uiSystem.color} onClick={() => drillInto(s.id)} />
+                  ))}
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* ── Level 2+: Inside a structure ── */}
+        {path.length >= 2 && currentSystem && uiSystem && (
+          <div>
+            {isLeaf ? (
+              <LeafDetail node={currentNode} accentColor={uiSystem.color} />
+            ) : (
+              <>
+                {/* Current node summary */}
+                <div style={{ backgroundColor: uiSystem.color + "22", border: `1px solid ${uiSystem.color}44`, borderRadius: "13px", padding: "18px 22px", marginBottom: "20px" }}>
+                  <div style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.1rem", marginBottom: "3px" }}>{currentNode?.officialName}</div>
+                  {currentNode?.casualName && <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.8rem", marginBottom: "6px" }}>{currentNode.casualName}</div>}
+                  {currentNode?.combiningForm && <div style={{ color: uiSystem.color, fontFamily: "monospace", fontSize: "0.82rem", fontWeight: "700", marginBottom: "7px" }}>{currentNode.combiningForm}</div>}
+                  <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.86rem", lineHeight: 1.55 }}>{currentNode?.definition}</div>
+                </div>
+                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "10px" }}>
+                  Inside {currentNode?.officialName?.split("(")[0].trim()} — click a part to zoom in
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px" }}>
+                  {items.map((s: any) => (
+                    <StructureCard key={s.id} structure={s} accentColor={uiSystem.color} onClick={() => drillInto(s.id)} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   );
