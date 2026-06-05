@@ -57,7 +57,7 @@ export default function MainMenu() {
       icon: Lightbulb,
       href: "/anatomy",
       color: "from-green-500 to-green-600",
-      stats: "8 body systems"
+      stats: "11 body systems"
     },
     {
       title: "Progress Tracker",

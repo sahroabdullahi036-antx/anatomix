@@ -14,7 +14,8 @@ const ANATOMY_HIERARCHY = {
   "Endocrine": { label: "Endocrine System", term: "Endocrin/o", parts: { "Pituitary": { term: "Pituitar/o", subparts: { "Anterior": { term: "Anterior" }, "Posterior": { term: "Posterior" } } }, "Thyroid": { term: "Thyr/o", subparts: {} }, "Parathyroid": { term: "Parathyr/o", subparts: {} }, "Adrenal": { term: "Adren/o", subparts: { "Cortex": { term: "Cortex" }, "Medulla": { term: "Medulla" } } }, "Pancreas": { term: "Pancreat/o", subparts: { "Islets": { term: "Islet/o" } } }, "Gonads": { term: "Gonad/o", subparts: {} } } },
   "Integumentary": { label: "Integumentary System", term: "Derm/o", parts: { "Epidermis": { term: "Epiderm/o", subparts: {} }, "Dermis": { term: "Derm/o", subparts: {} }, "Hypodermis": { term: "Hypoderm/o", subparts: {} }, "Hair": { term: "Pil/o", subparts: {} }, "Nails": { term: "Onyx/o", subparts: {} }, "Glands": { term: "Gland/o", subparts: { "Sebaceous": { term: "Sebac/o" }, "Sweat": { term: "Sudor/o" } } } } },
   "Sensory": { label: "Sensory System", term: "Sens/o", parts: { "Eyes": { term: "Ophthalm/o", subparts: { "Cornea": { term: "Kerat/o" }, "Iris": { term: "Iris/o" }, "Lens": { term: "Lens" }, "Retina": { term: "Retin/o" } } }, "Ears": { term: "Ot/o", subparts: { "Outer Ear": { term: "Aur/o" }, "Eardrum": { term: "Tympan/o" }, "Cochlea": { term: "Cochle/o" } } }, "Nose": { term: "Nas/o", subparts: {} }, "Tongue": { term: "Gloss/o", subparts: {} }, "Skin": { term: "Derm/o", subparts: {} } } },
-  "Immune": { label: "Immune/Lymphatic System", term: "Lymph/o", parts: { "Lymph Nodes": { term: "Lymphaden/o", subparts: {} }, "Spleen": { term: "Splen/o", subparts: {} }, "Thymus": { term: "Thym/o", subparts: {} }, "Tonsils": { term: "Tonsill/o", subparts: {} }, "Lymph Vessels": { term: "Lymph/o", subparts: {} } } }
+  "Immune": { label: "Immune/Lymphatic System", term: "Lymph/o", parts: { "Lymph Nodes": { term: "Lymphaden/o", subparts: {} }, "Spleen": { term: "Splen/o", subparts: {} }, "Thymus": { term: "Thym/o", subparts: {} }, "Tonsils": { term: "Tonsill/o", subparts: {} }, "Lymph Vessels": { term: "Lymph/o", subparts: {} } } },
+  "Reproductive": { label: "Reproductive System", term: "Genit/o", parts: { "Male": { term: "Orchi/o", subparts: { "Testes": { term: "Orchi/o", subparts: {} }, "Epididymis": { term: "Epididym/o", subparts: {} }, "Vas Deferens": { term: "Vas/o", subparts: {} }, "Prostate": { term: "Prostat/o", subparts: {} }, "Penis": { term: "Phall/o", subparts: {} } } }, "Female": { term: "Gynec/o", subparts: { "Ovaries": { term: "Oophor/o", subparts: {} }, "Fallopian Tubes": { term: "Salping/o", subparts: {} }, "Uterus": { term: "Hyster/o", subparts: { "Endometrium": { term: "Endometri/o" }, "Myometrium": { term: "Myometri/o" }, "Cervix": { term: "Cervic/o" } } }, "Vagina": { term: "Colp/o", subparts: {} }, "Vulva": { term: "Vulv/o", subparts: {} } } } } }
 };
 
 export default function Anatomy() {
@@ -32,9 +33,13 @@ export default function Anatomy() {
 
   const getCurrentInfo = () => {
     let info: any = ANATOMY_HIERARCHY;
-    for (const key of currentPath) {
+    for (let i = 0; i < currentPath.length; i++) {
+      const key = currentPath[i];
       info = info[key];
       if (!info) return null;
+      if (i < currentPath.length - 1) {
+        info = info.parts || info.subparts || info;
+      }
     }
     return info;
   };
