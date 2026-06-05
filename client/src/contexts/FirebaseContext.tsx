@@ -24,11 +24,11 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const config = {
         apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-        authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-        storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-        appId: import.meta.env.VITE_FIREBASE_APP_ID,
+        authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "anatomix-c3885.firebaseapp.com",
+        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "anatomix-c3885",
+        storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "anatomix-c3885.firebasestorage.app",
+        messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "31474037206",
+        appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:31474037206:web:db3cf1ac01a67d4105b477",
       };
       const firebaseApp = getApps().length ? getApps()[0] : initializeApp(config);
       const firestore = getFirestore(firebaseApp);
