@@ -2,6 +2,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { UserProvider, useUser } from "./contexts/UserContext";
+import { FirebaseProvider } from "./contexts/FirebaseContext";
+import { useFirebaseSync } from "./hooks/useFirebaseSync";
 import LoginGate from "./pages/v2/LoginGate";
 import Dashboard from "./pages/v2/Dashboard";
 import SystemExplorer from "./pages/v2/SystemExplorer";
@@ -24,13 +26,33 @@ import TextbookDefender from "./pages/v2/games/TextbookDefender";
 import CombiningFormLinker from "./pages/v2/games/CombiningFormLinker";
 import ChartAuditor from "./pages/v2/games/ChartAuditor";
 import IschemicCountdown from "./pages/v2/games/IschemicCountdown";
+import BossRound from "./pages/v2/games/BossRound";
+import SpellingBee from "./pages/v2/games/SpellingBee";
+import HangmanGame from "./pages/v2/games/HangmanGame";
+import MemoryMatch from "./pages/v2/games/MemoryMatch";
+import ModeratorDashboard from "./pages/v2/ModeratorDashboard";
+import MultiplayerHub from "./pages/v2/multiplayer/MultiplayerHub";
+import GameRoom from "./pages/v2/multiplayer/GameRoom";
+import BodyReference from "./pages/v2/BodyReference";
+
+const IS_HOST = (u: string) => u.toLowerCase() === "gameshowhost";
 
 function AppRoutes() {
   const { user } = useUser();
   if (!user) return <LoginGate />;
+  const isHost = IS_HOST(user.username);
+
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={isHost ? ModeratorDashboard : Dashboard} />
+      <Route path="/moderator" component={ModeratorDashboard} />
+      <Route path="/multiplayer" component={MultiplayerHub} />
+      <Route path="/game-room/:code" component={GameRoom} />
+      <Route path="/body-reference" component={BodyReference} />
+      <Route path="/boss-round" component={BossRound} />
+      <Route path="/games/spelling-bee" component={SpellingBee} />
+      <Route path="/games/hangman" component={HangmanGame} />
+      <Route path="/games/memory-match" component={MemoryMatch} />
       <Route path="/explorer" component={SystemExplorer} />
       <Route path="/dictionary" component={DictionarySearch} />
       <Route path="/root-builder" component={RootBuilder} />
@@ -51,19 +73,30 @@ function AppRoutes() {
       <Route path="/games/combining-linker" component={CombiningFormLinker} />
       <Route path="/games/chart-auditor" component={ChartAuditor} />
       <Route path="/games/ischemic-countdown" component={IschemicCountdown} />
-      <Route component={Dashboard} />
+      <Route component={isHost ? ModeratorDashboard : Dashboard} />
     </Switch>
+  );
+}
+
+function InnerApp() {
+  useFirebaseSync();
+  return (
+    <>
+      <Toaster />
+      <AppRoutes />
+    </>
   );
 }
 
 function App() {
   return (
-    <ErrorBoundary>
-      <UserProvider>
-        <Toaster />
-        <AppRoutes />
-      </UserProvider>
-    </ErrorBoundary>
+    <FirebaseProvider>
+      <ErrorBoundary>
+        <UserProvider>
+          <InnerApp />
+        </UserProvider>
+      </ErrorBoundary>
+    </FirebaseProvider>
   );
 }
 

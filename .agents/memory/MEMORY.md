@@ -1,0 +1,1 @@
+- [AnatomiX architecture](anatomix-arch.md) — key routing, auth, Firebase, and design decisions for the AnatomiX platform

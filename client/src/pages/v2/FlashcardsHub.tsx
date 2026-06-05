@@ -19,6 +19,8 @@ export default function FlashcardsHub() {
   const [cardIndex, setCardIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [newDeckName, setNewDeckName] = useState("");
+  const [reversed, setReversed] = useState(false);
+  const [hideMastered, setHideMastered] = useState(false);
 
   const cleared = useMemo(() => new Set(user?.clearedTermIds ?? []), [user?.clearedTermIds]);
 
@@ -28,17 +30,20 @@ export default function FlashcardsHub() {
   }, []);
 
   const changeChapter = (val: number) => {
-    setChapterFilter(val);
-    setCardIndex(0);
-    setFlipped(false);
+    setChapterFilter(val); setCardIndex(0); setFlipped(false);
     if (val > 0) localStorage.setItem(STUDY_CHAPTER_KEY, String(val));
     else localStorage.removeItem(STUDY_CHAPTER_KEY);
   };
 
-  const studyTerms = useMemo(() => {
+  const baseStudyTerms = useMemo(() => {
     if (chapterFilter === 0) return ALL_TERMS;
     return getTermsByChapter(chapterFilter);
   }, [chapterFilter]);
+
+  const studyTerms = useMemo(() => {
+    if (!hideMastered) return baseStudyTerms;
+    return baseStudyTerms.filter(t => !cleared.has(t.id));
+  }, [baseStudyTerms, hideMastered, cleared]);
 
   const dueTerms = useMemo(() => {
     const now = Date.now();
@@ -62,11 +67,11 @@ export default function FlashcardsHub() {
   const currentTerms = tab === "critical"
     ? (critTerms.map(c => c.termData).filter(Boolean) as typeof ALL_TERMS)
     : studyTerms;
-  const currentCard = currentTerms[cardIndex];
+  const effectiveIndex = currentTerms.length > 0 ? Math.min(cardIndex, currentTerms.length - 1) : 0;
+  const currentCard = currentTerms[effectiveIndex];
 
-  const handleNext = () => { setCardIndex(i => (i + 1) % currentTerms.length); setFlipped(false); };
-  const handlePrev = () => { setCardIndex(i => (i - 1 + currentTerms.length) % currentTerms.length); setFlipped(false); };
-
+  const handleNext = () => { setCardIndex(i => (i + 1) % Math.max(1, currentTerms.length)); setFlipped(false); };
+  const handlePrev = () => { setCardIndex(i => (i - 1 + Math.max(1, currentTerms.length)) % Math.max(1, currentTerms.length)); setFlipped(false); };
   const handleCorrect = () => { if (currentCard) recordCorrect(currentCard.id); handleNext(); };
   const handleMiss    = () => { if (currentCard) recordMiss(currentCard.id, currentCard.term); handleNext(); };
 
@@ -85,11 +90,17 @@ export default function FlashcardsHub() {
     </button>
   );
 
+  const toggleBtn = (active: boolean, label: string, onClick: () => void) => (
+    <button onClick={onClick} style={{ padding: "6px 12px", borderRadius: "7px", border: active ? "1px solid rgba(255,255,255,0.25)" : "1px solid rgba(255,255,255,0.08)", cursor: "pointer", fontFamily: "inherit", fontWeight: "600", fontSize: "0.78rem", backgroundColor: active ? "rgba(74,96,128,0.6)" : "rgba(255,255,255,0.05)", color: active ? "#fcfaf7" : "rgba(252,250,247,0.5)", transition: "all 0.15s" }}>
+      {label}
+    </button>
+  );
+
   const critEntry = currentCard ? (user?.criticalReview[currentCard.id]) : null;
   const activeChapter = CHAPTERS.find(c => c.num === chapterFilter);
 
   const chapterProficiency = (ch: typeof CHAPTERS[0]) => {
-    const count = ch.termIds.filter(id => cleared.has(id)).length;
+    const count = ch.termIds.filter((id: string) => cleared.has(id)).length;
     return ch.termIds.length > 0 ? count / ch.termIds.length : 0;
   };
 
@@ -136,18 +147,14 @@ export default function FlashcardsHub() {
                           <div style={{ flex: 1, height: "3px", borderRadius: "2px", backgroundColor: "rgba(0,0,0,0.3)", overflow: "hidden" }}>
                             <div style={{ height: "100%", width: `${Math.round(prof * 100)}%`, backgroundColor: isProficient ? "#7aaa7a" : "#4a6080", borderRadius: "2px" }} />
                           </div>
-                          <span style={{ color: isProficient ? "#7aaa7a" : "rgba(252,250,247,0.3)", fontSize: "0.65rem", fontWeight: "700", whiteSpace: "nowrap" as const }}>
-                            {Math.round(prof * 100)}%
-                          </span>
+                          <span style={{ color: isProficient ? "#7aaa7a" : "rgba(252,250,247,0.3)", fontSize: "0.65rem", fontWeight: "700", whiteSpace: "nowrap" as const }}>{Math.round(prof * 100)}%</span>
                         </div>
                       </button>
                       {isProficient && (
                         <button
                           onClick={e => { e.stopPropagation(); navigate(`/chapter-summary/${ch.num}`); }}
                           style={{ position: "absolute", top: "6px", right: "6px", backgroundColor: "rgba(60,130,80,0.3)", border: "1px solid rgba(80,160,100,0.3)", borderRadius: "4px", color: "#7aaa7a", fontSize: "0.6rem", fontWeight: "700", padding: "2px 5px", cursor: "pointer", fontFamily: "inherit" }}
-                        >
-                          Summary
-                        </button>
+                        >Summary</button>
                       )}
                     </div>
                   );
@@ -165,11 +172,22 @@ export default function FlashcardsHub() {
               )}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
-              <button onClick={exportDeck} style={{ padding: "8px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.7)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem" }}>Export Deck</button>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {toggleBtn(reversed, "Reverse Mode", () => { setReversed(r => !r); setFlipped(false); })}
+                {toggleBtn(hideMastered, "Hide Mastered", () => { setHideMastered(m => !m); setCardIndex(0); setFlipped(false); })}
+              </div>
+              <button onClick={exportDeck} style={{ padding: "6px 12px", borderRadius: "7px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.08)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Export Deck</button>
             </div>
 
-            {currentCard && <FlashCard card={currentCard} flipped={flipped} onFlip={() => setFlipped(!flipped)} onNext={handleNext} onPrev={handlePrev} onCorrect={handleCorrect} onMiss={handleMiss} index={cardIndex} total={currentTerms.length} critEntry={critEntry} />}
+            {currentTerms.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 24px", color: "rgba(252,250,247,0.3)" }}>
+                <div style={{ fontWeight: "700", marginBottom: "8px" }}>No terms to show</div>
+                <div style={{ fontSize: "0.85rem" }}>All terms in this chapter are mastered. Toggle "Hide Mastered" off to review them.</div>
+              </div>
+            ) : (
+              currentCard && <FlashCard card={currentCard} flipped={flipped} onFlip={() => setFlipped(!flipped)} onNext={handleNext} onPrev={handlePrev} onCorrect={handleCorrect} onMiss={handleMiss} index={effectiveIndex} total={currentTerms.length} critEntry={critEntry} reversed={reversed} />
+            )}
           </>
         )}
 
@@ -177,9 +195,7 @@ export default function FlashcardsHub() {
           <>
             <div style={{ backgroundColor: "rgba(160,70,70,0.2)", border: "1px solid rgba(200,90,90,0.25)", borderRadius: "12px", padding: "14px 18px", marginBottom: "24px" }}>
               <div style={{ color: "#e09090", fontWeight: "700", marginBottom: "4px" }}>Critical Review</div>
-              <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem" }}>
-                Terms added automatically when missed. Spaced repetition schedules reviews at increasing intervals. Answer correctly to advance toward removal.
-              </div>
+              <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem" }}>Terms added automatically when missed. Spaced repetition schedules reviews at increasing intervals. Answer correctly to advance toward removal.</div>
               {dueTerms.length > 0 && (
                 <div style={{ marginTop: "10px", color: "rgba(252,250,247,0.7)", fontSize: "0.82rem" }}>
                   <span style={{ color: "#e09090", fontWeight: "700" }}>{dueTerms.length} due now</span>
@@ -194,11 +210,8 @@ export default function FlashcardsHub() {
               </div>
             ) : (
               <>
-                <div style={{ marginBottom: "12px", color: "rgba(252,250,247,0.45)", fontSize: "0.85rem" }}>
-                  {allCritTerms.length} term{allCritTerms.length !== 1 ? "s" : ""} tracked
-                  {dueTerms.length > 0 && ` - reviewing ${cardIndex + 1} of ${currentTerms.length}`}
-                </div>
-                {currentCard && <FlashCard card={currentCard} flipped={flipped} onFlip={() => setFlipped(!flipped)} onNext={handleNext} onPrev={handlePrev} onCorrect={handleCorrect} onMiss={handleMiss} index={cardIndex} total={currentTerms.length} critEntry={critEntry} />}
+                <div style={{ marginBottom: "12px", color: "rgba(252,250,247,0.45)", fontSize: "0.85rem" }}>{allCritTerms.length} term{allCritTerms.length !== 1 ? "s" : ""} tracked{dueTerms.length > 0 && ` - reviewing ${effectiveIndex + 1} of ${currentTerms.length}`}</div>
+                {currentCard && <FlashCard card={currentCard} flipped={flipped} onFlip={() => setFlipped(!flipped)} onNext={handleNext} onPrev={handlePrev} onCorrect={handleCorrect} onMiss={handleMiss} index={effectiveIndex} total={currentTerms.length} critEntry={critEntry} reversed={false} />}
               </>
             )}
           </>
@@ -210,10 +223,7 @@ export default function FlashcardsHub() {
               <div style={{ color: "#fcfaf7", fontWeight: "700", marginBottom: "12px" }}>Create New Custom Deck</div>
               <div style={{ display: "flex", gap: "10px" }}>
                 <input value={newDeckName} onChange={e => setNewDeckName(e.target.value)} placeholder="Deck name..." style={{ flex: 1, padding: "10px 12px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit" }} />
-                <button onClick={() => { if (newDeckName.trim()) { addDeck(newDeckName.trim(), []); setNewDeckName(""); } }}
-                  style={{ padding: "10px 16px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>
-                  Create
-                </button>
+                <button onClick={() => { if (newDeckName.trim()) { addDeck(newDeckName.trim(), []); setNewDeckName(""); } }} style={{ padding: "10px 16px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Create</button>
               </div>
             </div>
             {user?.decks.length === 0 ? (
@@ -234,46 +244,55 @@ export default function FlashcardsHub() {
   );
 }
 
-function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, index, total, critEntry }: {
+function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, index, total, critEntry, reversed }: {
   card: typeof ALL_TERMS[0]; flipped: boolean; onFlip: () => void;
   onNext: () => void; onPrev: () => void; onCorrect: () => void; onMiss: () => void;
-  index: number; total: number; critEntry?: any;
+  index: number; total: number; critEntry?: any; reversed: boolean;
 }) {
   const TYPE_COLORS: Record<string, string> = {
     prefix: "#5a4a3e", suffix: "#394d62", root: "#3d5a47",
     condition: "#4a3d62", procedure: "#424242", word: "#2e4e58",
   };
   const color = TYPE_COLORS[card.type] ?? "#394d62";
-  const nextReviewDays = critEntry
-    ? Math.max(0, Math.round((critEntry.nextReview - Date.now()) / 86_400_000))
-    : null;
+  const nextReviewDays = critEntry ? Math.max(0, Math.round((critEntry.nextReview - Date.now()) / 86_400_000)) : null;
 
   return (
     <div>
       <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.8rem", textAlign: "center", marginBottom: "12px" }}>
         {index + 1} / {total}
-        {critEntry && (
-          <span style={{ color: "#e09090", marginLeft: "12px" }}>
-            {critEntry.correctStreak} correct - next review in {nextReviewDays === 0 ? "less than 1" : nextReviewDays} day{nextReviewDays !== 1 ? "s" : ""}
-          </span>
-        )}
+        {critEntry && <span style={{ color: "#e09090", marginLeft: "12px" }}>{critEntry.correctStreak} correct - next review in {nextReviewDays === 0 ? "less than 1" : nextReviewDays} day{nextReviewDays !== 1 ? "s" : ""}</span>}
+        {reversed && <span style={{ color: "rgba(74,96,128,0.9)", marginLeft: "12px", fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase" }}>Reverse</span>}
       </div>
       <div onClick={onFlip} style={{ backgroundColor: color, borderRadius: "16px", padding: "40px 32px", minHeight: "220px", cursor: "pointer", textAlign: "center", marginBottom: "16px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", userSelect: "none", transition: "transform 0.15s", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
-        {!flipped ? (
-          <>
-            <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.type} - {card.system}</div>
-            <div style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", fontFamily: "monospace" }}>{card.term}</div>
-            <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.85rem", marginTop: "16px" }}>Tap to reveal definition</div>
-          </>
+        {!reversed ? (
+          !flipped ? (
+            <>
+              <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.type} - {card.system}</div>
+              <div style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", fontFamily: "monospace" }}>{card.term}</div>
+              <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.85rem", marginTop: "16px" }}>Tap to reveal definition</div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.term}</div>
+              <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "10px" }}>{card.meaning}</div>
+              <div style={{ color: "rgba(252,250,247,0.65)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{card.definition}</div>
+              {card.casualMeaning && <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.8rem", marginTop: "10px", fontStyle: "italic" }}>{card.casualMeaning}</div>}
+            </>
+          )
         ) : (
-          <>
-            <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.term}</div>
-            <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "10px" }}>{card.meaning}</div>
-            <div style={{ color: "rgba(252,250,247,0.65)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{card.definition}</div>
-            {card.casualMeaning && (
-              <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.8rem", marginTop: "10px", fontStyle: "italic" }}>{card.casualMeaning}</div>
-            )}
-          </>
+          !flipped ? (
+            <>
+              <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.type} - {card.system}</div>
+              <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "8px" }}>{card.meaning}</div>
+              <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{card.definition}</div>
+              <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.85rem", marginTop: "16px" }}>Tap to reveal term</div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.type} - {card.system}</div>
+              <div style={{ color: "#fcfaf7", fontSize: "2rem", fontWeight: "800", fontFamily: "monospace" }}>{card.term}</div>
+            </>
+          )
         )}
       </div>
       <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>

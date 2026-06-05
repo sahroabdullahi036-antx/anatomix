@@ -4,6 +4,8 @@ import { accountExists, hasPassword, verifyPassword, setPassword } from "@/utils
 
 type Step = "username" | "password" | "new-account";
 
+const IS_HOST = (u: string) => u.toLowerCase() === "gameshowhost";
+
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "14px 16px", borderRadius: "10px", fontSize: "1rem",
   backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(252,250,247,0.15)",
@@ -29,33 +31,26 @@ export default function LoginGate() {
   const [step, setStep] = useState<Step>("username");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newConfirm, setNewConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const reset = () => {
-    setStep("username");
-    setUsername("");
-    setPassword("");
-    setConfirmPassword("");
-    setNewPassword("");
-    setNewConfirm("");
-    setError("");
+    setStep("username"); setUsername(""); setPassword("");
+    setNewPassword(""); setNewConfirm(""); setError("");
   };
 
   const handleUsernameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = username.trim();
     if (!trimmed) return;
+    const isHost = IS_HOST(trimmed);
     const exists = accountExists(trimmed);
     if (exists && hasPassword(trimmed)) {
-      setStep("password");
-      setError("");
-    } else if (!exists) {
-      setStep("new-account");
-      setError("");
+      setStep("password"); setError("");
+    } else if (!exists || (isHost && !hasPassword(trimmed))) {
+      setStep("new-account"); setError("");
     } else {
       login(trimmed);
     }
@@ -64,22 +59,19 @@ export default function LoginGate() {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) return;
-    setLoading(true);
-    setError("");
+    setLoading(true); setError("");
     const ok = await verifyPassword(username.trim(), password);
     setLoading(false);
-    if (ok) {
-      login(username.trim());
-    } else {
-      setError("Incorrect password.");
-      setPassword("");
-    }
+    if (ok) { login(username.trim()); }
+    else { setError("Incorrect password."); setPassword(""); }
   };
 
   const handleNewAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = username.trim();
     if (!trimmed) return;
+    const isHost = IS_HOST(trimmed);
+    if (isHost && !newPassword) { setError("A password is required for this account."); return; }
     if (newPassword) {
       if (newPassword.length < 4) { setError("Password must be at least 4 characters."); return; }
       if (newPassword !== newConfirm) { setError("Passwords do not match."); return; }
@@ -91,14 +83,11 @@ export default function LoginGate() {
   };
 
   const handleRecentUser = (u: string) => {
-    if (hasPassword(u)) {
-      setUsername(u);
-      setStep("password");
-      setError("");
-    } else {
-      login(u);
-    }
+    if (hasPassword(u)) { setUsername(u); setStep("password"); setError(""); }
+    else { login(u); }
   };
+
+  const isHost = IS_HOST(username);
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", fontFamily: "'Inter', 'Plus Jakarta Sans', sans-serif" }}>
@@ -115,17 +104,8 @@ export default function LoginGate() {
               <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "8px", textAlign: "center" }}>Welcome</h2>
               <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "24px", textAlign: "center" }}>Each profile keeps completely separate progress and decks.</p>
               <form onSubmit={handleUsernameSubmit}>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  placeholder="Your name or nickname..."
-                  autoFocus
-                  style={inputStyle}
-                />
-                <button type="submit" disabled={!username.trim()} style={primaryBtn(!username.trim())}>
-                  Continue
-                </button>
+                <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Your name or nickname..." autoFocus style={inputStyle} />
+                <button type="submit" disabled={!username.trim()} style={primaryBtn(!username.trim())}>Continue</button>
               </form>
               {recentUsers.length > 0 && (
                 <div style={{ marginTop: "24px" }}>
@@ -148,18 +128,9 @@ export default function LoginGate() {
               <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>Welcome back, {username}</h2>
               <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "24px", textAlign: "center" }}>This profile is password protected.</p>
               <form onSubmit={handlePasswordSubmit}>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => { setPassword(e.target.value); setError(""); }}
-                  placeholder="Password..."
-                  autoFocus
-                  style={inputStyle}
-                />
+                <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} placeholder="Password..." autoFocus style={inputStyle} />
                 {error && <div style={{ color: "#e09090", fontSize: "0.85rem", marginBottom: "12px" }}>{error}</div>}
-                <button type="submit" disabled={!password || loading} style={primaryBtn(!password || loading)}>
-                  {loading ? "Checking..." : "Open My Study Space"}
-                </button>
+                <button type="submit" disabled={!password || loading} style={primaryBtn(!password || loading)}>{loading ? "Checking..." : "Open My Study Space"}</button>
               </form>
               <div style={{ textAlign: "center", marginTop: "16px" }}>
                 <button onClick={reset} style={ghostBtn}>Back</button>
@@ -169,31 +140,20 @@ export default function LoginGate() {
 
           {step === "new-account" && (
             <>
-              <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>Create Profile: {username}</h2>
+              <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>
+                {isHost ? "Moderator Account Setup" : `Create Profile: ${username}`}
+              </h2>
               <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "20px", textAlign: "center" }}>
-                Set a password to protect your profile, or skip to continue without one.
+                {isHost ? "Set a password to secure the moderator account." : "Set a password to protect your profile, or skip to continue without one."}
               </p>
               <form onSubmit={handleNewAccount}>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={e => { setNewPassword(e.target.value); setError(""); }}
-                  placeholder="Choose a password (optional)..."
-                  autoFocus
-                  style={inputStyle}
-                />
-                {newPassword && (
-                  <input
-                    type="password"
-                    value={newConfirm}
-                    onChange={e => { setNewConfirm(e.target.value); setError(""); }}
-                    placeholder="Confirm password..."
-                    style={inputStyle}
-                  />
+                <input type="password" value={newPassword} onChange={e => { setNewPassword(e.target.value); setError(""); }} placeholder={isHost ? "Set a password..." : "Choose a password (optional)..."} autoFocus style={inputStyle} />
+                {(newPassword || isHost) && (
+                  <input type="password" value={newConfirm} onChange={e => { setNewConfirm(e.target.value); setError(""); }} placeholder="Confirm password..." style={inputStyle} />
                 )}
                 {error && <div style={{ color: "#e09090", fontSize: "0.85rem", marginBottom: "12px" }}>{error}</div>}
-                <button type="submit" disabled={loading} style={primaryBtn(loading)}>
-                  {loading ? "Creating..." : newPassword ? "Create Protected Profile" : "Create Profile"}
+                <button type="submit" disabled={loading || (isHost && !newPassword)} style={primaryBtn(loading || (isHost && !newPassword))}>
+                  {loading ? "Creating..." : isHost ? "Secure Moderator Account" : newPassword ? "Create Protected Profile" : "Create Profile"}
                 </button>
               </form>
               <div style={{ textAlign: "center", marginTop: "16px" }}>
