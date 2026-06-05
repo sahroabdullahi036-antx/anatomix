@@ -82,7 +82,7 @@ export default function TypingQuiz() {
                 {result === "wrong" && <>Correct answer: </>}
                 <strong style={{ fontFamily: "monospace" }}>{current.term}</strong>
               </div>
-              <SpeakButton text={termToSpeakText(current.term, current.meaning)} size="sm" />
+              <SpeakButton text={termToSpeakText(current.term, current.meaning, current.example)} size="sm" />
             </div>
             {result === "correct" && current.wordParts && current.wordParts.length > 0 && (
               <div style={{ marginTop: "8px", color: "rgba(252,250,247,0.7)", fontSize: "0.82rem" }}>

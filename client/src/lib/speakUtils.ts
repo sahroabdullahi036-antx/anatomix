@@ -1,23 +1,32 @@
 /**
  * Convert a medical term string into a TTS-friendly string.
- * Very short cleaned results (e.g. "ab", "a", "bi") get the meaning appended
- * so the speech synthesizer has real words to pronounce instead of reading
- * the characters as initials or weird letter combos.
+ *
+ * Strategy:
+ * - Strip combining-form slashes (hem/o → hemo) and leading/trailing hyphens.
+ * - For very short results that TTS mispronounces (≤4 chars), use the first
+ *   word of the example sentence instead — e.g. "abduction" for "ab-".
+ * - Longer terms (hyper, brady, hemo, …) are spoken as-is.
  */
-export function termToSpeakText(term: string, meaning?: string): string {
+export function termToSpeakText(
+  term: string,
+  _meaning?: string,
+  example?: string,
+): string {
   const first = term.split(",")[0].trim();
 
-  // Strip combining-form slash notation (hem/o → hemo), leading/trailing hyphens
   const cleaned = first
-    .replace(/\/[a-z]{0,2}$/i, "")  // /o, /i, /a at end of combining form
-    .replace(/\//g, "")             // any remaining slashes
+    .replace(/\/[a-z]{0,2}$/i, "") // /o, /i, /a combining-form vowel
+    .replace(/\//g, "")             // remaining slashes
     .replace(/^-+/, "")             // leading hyphens (suffix marker)
     .replace(/-+$/, "")             // trailing hyphens (prefix marker)
     .trim();
 
-  // If the result is very short, append meaning so TTS has context
-  if (cleaned.length <= 4 && meaning) {
-    return `${cleaned} — ${meaning}`;
+  // Short strings confuse TTS — speak the first example word instead
+  if (cleaned.length <= 4 && example) {
+    const firstWord = example.match(/^([a-zA-Z]+)/)?.[1];
+    if (firstWord && firstWord.length > cleaned.length) {
+      return firstWord;
+    }
   }
 
   return cleaned;
