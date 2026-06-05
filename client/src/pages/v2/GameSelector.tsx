@@ -14,14 +14,14 @@ const GAMES = [
   { path: "/games/typing-quiz",        num: 2,  title: "Typing Input Quiz",          desc: "Type the medical term, typos normalized" },
   { path: "/games/linguistic-autopsy", num: 3,  title: "Linguistic Autopsy",         desc: "Arrange scrambled word-parts in correct order" },
   { path: "/games/chart-triage",       num: 4,  title: "Chart Triage",               desc: "Match patient complaint to term before time runs out" },
-  { path: "/games/textbook-trap",      num: 5,  title: "Textbook Trap",              desc: "True/False — spot intentionally altered definitions" },
+  { path: "/games/textbook-trap",      num: 5,  title: "Textbook Trap",              desc: "True/False: spot intentionally altered definitions" },
   { path: "/games/root-race",          num: 6,  title: "Root Race",                  desc: "Link every valid suffix to a combining form root" },
   { path: "/games/root-swap",          num: 7,  title: "Root Swap",                  desc: "Swap suffixes as clinical scenarios change" },
   { path: "/games/structural-hole",    num: 8,  title: "Fill the Structural Hole",   desc: "Repair an anatomy chain with one link missing" },
   { path: "/games/textbook-defender",  num: 9,  title: "Textbook Defender",          desc: "Destroy incorrect definitions before they reach you" },
-  { path: "/games/combining-linker",   num: 10, title: "Combining Form Linker",      desc: "Domino chain — each card must share a root or suffix" },
+  { path: "/games/combining-linker",   num: 10, title: "Combining Form Linker",      desc: "Domino chain: each card must share a root or suffix" },
   { path: "/games/chart-auditor",      num: 11, title: "Chart Auditor",              desc: "Find and replace incorrect terms in clinical text" },
-  { path: "/games/ischemic-countdown", num: 12, title: "Ischemic Countdown",         desc: "Survival mode — right gains time, wrong speeds it up" },
+  { path: "/games/ischemic-countdown", num: 12, title: "Ischemic Countdown",         desc: "Survival mode: right gains time, wrong speeds it up" },
 ];
 
 const CHAPTER_TONES = [
@@ -65,7 +65,7 @@ export default function GameSelector() {
 
         {critCount > 0 && (
           <div style={{ color: "#e09090", fontSize: "0.85rem", marginBottom: "16px" }}>
-            {critCount} term{critCount !== 1 ? "s" : ""} in Critical Review — they will appear more frequently.
+            {critCount} term{critCount !== 1 ? "s" : ""} in Critical Review. They will appear more frequently.
           </div>
         )}
 

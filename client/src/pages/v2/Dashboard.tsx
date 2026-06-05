@@ -39,22 +39,8 @@ export default function Dashboard() {
             Welcome back, {user?.username}
           </h1>
           <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "1rem", margin: 0 }}>
-            Your personalized study hub — all progress saved locally to your profile.
+            Your personalized study hub. All progress saved locally to your profile.
           </p>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "14px", marginBottom: "40px" }}>
-          {[
-            { label: "Critical Review Terms", value: critCount, note: critCount > 0 ? "Need 2 correct in a row to clear" : "Clean slate", color: critCount > 0 ? "#c07070" : "#7aaa7a" },
-            { label: "Games Played",           value: totalGames,              note: "Unique game modes",            color: "#fcfaf7" },
-            { label: "Custom Decks",           value: user?.decks.length ?? 0, note: "Personal study collections",  color: "#fcfaf7" },
-          ].map(s => (
-            <div key={s.label} style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "12px", padding: "20px", border: "1px solid rgba(252,250,247,0.06)" }}>
-              <div style={{ color: s.color, fontSize: "2rem", fontWeight: "800" }}>{s.value}</div>
-              <div style={{ color: "#fcfaf7", fontSize: "0.9rem", fontWeight: "600", marginTop: "4px" }}>{s.label}</div>
-              <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.75rem", marginTop: "4px" }}>{s.note}</div>
-            </div>
-          ))}
         </div>
 
         {critCount > 0 && (
@@ -65,7 +51,7 @@ export default function Dashboard() {
             <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#c07070", flexShrink: 0 }} />
             <div>
               <div style={{ color: "#e09090", fontWeight: "700" }}>{critCount} term{critCount !== 1 ? "s" : ""} in Critical Review</div>
-              <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem" }}>Click to practice — answer correctly twice in a row to clear each term.</div>
+              <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem" }}>Click to practice. Answer correctly twice in a row to clear each term.</div>
             </div>
           </div>
         )}

@@ -70,7 +70,7 @@ export default function DictionarySearch() {
         </div>
 
         <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.8rem", marginBottom: "14px" }}>
-          {results.length} result{results.length !== 1 ? "s" : ""}{!query.trim() ? " — start typing to filter" : ""}
+          {results.length} result{results.length !== 1 ? "s" : ""}{!query.trim() ? " - start typing to filter" : ""}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
