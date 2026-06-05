@@ -633,6 +633,38 @@ export const CHAPTERS: Chapter[] = [
 const _chapterMap: Record<string, number> = {};
 CHAPTERS.forEach(ch => ch.termIds.forEach(id => { _chapterMap[id] = ch.num; }));
 
+// Snapshot of original chapter data for reset support
+const _originalChapters: Record<number, { title: string; subtitle: string; termIds: string[] }> = {};
+CHAPTERS.forEach(ch => { _originalChapters[ch.num] = { title: ch.title, subtitle: ch.subtitle, termIds: [...ch.termIds] }; });
+
+function _rebuildChapterMap() {
+  for (const key of Object.keys(_chapterMap)) delete _chapterMap[key];
+  CHAPTERS.forEach(ch => ch.termIds.forEach(id => { _chapterMap[id] = ch.num; }));
+}
+
+export function applyChapterOverrides(overrides: Record<string, { termIds?: string[]; title?: string; subtitle?: string }>) {
+  for (const [key, override] of Object.entries(overrides)) {
+    const num = parseInt(key.replace('ch_', ''));
+    const ch = CHAPTERS.find(c => c.num === num);
+    if (!ch) continue;
+    if (Array.isArray(override.termIds)) ch.termIds = [...override.termIds];
+    if (override.title) ch.title = override.title;
+    if (override.subtitle) ch.subtitle = override.subtitle;
+  }
+  _rebuildChapterMap();
+}
+
+export function resetChapterToOriginal(chapterNum: number) {
+  const orig = _originalChapters[chapterNum];
+  if (!orig) return;
+  const ch = CHAPTERS.find(c => c.num === chapterNum);
+  if (!ch) return;
+  ch.title = orig.title;
+  ch.subtitle = orig.subtitle;
+  ch.termIds = [...orig.termIds];
+  _rebuildChapterMap();
+}
+
 export function getTermsByChapter(chapter: number): MedicalTerm[] {
   const ch = CHAPTERS.find(c => c.num === chapter);
   if (!ch) return ALL_TERMS;

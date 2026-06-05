@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
-import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides } from "@/data/medicalData";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
+import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal } from "@/data/medicalData";
 
 const TERM_SYSTEMS = ["General","Cardiovascular","Digestive","Respiratory","Nervous","Musculoskeletal","Urinary","Endocrine","Integumentary","Blood","Reproductive","Lymphatic"];
 const TERM_TYPES: MedicalTerm["type"][] = ["prefix","suffix","root","condition","procedure","word"];
@@ -23,7 +23,7 @@ export default function ModeratorDashboard() {
   const { db, ready } = useFirebase();
   const [students, setStudents] = useState<FirestoreUserProgress[]>([]);
   const [classes, setClasses] = useState<FirestoreClass[]>([]);
-  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers" | "terms">("roster");
+  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers" | "terms" | "chapters">("roster");
   const [filterClass, setFilterClass] = useState<string>("all");
   const [newClassName, setNewClassName] = useState("");
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
@@ -45,10 +45,42 @@ export default function ModeratorDashboard() {
   const [termOverrideIds, setTermOverrideIds] = useState<Set<string>>(new Set());
   const [termSaving, setTermSaving] = useState(false);
 
+  const [editingChapter, setEditingChapter] = useState<number | null>(null);
+  const [chapterForm, setChapterForm] = useState<{ title: string; subtitle: string; termIds: string[] } | null>(null);
+  const [chapterSearch, setChapterSearch] = useState("");
+  const [chapterOverrideNums, setChapterOverrideNums] = useState<Set<number>>(new Set());
+  const [chapterSaving, setChapterSaving] = useState(false);
+
   useEffect(() => {
     if (!db) return;
     getTermOverrides(db).then(o => setTermOverrideIds(new Set(Object.keys(o))));
+    getChapterOverrides(db).then(o => setChapterOverrideNums(new Set(Object.keys(o).map(k => parseInt(k.replace('ch_', ''))))));
   }, [db]);
+
+  const openChapterEdit = (num: number) => {
+    const ch = CHAPTERS.find(c => c.num === num);
+    if (!ch) return;
+    setEditingChapter(num);
+    setChapterForm({ title: ch.title, subtitle: ch.subtitle, termIds: [...ch.termIds] });
+    setChapterSearch("");
+  };
+  const closeChapterModal = () => { setEditingChapter(null); setChapterForm(null); setChapterSearch(""); };
+  const saveChapter = async () => {
+    if (!db || !chapterForm || editingChapter === null) return;
+    setChapterSaving(true);
+    await saveChapterOverride(db, editingChapter, chapterForm);
+    applyChapterOverrides({ [`ch_${editingChapter}`]: chapterForm });
+    setChapterOverrideNums(s => new Set([...s, editingChapter]));
+    setChapterSaving(false);
+    closeChapterModal();
+  };
+  const resetChapter = async () => {
+    if (!db || editingChapter === null) return;
+    await deleteChapterOverride(db, editingChapter);
+    resetChapterToOriginal(editingChapter);
+    setChapterOverrideNums(s => { const n = new Set(s); n.delete(editingChapter); return n; });
+    closeChapterModal();
+  };
 
   useEffect(() => {
     if (!IS_HOST(user?.username ?? "")) navigate("/");
@@ -112,6 +144,7 @@ export default function ModeratorDashboard() {
           <button onClick={() => setTab("games")} style={tabBtn("games")}>Game Rooms</button>
           <button onClick={() => setTab("teachers")} style={tabBtn("teachers")}>Teachers ({teachers.length})</button>
           <button onClick={() => setTab("terms")} style={tabBtn("terms")}>Term Editor ({ALL_TERMS.length})</button>
+          <button onClick={() => setTab("chapters")} style={tabBtn("chapters")}>Chapters ({CHAPTERS.length})</button>
         </div>
 
         {tab === "roster" && (
@@ -241,6 +274,21 @@ export default function ModeratorDashboard() {
             </>
           );
         })()}
+
+        {tab === "chapters" && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "10px" }}>
+            {CHAPTERS.map(ch => (
+              <div key={ch.num} onClick={() => openChapterEdit(ch.num)} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 18px", border: `1px solid ${chapterOverrideNums.has(ch.num) ? "rgba(100,160,100,0.35)" : "rgba(252,250,247,0.06)"}`, cursor: "pointer", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <span style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.95rem" }}>{ch.title}</span>
+                  {chapterOverrideNums.has(ch.num) && <span style={{ color: "#7aaa7a", fontSize: "0.68rem", fontWeight: "700", flexShrink: 0, marginLeft: "8px" }}>EDITED</span>}
+                </div>
+                <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem", lineHeight: "1.3" }}>{ch.subtitle}</div>
+                <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.75rem", marginTop: "2px" }}>{ch.termIds.length} flashcards</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {tab === "games" && (
           <div style={{ textAlign: "center", padding: "40px" }}>
@@ -421,6 +469,82 @@ export default function ModeratorDashboard() {
                   </button>
                 )}
                 <button onClick={() => { setEditingTerm(null); setEditForm(null); }} style={{ padding: "11px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {editingChapter !== null && chapterForm && (() => {
+        const inp2: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: "7px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem", boxSizing: "border-box" as const };
+        const lbl2: React.CSSProperties = { color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "5px", display: "block" };
+        const q = chapterSearch.trim().toLowerCase();
+        const searchResults = q
+          ? ALL_TERMS.filter(t => !chapterForm.termIds.includes(t.id) && (t.term.toLowerCase().includes(q) || t.meaning.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))).slice(0, 12)
+          : [];
+        return (
+          <div onClick={closeChapterModal} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "16px" }}>
+            <div onClick={e => e.stopPropagation()} style={{ backgroundColor: "#2e3240", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "560px", border: "1px solid rgba(252,250,247,0.1)", display: "flex", flexDirection: "column", gap: "16px", maxHeight: "90vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3 style={{ color: "#fcfaf7", fontWeight: "700", margin: 0 }}>Edit Chapter {editingChapter}</h3>
+                {chapterOverrideNums.has(editingChapter) && <span style={{ color: "#7aaa7a", fontSize: "0.72rem", fontWeight: "700" }}>OVERRIDDEN</span>}
+              </div>
+
+              <div>
+                <span style={lbl2}>Title</span>
+                <input value={chapterForm.title} onChange={e => setChapterForm(f => f && ({ ...f, title: e.target.value }))} style={inp2} />
+              </div>
+              <div>
+                <span style={lbl2}>Subtitle</span>
+                <input value={chapterForm.subtitle} onChange={e => setChapterForm(f => f && ({ ...f, subtitle: e.target.value }))} style={inp2} />
+              </div>
+
+              <div>
+                <span style={lbl2}>Flashcards in this chapter ({chapterForm.termIds.length})</span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", minHeight: "42px", maxHeight: "160px", overflowY: "auto", padding: "10px", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "8px" }}>
+                  {chapterForm.termIds.length === 0 && <span style={{ color: "rgba(252,250,247,0.25)", fontSize: "0.82rem" }}>No terms yet. Add some below.</span>}
+                  {chapterForm.termIds.map(id => {
+                    const t = ALL_TERMS.find(x => x.id === id);
+                    return (
+                      <span key={id} style={{ backgroundColor: "rgba(255,255,255,0.08)", borderRadius: "6px", padding: "4px 8px", display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "0.78rem" }}>
+                        <span style={{ color: "#fcfaf7", fontFamily: "monospace", fontWeight: "700" }}>{t ? t.term : id}</span>
+                        {t && <span style={{ color: "rgba(252,250,247,0.4)" }}>{t.meaning}</span>}
+                        <button onClick={() => setChapterForm(f => f && ({ ...f, termIds: f.termIds.filter(x => x !== id) }))} style={{ background: "none", border: "none", color: "rgba(252,250,247,0.45)", cursor: "pointer", padding: "0 0 0 2px", fontSize: "1rem", lineHeight: 1 }}>×</button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <span style={lbl2}>Add a flashcard</span>
+                <input value={chapterSearch} onChange={e => setChapterSearch(e.target.value)} placeholder="Search by term, meaning, or ID (e.g. r9, -emia, blood)..." style={{ ...inp2, marginBottom: searchResults.length > 0 ? "6px" : "0" }} />
+                {searchResults.length > 0 && (
+                  <div style={{ backgroundColor: "rgba(0,0,0,0.3)", borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(252,250,247,0.07)" }}>
+                    {searchResults.map(t => (
+                      <div key={t.id} onClick={() => { setChapterForm(f => f && ({ ...f, termIds: [...f.termIds, t.id] })); setChapterSearch(""); }} style={{ padding: "9px 12px", cursor: "pointer", display: "flex", gap: "10px", alignItems: "center", borderBottom: "1px solid rgba(252,250,247,0.04)" }}>
+                        <span style={{ color: "#fcfaf7", fontFamily: "monospace", fontWeight: "700", minWidth: "90px" }}>{t.term}</span>
+                        <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.72rem", backgroundColor: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "3px", flexShrink: 0 }}>{t.type}</span>
+                        <span style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.82rem", flex: 1, overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{t.meaning}</span>
+                        <span style={{ color: "rgba(252,250,247,0.25)", fontSize: "0.72rem", flexShrink: 0 }}>{t.id}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                <button onClick={saveChapter} disabled={chapterSaving} style={{ flex: 1, padding: "11px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", opacity: chapterSaving ? 0.5 : 1 }}>
+                  {chapterSaving ? "Saving..." : "Save Changes"}
+                </button>
+                {chapterOverrideNums.has(editingChapter) && (
+                  <button onClick={resetChapter} style={{ padding: "11px 14px", borderRadius: "8px", backgroundColor: "rgba(160,100,40,0.3)", color: "#d4a843", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.82rem" }}>
+                    Reset to Original
+                  </button>
+                )}
+                <button onClick={closeChapterModal} style={{ padding: "11px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                   Cancel
                 </button>
               </div>

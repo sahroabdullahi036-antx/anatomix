@@ -305,3 +305,28 @@ export async function removeTeacher(db: Firestore, username: string): Promise<vo
   const existing: string[] = snap.exists() ? ((snap.data() as any).teacherUsernames ?? []) : [];
   await setDoc(ref, { teacherUsernames: existing.filter(u => u !== username.toLowerCase().trim()) }, { merge: true });
 }
+
+// ── Chapter overrides ────────────────────────────────────────────────────────
+
+export interface ChapterOverride {
+  termIds: string[];
+  title?: string;
+  subtitle?: string;
+}
+
+export async function getChapterOverrides(db: Firestore): Promise<Record<string, ChapterOverride>> {
+  try {
+    const snap = await getDocs(collection(db, "chapterOverrides"));
+    const result: Record<string, ChapterOverride> = {};
+    snap.docs.forEach(d => { result[d.id] = d.data() as ChapterOverride; });
+    return result;
+  } catch { return {}; }
+}
+
+export async function saveChapterOverride(db: Firestore, chapterNum: number, data: ChapterOverride): Promise<void> {
+  await setDoc(doc(db, "chapterOverrides", `ch_${chapterNum}`), data);
+}
+
+export async function deleteChapterOverride(db: Firestore, chapterNum: number): Promise<void> {
+  await deleteDoc(doc(db, "chapterOverrides", `ch_${chapterNum}`));
+}
