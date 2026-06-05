@@ -1,3 +1,4 @@
 - [AI term lookup](ai-lookup.md) — Gemini 2.0 Flash via Firebase API key at /api/lookup-term; vite middleware (dev) + server/index.ts (prod)
 - [Chapter order](chapter-order.md) — moderator-only reorder saved to Firestore config/chapterOrder; applyChapterOrder() reorders CHAPTERS in place
 - [Term dedup rule](term-dedup.md) — dedupeTerms() runs after sortTerms() at startup; custom ct_* terms win over base terms on same key
+- [Firestore auth timing](firestore-auth-timing.md) — gate all Firestore reads on `ready` (anon auth); reads before auth fail silently and fall back to defaults

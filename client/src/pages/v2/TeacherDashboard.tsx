@@ -4,6 +4,24 @@ import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
 import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToUserPins, setUserPin, clearUserPin, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
 import { CHAPTERS } from "@/data/medicalData";
+import OnboardingTour, { Step } from "./OnboardingTour";
+
+const TEACHER_TOUR_STEPS: Step[] = [
+  {
+    title: "Welcome to your Teacher dashboard",
+    desc: "This is where you manage your classes and keep an eye on your students. Here is a quick look around.",
+  },
+  {
+    title: "Top bar",
+    desc: "Open this Guide any time, jump into Chat, host a live multiplayer game, or open Study to review the material yourself.",
+    targetId: "teacher-tour-header",
+  },
+  {
+    title: "Your tabs",
+    desc: "Create and manage your classes, see how each of your students is progressing, and run game rooms for your sections.",
+    targetId: "teacher-tour-tabs",
+  },
+];
 
 function StatBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min(1, value / max) : 0;
@@ -24,15 +42,16 @@ export default function TeacherDashboard() {
   const [pinModal, setPinModal] = useState<string | null>(null);
   const [pinInput, setPinInput] = useState("");
   const [pinSaving, setPinSaving] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
 
   useEffect(() => {
-    if (!db) return;
+    if (!db || !ready) return;
     const u1 = subscribeToUsers(db, setAllStudents);
     const u2 = subscribeToClasses(db, setAllClasses);
     const u3 = subscribeToUserPins(db, setPins);
     return () => { u1(); u2(); u3(); };
-  }, [db]);
+  }, [db, ready]);
 
   const myUsername = user?.username.toLowerCase() ?? "";
   const myClasses = allClasses.filter(c => !c.ownerUsername || c.ownerUsername === myUsername);
@@ -52,13 +71,14 @@ export default function TeacherDashboard() {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
+      {showTour && <OnboardingTour onDone={() => setShowTour(false)} steps={TEACHER_TOUR_STEPS} />}
       <div style={hdr}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.1rem" }}>AnatomiX Teacher</span>
           <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", backgroundColor: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "4px" }}>{user?.username}</span>
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button onClick={() => navigate("/guide")} style={backBtn}>Guide</button>
+        <div id="teacher-tour-header" style={{ display: "flex", gap: "10px" }}>
+          <button onClick={() => setShowTour(true)} style={backBtn}>Guide</button>
           <button onClick={() => navigate("/chat")} style={backBtn}>Chat</button>
           <button onClick={() => navigate("/multiplayer")} style={backBtn}>Host a Game</button>
           <button onClick={() => navigate("/flashcards")} style={backBtn}>Study</button>
@@ -68,7 +88,7 @@ export default function TeacherDashboard() {
       {!ready && <div style={{ backgroundColor: "rgba(200,150,50,0.12)", padding: "10px 24px", color: "rgba(252,250,247,0.6)", fontSize: "0.82rem" }}>Connecting to server...</div>}
 
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "28px 24px" }}>
-        <div style={{ display: "flex", gap: "10px", marginBottom: "28px" }}>
+        <div id="teacher-tour-tabs" style={{ display: "flex", gap: "10px", marginBottom: "28px" }}>
           <button onClick={() => setTab("classes")} style={tabBtn("classes")}>My Classes ({myClasses.length})</button>
           <button onClick={() => setTab("students")} style={tabBtn("students")}>Students ({myStudents.length})</button>
           <button onClick={() => setTab("games")} style={tabBtn("games")}>Game Rooms</button>

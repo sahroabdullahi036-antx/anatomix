@@ -4,6 +4,24 @@ import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
 import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, saveChapterOrder, getChapterOrder, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
 import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal, addCustomTerms, removeCustomTerm, applyChapterOrder } from "@/data/medicalData";
+import OnboardingTour, { Step } from "./OnboardingTour";
+
+const MOD_TOUR_STEPS: Step[] = [
+  {
+    title: "Welcome to the Moderator console",
+    desc: "This is where you run AnatomiX. Here is a quick look at what you can manage from here.",
+  },
+  {
+    title: "Top bar",
+    desc: "Open this Guide any time, jump into Chat, host a live multiplayer game, or switch to the Student View to study the material yourself.",
+    targetId: "mod-tour-header",
+  },
+  {
+    title: "Management tabs",
+    desc: "Track your student roster, organize classes, run game rooms, promote teachers, and edit the terms and chapters that everyone studies.",
+    targetId: "mod-tour-tabs",
+  },
+];
 
 const TERM_SYSTEMS = ["General","Cardiovascular","Digestive","Respiratory","Nervous","Musculoskeletal","Urinary","Endocrine","Integumentary","Blood","Reproductive","Lymphatic"];
 const TERM_TYPES: MedicalTerm["type"][] = ["prefix","suffix","root","condition","procedure","word"];
@@ -55,9 +73,10 @@ export default function ModeratorDashboard() {
   const [chapterSaving, setChapterSaving] = useState(false);
   const [chapterOrderNums, setChapterOrderNums] = useState<number[]>(() => CHAPTERS.map(c => c.num));
   const [aiLookupLoading, setAiLookupLoading] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
-    if (!db) return;
+    if (!db || !ready) return;
     getTermOverrides(db).then(o => setTermOverrideIds(new Set(Object.keys(o))));
     getChapterOverrides(db).then(o => setChapterOverrideNums(new Set(Object.keys(o).map(k => parseInt(k.replace('ch_', ''))))));
     getCustomTerms(db).then(terms => {
@@ -70,7 +89,7 @@ export default function ModeratorDashboard() {
       if (nums.length > 0) { applyChapterOrder(nums); setChapterOrderNums(nums); }
       else setChapterOrderNums(CHAPTERS.map(c => c.num));
     });
-  }, [db]);
+  }, [db, ready]);
 
   const openChapterEdit = (num: number) => {
     const ch = CHAPTERS.find(c => c.num === num);
@@ -137,13 +156,13 @@ export default function ModeratorDashboard() {
   }, [user]);
 
   useEffect(() => {
-    if (!db) return;
+    if (!db || !ready) return;
     const u1 = subscribeToUsers(db, s => setStudents(s.filter(s => !IS_HOST(s.username))));
     const u2 = subscribeToClasses(db, setClasses);
     const u3 = subscribeToTeachers(db, setTeachers);
     const u4 = subscribeToUserPins(db, setPins);
     return () => { u1(); u2(); u3(); u4(); };
-  }, [db]);
+  }, [db, ready]);
 
   const filteredStudents = filterClass === "all" ? students : students.filter(s => {
     const cls = classes.find(c => c.id === filterClass);
@@ -174,13 +193,14 @@ export default function ModeratorDashboard() {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
+      {showTour && <OnboardingTour onDone={() => setShowTour(false)} steps={MOD_TOUR_STEPS} />}
       <div style={hdr}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.1rem" }}>AnatomiX Moderator</span>
           <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", backgroundColor: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "4px" }}>AnatomiXOwner</span>
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button onClick={() => navigate("/guide")} style={backBtn}>Guide</button>
+        <div id="mod-tour-header" style={{ display: "flex", gap: "10px" }}>
+          <button onClick={() => setShowTour(true)} style={backBtn}>Guide</button>
           <button onClick={() => navigate("/chat")} style={backBtn}>Chat</button>
           <button onClick={() => navigate("/multiplayer")} style={backBtn}>Host a Game</button>
           <button onClick={() => navigate("/")} style={backBtn}>Student View</button>
@@ -190,7 +210,7 @@ export default function ModeratorDashboard() {
       {!ready && <div style={{ backgroundColor: "rgba(200,150,50,0.12)", padding: "10px 24px", color: "rgba(252,250,247,0.6)", fontSize: "0.82rem" }}>Connecting to server...</div>}
 
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "28px 24px" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "28px" }}>
+        <div id="mod-tour-tabs" style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "28px" }}>
           <button onClick={() => setTab("roster")} style={tabBtn("roster")}>Roster ({students.length})</button>
           <button onClick={() => setTab("classes")} style={tabBtn("classes")}>Classes ({classes.length})</button>
           <button onClick={() => setTab("games")} style={tabBtn("games")}>Game Rooms</button>

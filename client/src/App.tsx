@@ -45,14 +45,14 @@ const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 
 function AppRoutes() {
   const { user } = useUser();
-  const { db } = useFirebase();
+  const { db, ready } = useFirebase();
   const [teachers, setTeachers] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!db) return;
+    if (!db || !ready) return;
     const unsub = subscribeToTeachers(db, setTeachers);
     return unsub;
-  }, [db]);
+  }, [db, ready]);
 
   if (!user) return <LoginGate />;
   const isHost = IS_HOST(user.username);
@@ -102,10 +102,10 @@ function AppRoutes() {
 function InnerApp() {
   useFirebaseSync();
   const { filter } = usePalette();
-  const { db } = useFirebase();
+  const { db, ready } = useFirebase();
 
   useEffect(() => {
-    if (!db) return;
+    if (!db || !ready) return;
     getTermOverrides(db).then(overrides => {
       if (Object.keys(overrides).length > 0) {
         applyTermOverrides(overrides as Record<string, Record<string, never>>);
@@ -122,7 +122,7 @@ function InnerApp() {
     getChapterOrder(db).then(nums => {
       if (nums.length > 0) applyChapterOrder(nums);
     });
-  }, [db]);
+  }, [db, ready]);
 
   return (
     <div style={{ filter, minHeight: "100vh", transition: "filter 0.3s ease" }}>

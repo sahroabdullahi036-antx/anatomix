@@ -1,12 +1,12 @@
 import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 
-interface Step {
+export interface Step {
   title: string;
   desc: string;
   targetId?: string;
 }
 
-const STEPS: Step[] = [
+export const DEFAULT_STEPS: Step[] = [
   {
     title: "Welcome to AnatomiX",
     desc: "Your complete medical terminology study platform. Here is a quick look around so you know where everything is.",
@@ -70,15 +70,15 @@ function cardStyle(rect: Rect | null): React.CSSProperties {
   return { position: "fixed", top, left, width: CARD_W };
 }
 
-export default function OnboardingTour({ onDone }: { onDone: () => void }) {
+export default function OnboardingTour({ onDone, steps = DEFAULT_STEPS }: { onDone: () => void; steps?: Step[] }) {
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
 
-  const current = STEPS[step];
-  const isLast = step === STEPS.length - 1;
+  const current = steps[step];
+  const isLast = step === steps.length - 1;
 
   const updateRect = useCallback(() => {
-    if (!current.targetId) { setRect(null); return; }
+    if (!current?.targetId) { setRect(null); return; }
     const el = document.getElementById(current.targetId);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -86,7 +86,7 @@ export default function OnboardingTour({ onDone }: { onDone: () => void }) {
     } else {
       setRect(null);
     }
-  }, [current.targetId]);
+  }, [current?.targetId]);
 
   useLayoutEffect(() => { updateRect(); }, [updateRect]);
 
@@ -100,6 +100,8 @@ export default function OnboardingTour({ onDone }: { onDone: () => void }) {
     if (isLast) { onDone(); } else { setStep(s => s + 1); }
   };
   const back = () => setStep(s => s - 1);
+
+  if (!current) return null;
 
   const spotlightStyle: React.CSSProperties | null = rect ? {
     position: "fixed",
@@ -138,7 +140,7 @@ export default function OnboardingTour({ onDone }: { onDone: () => void }) {
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
           <span style={{ color: "#7a9fc8", fontSize: "0.72rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em" }}>
-            {step + 1} of {STEPS.length}
+            {step + 1} of {steps.length}
           </span>
           <button
             onClick={onDone}
@@ -157,7 +159,7 @@ export default function OnboardingTour({ onDone }: { onDone: () => void }) {
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", gap: "5px" }}>
-            {STEPS.map((_, i) => (
+            {steps.map((_, i) => (
               <div key={i} style={{
                 width: i === step ? "18px" : "6px", height: "6px", borderRadius: "3px",
                 backgroundColor: i === step ? "#7a9fc8" : "rgba(252,250,247,0.18)",
