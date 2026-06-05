@@ -180,6 +180,7 @@ export default function ModeratorDashboard() {
           <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", backgroundColor: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "4px" }}>AnatomiXOwner</span>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
+          <button onClick={() => navigate("/chat")} style={backBtn}>Chat</button>
           <button onClick={() => navigate("/multiplayer")} style={backBtn}>Host a Game</button>
           <button onClick={() => navigate("/")} style={backBtn}>Student View</button>
         </div>

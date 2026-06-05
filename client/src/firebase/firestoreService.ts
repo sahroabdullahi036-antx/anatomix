@@ -1,6 +1,7 @@
 import {
   Firestore, doc, setDoc, getDoc, collection, getDocs,
-  onSnapshot, deleteDoc, updateDoc, Unsubscribe, query, orderBy
+  onSnapshot, deleteDoc, updateDoc, Unsubscribe, query, orderBy,
+  addDoc, where
 } from "firebase/firestore";
 import type { UserData } from "@/contexts/UserContext";
 import type { MedicalTerm } from "@/data/medicalData";
@@ -358,4 +359,101 @@ export async function getChapterOrder(db: Firestore): Promise<number[]> {
 
 export async function saveChapterOrder(db: Firestore, nums: number[]): Promise<void> {
   await setDoc(doc(db, "config", "chapterOrder"), { nums });
+}
+
+// ── Chat System ───────────────────────────────────────────────────────────────
+
+export interface ChatChannel {
+  id: string;
+  classId: string;
+  name: string;
+  createdAt: number;
+  createdBy: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: number;
+}
+
+export interface DmThread {
+  id: string;
+  participants: string[];
+  participantDisplay: string[];
+  createdAt: number;
+  lastMessage?: string;
+  lastAt?: number;
+}
+
+export async function createChannel(db: Firestore, classId: string, name: string, createdBy: string): Promise<ChatChannel> {
+  const id = `${classId}_${Date.now()}`;
+  const channel: ChatChannel = { id, classId, name, createdAt: Date.now(), createdBy };
+  await setDoc(doc(db, "chatChannels", id), channel);
+  return channel;
+}
+
+export async function deleteChannel(db: Firestore, channelId: string): Promise<void> {
+  await deleteDoc(doc(db, "chatChannels", channelId));
+}
+
+export function subscribeToAllChannels(db: Firestore, cb: (channels: ChatChannel[]) => void): Unsubscribe {
+  return onSnapshot(collection(db, "chatChannels"), snap => {
+    const channels = snap.docs.map(d => d.data() as ChatChannel);
+    channels.sort((a, b) => a.createdAt - b.createdAt);
+    cb(channels);
+  });
+}
+
+export function subscribeToChannelMessages(db: Firestore, channelId: string, cb: (messages: ChatMessage[]) => void): Unsubscribe {
+  const q = query(collection(db, "chatChannels", channelId, "messages"), orderBy("createdAt", "asc"));
+  return onSnapshot(q, snap => {
+    cb(snap.docs.map(d => ({ id: d.id, ...d.data() } as ChatMessage)));
+  });
+}
+
+export async function sendChannelMessage(db: Firestore, channelId: string, author: string, text: string): Promise<void> {
+  await addDoc(collection(db, "chatChannels", channelId, "messages"), { author, text, createdAt: Date.now() });
+}
+
+export function subscribeToDmThreadsForUser(db: Firestore, usernameKey: string, cb: (threads: DmThread[]) => void): Unsubscribe {
+  const q = query(collection(db, "dmThreads"), where("participants", "array-contains", usernameKey));
+  return onSnapshot(q, snap => {
+    const threads = snap.docs.map(d => ({ id: d.id, ...d.data() } as DmThread));
+    threads.sort((a, b) => (b.lastAt ?? b.createdAt) - (a.lastAt ?? a.createdAt));
+    cb(threads);
+  });
+}
+
+export function subscribeToAllDmThreads(db: Firestore, cb: (threads: DmThread[]) => void): Unsubscribe {
+  return onSnapshot(collection(db, "dmThreads"), snap => {
+    const threads = snap.docs.map(d => ({ id: d.id, ...d.data() } as DmThread));
+    threads.sort((a, b) => (b.lastAt ?? b.createdAt) - (a.lastAt ?? a.createdAt));
+    cb(threads);
+  });
+}
+
+export function subscribeToDmMessages(db: Firestore, threadId: string, cb: (messages: ChatMessage[]) => void): Unsubscribe {
+  const q = query(collection(db, "dmThreads", threadId, "messages"), orderBy("createdAt", "asc"));
+  return onSnapshot(q, snap => {
+    cb(snap.docs.map(d => ({ id: d.id, ...d.data() } as ChatMessage)));
+  });
+}
+
+export async function getOrCreateDmThread(db: Firestore, myKey: string, otherKey: string, myDisplay: string, otherDisplay: string): Promise<string> {
+  const sorted = [myKey, otherKey].sort();
+  const threadId = sorted.join("__dm__");
+  const ref = doc(db, "dmThreads", threadId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    const sortedDisplay = sorted[0] === myKey ? [myDisplay, otherDisplay] : [otherDisplay, myDisplay];
+    await setDoc(ref, { id: threadId, participants: sorted, participantDisplay: sortedDisplay, createdAt: Date.now() });
+  }
+  return threadId;
+}
+
+export async function sendDmMessage(db: Firestore, threadId: string, author: string, text: string): Promise<void> {
+  await addDoc(collection(db, "dmThreads", threadId, "messages"), { author, text, createdAt: Date.now() });
+  await updateDoc(doc(db, "dmThreads", threadId), { lastMessage: text, lastAt: Date.now() });
 }
