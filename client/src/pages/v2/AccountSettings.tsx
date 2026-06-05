@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { hasPassword, verifyPassword, setPassword, removePassword } from "@/utils/auth";
-import { usePalette, PALETTES, PaletteName } from "@/contexts/ThemeContext";
+import { usePalette, PALETTES, PaletteName, ColorMode } from "@/contexts/ThemeContext";
 
 interface Props {
   onClose: () => void;
@@ -16,7 +16,7 @@ const inputStyle: React.CSSProperties = {
 
 export default function AccountSettings({ onClose }: Props) {
   const { user } = useUser();
-  const { palette, setPalette } = usePalette();
+  const { palette, setPalette, colorMode, setColorMode, swatchFilter } = usePalette();
   const username = user?.username ?? "";
   const pwSet = hasPassword(username);
 
@@ -91,11 +91,41 @@ export default function AccountSettings({ onClose }: Props) {
           </span>
         </div>
 
+        <div style={{ marginBottom: "20px" }}>
+          <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Appearance</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+            {(["dark", "light"] as ColorMode[]).map(m => {
+              const active = colorMode === m;
+              const isDark = m === "dark";
+              return (
+                <button
+                  key={m}
+                  onClick={() => setColorMode(m)}
+                  style={{
+                    padding: "0", border: active ? "2px solid #fcfaf7" : "2px solid transparent",
+                    borderRadius: "10px", cursor: "pointer", overflow: "hidden",
+                    outline: "none", transition: "border-color 0.15s",
+                    boxShadow: active ? "0 0 0 1px rgba(252,250,247,0.3)" : "none",
+                  }}
+                >
+                  <div style={{ backgroundColor: isDark ? "#252830" : "#dad7cf", padding: "10px 6px 8px", display: "flex", flexDirection: "column", gap: "4px", alignItems: "center" }}>
+                    <div style={{ width: "100%", height: "6px", borderRadius: "3px", backgroundColor: isDark ? "#4a6080" : "#3a5570" }} />
+                    <div style={{ width: "70%", height: "4px", borderRadius: "2px", backgroundColor: isDark ? "rgba(252,250,247,0.25)" : "rgba(0,0,0,0.18)" }} />
+                    <div style={{ width: "85%", height: "4px", borderRadius: "2px", backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)" }} />
+                  </div>
+                  <div style={{ backgroundColor: active ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)", padding: "5px 0", fontSize: "0.72rem", fontWeight: "600", color: active ? "#fcfaf7" : "rgba(252,250,247,0.55)", fontFamily: "inherit", textAlign: "center" }}>
+                    {isDark ? "Dark" : "Light"}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div style={{ marginBottom: "24px" }}>
           <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Color Palette</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
             {(Object.keys(PALETTES) as PaletteName[]).map(name => {
-              const p = PALETTES[name];
               const active = palette === name;
               return (
                 <button
@@ -108,7 +138,7 @@ export default function AccountSettings({ onClose }: Props) {
                     boxShadow: active ? "0 0 0 1px rgba(252,250,247,0.3)" : "none",
                   }}
                 >
-                  <div style={{ filter: p.filter }}>
+                  <div style={{ filter: swatchFilter(name) }}>
                     <div style={{ backgroundColor: "#252830", padding: "10px 6px 8px", display: "flex", flexDirection: "column", gap: "4px", alignItems: "center" }}>
                       <div style={{ width: "100%", height: "6px", borderRadius: "3px", backgroundColor: "#4a6080" }} />
                       <div style={{ width: "70%", height: "4px", borderRadius: "2px", backgroundColor: "rgba(252,250,247,0.25)" }} />
@@ -116,7 +146,7 @@ export default function AccountSettings({ onClose }: Props) {
                     </div>
                   </div>
                   <div style={{ backgroundColor: active ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)", padding: "5px 0", fontSize: "0.72rem", fontWeight: "600", color: active ? "#fcfaf7" : "rgba(252,250,247,0.55)", fontFamily: "inherit", textAlign: "center" }}>
-                    {p.label}
+                    {PALETTES[name].label}
                   </div>
                 </button>
               );
