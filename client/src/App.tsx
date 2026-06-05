@@ -39,7 +39,6 @@ import MultiplayerHub from "./pages/v2/multiplayer/MultiplayerHub";
 import GameRoom from "./pages/v2/multiplayer/GameRoom";
 import BodyReference from "./pages/v2/BodyReference";
 import ChatHub from "./pages/v2/ChatHub";
-import Guide from "./pages/v2/Guide";
 
 const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 
@@ -93,7 +92,6 @@ function AppRoutes() {
       <Route path="/games/chart-auditor" component={ChartAuditor} />
       <Route path="/games/ischemic-countdown" component={IschemicCountdown} />
       <Route path="/chat" component={ChatHub} />
-      <Route path="/guide" component={Guide} />
       <Route component={HomeComponent} />
     </Switch>
   );
