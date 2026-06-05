@@ -1,8 +1,6 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { ALL_TERMS, SYSTEMS, type MedicalTerm } from "@/data/medicalData";
-import { SpeakButton } from "@/components/SpeakButton";
-import { termToSpeakText } from "@/lib/speakUtils";
 
 type FilterType = 'all' | 'prefix' | 'suffix' | 'root' | 'condition' | 'procedure';
 const FILTERS: { key: FilterType; label: string }[] = [
@@ -96,7 +94,6 @@ function DictCard({ term, expanded, onToggle, typeColors }: { term: MedicalTerm;
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px", flexWrap: "wrap" }}>
             <span style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "1rem", fontFamily: "monospace" }}>{term.term}</span>
-            <SpeakButton text={termToSpeakText(term.term)} size="sm" />
             <span style={{ backgroundColor: color, color: "#fcfaf7", fontSize: "0.68rem", fontWeight: "700", padding: "2px 7px", borderRadius: "4px", textTransform: "uppercase" }}>{term.type}</span>
             {term.system && term.system !== "General" && <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.75rem" }}>{term.system}</span>}
           </div>
