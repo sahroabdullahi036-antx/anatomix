@@ -474,3 +474,122 @@ export const CONDITIONS = ALL_TERMS.filter(t => t.type === 'condition');
 export const PROCEDURES = ALL_TERMS.filter(t => t.type === 'procedure');
 
 export const SYSTEM_MAP = Object.fromEntries(SYSTEMS.map(s => [s.id, s]));
+
+// ─── Chapter Definitions ───────────────────────────────────────────────────
+export interface Chapter {
+  num: number;
+  title: string;
+  subtitle: string;
+  color: string;
+  termIds: string[];
+}
+
+export const CHAPTERS: Chapter[] = [
+  {
+    num: 1,
+    title: 'Chapter 1',
+    subtitle: 'Basic Prefixes (a- through macro-)',
+    color: '#596e60',
+    termIds: ['p1','p2','p3','p4','p5','p6','p7','p8','p9','p10','p11','p12','p13','p14','p15','p16','p17','p18'],
+  },
+  {
+    num: 2,
+    title: 'Chapter 2',
+    subtitle: 'More Prefixes & Key Suffixes',
+    color: '#4a5a6a',
+    termIds: ['p19','p20','p21','p22','p23','p24','p25','p26','p27','p28','p29','p30','p31','p32','p33','p34','p35','p36','s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12','s13','s14','s15','s16','s17','s18','s19','s20'],
+  },
+  {
+    num: 3,
+    title: 'Chapter 3',
+    subtitle: 'All Suffixes Complete (-osis through -sclerosis)',
+    color: '#9c6f5e',
+    termIds: ['s21','s22','s23','s24','s25','s26','s27','s28','s29','s30','s31','s32','s33','s34','s35','s36','s37','s38','s39','s40','s41','s42','s43'],
+  },
+  {
+    num: 4,
+    title: 'Chapter 4',
+    subtitle: 'Digestive System',
+    color: '#596e60',
+    termIds: ['r23','r24','r25','r26','r27','r28','r29','r30','r31','r32','r33','c21','c22','c23','c24','c25','c26','c27','pr4','pr5','pr6'],
+  },
+  {
+    num: 5,
+    title: 'Chapter 5',
+    subtitle: 'Cardiovascular System',
+    color: '#4a5a6a',
+    termIds: ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','pr1','pr2','pr3'],
+  },
+  {
+    num: 6,
+    title: 'Chapter 6',
+    subtitle: 'Respiratory System',
+    color: '#9c6f5e',
+    termIds: ['r11','r12','r13','r14','r15','r16','r17','r18','r19','r20','r21','r22','c13','c14','c15','c16','c17','c18','c19','c20','pr7','pr8'],
+  },
+  {
+    num: 7,
+    title: 'Chapter 7',
+    subtitle: 'Nervous System',
+    color: '#5c4a6a',
+    termIds: ['r34','r35','r36','r37','r38','r39','c28','c29','c30','c31','c32','c33','pr12','pr13'],
+  },
+  {
+    num: 8,
+    title: 'Chapter 8',
+    subtitle: 'Musculoskeletal System',
+    color: '#4f4f4f',
+    termIds: ['r40','r41','r42','r43','r44','r45','r46','r47','c34','c35','c36','pr11'],
+  },
+  {
+    num: 9,
+    title: 'Chapter 9',
+    subtitle: 'Urinary System',
+    color: '#3b5e66',
+    termIds: ['r48','r49','r50','r51','r52','r53','c37','c38','c39','c40','c41','pr9','pr10'],
+  },
+  {
+    num: 10,
+    title: 'Chapter 10',
+    subtitle: 'Endocrine System',
+    color: '#3b5e66',
+    termIds: ['r54','r55','r56','r57','c42','c43','c44'],
+  },
+  {
+    num: 11,
+    title: 'Chapter 11',
+    subtitle: 'Integumentary System (Skin)',
+    color: '#4a5a6e',
+    termIds: ['r58','r59','r60','r61'],
+  },
+  {
+    num: 12,
+    title: 'Chapter 12',
+    subtitle: 'Blood & Lymphatic Systems',
+    color: '#4a5a6e',
+    termIds: ['r62','r63','r64','r65','r72','r73','r74','r75','c45','c46','c47'],
+  },
+  {
+    num: 13,
+    title: 'Chapter 13',
+    subtitle: 'Reproductive System',
+    color: '#6a4a5e',
+    termIds: ['r66','r67','r68','r69','r70','r71'],
+  },
+];
+
+const _chapterMap: Record<string, number> = {};
+CHAPTERS.forEach(ch => ch.termIds.forEach(id => { _chapterMap[id] = ch.num; }));
+
+export function getTermsByChapter(chapter: number): MedicalTerm[] {
+  const ch = CHAPTERS.find(c => c.num === chapter);
+  if (!ch) return ALL_TERMS;
+  const ids = new Set(ch.termIds);
+  return ALL_TERMS.filter(t => ids.has(t.id));
+}
+
+export function getTermChapter(termId: string): number {
+  return _chapterMap[termId] ?? 0;
+}
+
+export const STUDY_CHAPTER_KEY = 'anatomix_study_chapter';

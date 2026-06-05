@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { ALL_TERMS, SYSTEMS } from "@/data/medicalData";
+import { ALL_TERMS, CHAPTERS, getTermsByChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
 
 type Tab = "study" | "critical" | "decks";
 
@@ -9,15 +9,28 @@ export default function FlashcardsHub() {
   const [, navigate] = useLocation();
   const { user, recordCorrect, recordMiss, addDeck, removeDeck } = useUser();
   const [tab, setTab] = useState<Tab>("study");
-  const [systemFilter, setSystemFilter] = useState("all");
+  const [chapterFilter, setChapterFilter] = useState<number>(0);
   const [cardIndex, setCardIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [newDeckName, setNewDeckName] = useState("");
 
+  useEffect(() => {
+    const stored = localStorage.getItem(STUDY_CHAPTER_KEY);
+    if (stored) setChapterFilter(parseInt(stored, 10));
+  }, []);
+
+  const changeChapter = (val: number) => {
+    setChapterFilter(val);
+    setCardIndex(0);
+    setFlipped(false);
+    if (val > 0) localStorage.setItem(STUDY_CHAPTER_KEY, String(val));
+    else localStorage.removeItem(STUDY_CHAPTER_KEY);
+  };
+
   const studyTerms = useMemo(() => {
-    if (systemFilter === "all") return ALL_TERMS;
-    return ALL_TERMS.filter(t => t.system.toLowerCase() === systemFilter || t.system === "General");
-  }, [systemFilter]);
+    if (chapterFilter === 0) return ALL_TERMS;
+    return getTermsByChapter(chapterFilter);
+  }, [chapterFilter]);
 
   const critTerms = useMemo(() => {
     return Object.values(user?.criticalReview ?? {}).map(e => {
@@ -58,6 +71,7 @@ export default function FlashcardsHub() {
   );
 
   const critEntry = currentCard ? (user?.criticalReview[currentCard.id]) : null;
+  const activeChapter = CHAPTERS.find(c => c.num === chapterFilter);
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#8b4f58", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
@@ -75,14 +89,48 @@ export default function FlashcardsHub() {
 
         {tab === "study" && (
           <>
-            <div style={{ display: "flex", gap: "10px", marginBottom: "24px", alignItems: "center", flexWrap: "wrap" }}>
-              <select value={systemFilter} onChange={e => { setSystemFilter(e.target.value); setCardIndex(0); setFlipped(false); }}
-                style={{ flex: 1, padding: "10px 12px", borderRadius: "8px", backgroundColor: "rgba(252,250,247,0.1)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.2)", fontFamily: "inherit" }}>
-                <option value="all">All Systems ({ALL_TERMS.length} terms)</option>
-                {SYSTEMS.map(s => <option key={s.id} value={s.id}>{s.officialName}</option>)}
-              </select>
-              <button onClick={exportDeck} style={{ padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(252,250,247,0.1)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.2)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem" }}>📋 Export</button>
+            <div style={{ marginBottom: "24px" }}>
+              <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "10px" }}>Study by Chapter</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "8px", marginBottom: "12px" }}>
+                <button
+                  onClick={() => changeChapter(0)}
+                  style={{ padding: "10px 14px", borderRadius: "10px", border: chapterFilter === 0 ? "2px solid #fcfaf7" : "1px solid rgba(252,250,247,0.15)", backgroundColor: chapterFilter === 0 ? "rgba(252,250,247,0.2)" : "rgba(0,0,0,0.2)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", textAlign: "left" as const, transition: "all 0.15s" }}
+                >
+                  <div style={{ fontWeight: "700", fontSize: "0.85rem" }}>All Chapters</div>
+                  <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.72rem", marginTop: "2px" }}>{ALL_TERMS.length} terms</div>
+                </button>
+                {CHAPTERS.map(ch => {
+                  const count = ch.termIds.length;
+                  const isActive = chapterFilter === ch.num;
+                  return (
+                    <button
+                      key={ch.num}
+                      onClick={() => changeChapter(ch.num)}
+                      style={{ padding: "10px 14px", borderRadius: "10px", border: isActive ? "2px solid #fcfaf7" : "1px solid rgba(252,250,247,0.15)", backgroundColor: isActive ? ch.color : "rgba(0,0,0,0.2)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", textAlign: "left" as const, transition: "all 0.15s" }}
+                    >
+                      <div style={{ fontWeight: "700", fontSize: "0.82rem" }}>{ch.title}</div>
+                      <div style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.7rem", marginTop: "2px", lineHeight: 1.3 }}>{ch.subtitle}</div>
+                      <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.7rem", marginTop: "4px" }}>{count} terms</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {activeChapter && (
+                <div style={{ backgroundColor: activeChapter.color, borderRadius: "10px", padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <span style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.9rem" }}>{activeChapter.title}: </span>
+                    <span style={{ color: "rgba(252,250,247,0.8)", fontSize: "0.85rem" }}>{activeChapter.subtitle}</span>
+                  </div>
+                  <span style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.8rem" }}>{studyTerms.length} terms</span>
+                </div>
+              )}
             </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+              <button onClick={exportDeck} style={{ padding: "8px 14px", borderRadius: "8px", backgroundColor: "rgba(252,250,247,0.1)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.2)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem" }}>📋 Export Deck</button>
+            </div>
+
             {currentCard && <FlashCard card={currentCard} flipped={flipped} onFlip={() => setFlipped(!flipped)} onNext={handleNext} onPrev={handlePrev} onCorrect={handleCorrect} onMiss={handleMiss} index={cardIndex} total={currentTerms.length} critEntry={critEntry} />}
           </>
         )}
@@ -158,7 +206,7 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
           <>
             <div style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.6)", marginBottom: "12px" }}>{card.type} · {card.system}</div>
             <div style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", fontFamily: "monospace" }}>{card.term}</div>
-            <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", marginTop: "16px" }}>Tap to reveal definition →</div>
+            <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", marginTop: "16px" }}>Tap to reveal definition</div>
           </>
         ) : (
           <>

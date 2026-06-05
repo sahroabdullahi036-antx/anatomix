@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ALL_TERMS } from "@/data/medicalData";
+import { ALL_TERMS, getTermsByChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -10,13 +10,19 @@ export function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function useGameTerms(systemId?: string) {
+export function useGameTerms(overridePool?: typeof ALL_TERMS) {
   return useMemo(() => {
-    const pool = systemId
-      ? ALL_TERMS.filter(t => t.system.toLowerCase() === systemId.toLowerCase() || t.system === "General")
-      : ALL_TERMS;
-    return shuffle(pool.filter(t => t.type !== "prefix" || t.example));
-  }, [systemId]);
+    let pool: typeof ALL_TERMS;
+    if (overridePool) {
+      pool = overridePool;
+    } else {
+      const stored = localStorage.getItem(STUDY_CHAPTER_KEY);
+      const ch = stored ? parseInt(stored, 10) : 0;
+      pool = ch > 0 ? getTermsByChapter(ch) : ALL_TERMS;
+    }
+    const filtered = pool.filter(t => t.type !== "prefix" || t.example);
+    return shuffle(filtered.length >= 4 ? filtered : ALL_TERMS.filter(t => t.type !== "prefix" || t.example));
+  }, [overridePool]);
 }
 
 export function GameShell({ title, emoji, score, streak, idx, total, onBack, children }: {
