@@ -2,15 +2,8 @@ import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { GameShell, shuffle, useGameTerms } from "./shared";
-
-function normalize(s: string) {
-  return s.toLowerCase().replace(/[-\s/]/g, "").replace(/[aeiou]s$/, "s").trim();
-}
-
-const PLURAL_MAP: Record<string, string[]> = {
-  "atria": ["atrium"], "bacteria": ["bacterium"], "nuclei": ["nucleus"],
-  "vertebrae": ["vertebra"], "ganglia": ["ganglion"], "pleura": ["pleura"],
-};
+import { checkAnswer } from "@/lib/answerUtils";
+import { SpeakButton } from "@/components/SpeakButton";
 
 export default function TypingQuiz() {
   const [, navigate] = useLocation();
@@ -27,10 +20,7 @@ export default function TypingQuiz() {
 
   const check = () => {
     if (!input.trim() || !current) return;
-    const userNorm = normalize(input);
-    const correctNorm = normalize(current.term);
-    const alternates = PLURAL_MAP[current.term.toLowerCase()] ?? [];
-    const isCorrect = userNorm === correctNorm || alternates.some(a => normalize(a) === userNorm) || correctNorm.startsWith(userNorm) && userNorm.length >= correctNorm.length - 2;
+    const isCorrect = checkAnswer(input, current.term);
 
     if (isCorrect) {
       setResult("correct");
@@ -58,7 +48,7 @@ export default function TypingQuiz() {
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "28px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>{current.type} · {current.system}</div>
         <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", lineHeight: 1.6, marginBottom: "12px" }}>{current.definition}</div>
-        <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem" }}>💬 {current.casualMeaning}</div>
+        <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem" }}>{current.casualMeaning}</div>
         {current.example && <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.82rem", marginTop: "6px", fontStyle: "italic" }}>e.g. {current.example}</div>}
         {hint && <div style={{ marginTop: "12px", color: "#f0c060", fontSize: "0.85rem" }}>Hint: starts with <strong style={{ fontFamily: "monospace" }}>{current.term[0].toUpperCase()}</strong> ({current.term.length} characters)</div>}
       </div>
@@ -85,15 +75,21 @@ export default function TypingQuiz() {
       ) : (
         <div>
           <div style={{ padding: "16px", borderRadius: "10px", backgroundColor: result === "correct" ? "rgba(80,160,80,0.25)" : "rgba(200,80,80,0.25)", border: `1px solid ${result === "correct" ? "rgba(100,200,100,0.4)" : "rgba(220,100,100,0.4)"}`, marginBottom: "14px" }}>
-            <div style={{ color: result === "correct" ? "#90e090" : "#e09090", fontWeight: "700", marginBottom: "6px" }}>{result === "correct" ? `✓ Correct! +${10 + (streak - 1) * 2} pts` : "✗ Incorrect"}</div>
-            {result === "wrong" && <div style={{ color: "#fcfaf7", fontSize: "0.9rem" }}>Correct answer: <strong style={{ fontFamily: "monospace" }}>{current.term}</strong></div>}
+            <div style={{ color: result === "correct" ? "#90e090" : "#e09090", fontWeight: "700", marginBottom: "8px" }}>{result === "correct" ? `Correct! +${10 + (streak - 1) * 2} pts` : "Incorrect"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ color: "#fcfaf7", fontSize: "0.9rem" }}>
+                {result === "wrong" && <>Correct answer: </>}
+                <strong style={{ fontFamily: "monospace" }}>{current.term}</strong>
+              </div>
+              <SpeakButton text={current.term.split(",")[0].replace(/[\/\-]/g, "")} size="sm" />
+            </div>
             {result === "correct" && current.wordParts && current.wordParts.length > 0 && (
               <div style={{ marginTop: "8px", color: "rgba(252,250,247,0.7)", fontSize: "0.82rem" }}>
                 Word parts: {current.wordParts.map(wp => `${wp.part} (${wp.meaning})`).join(" + ")}
               </div>
             )}
           </div>
-          <button onClick={next} style={{ width: "100%", padding: "12px", borderRadius: "10px", backgroundColor: "#fcfaf7", color: "#8b4f58", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Next Question →</button>
+          <button onClick={next} style={{ width: "100%", padding: "12px", borderRadius: "10px", backgroundColor: "#fcfaf7", color: "#8b4f58", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Next Question</button>
         </div>
       )}
     </GameShell>

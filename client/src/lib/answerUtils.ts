@@ -1,44 +1,62 @@
 /**
- * Normalize answer by lowercasing, trimming whitespace, and removing hyphens/slashes
+ * Strip slashes, hyphens, commas, spaces and lowercase for comparison.
+ * e.g. "hem/o, hemat/o" → "hemohemat o" is NOT what we want —
+ * we split on commas first, then normalize each token individually.
  */
-export const normalizeAnswer = (answer: string): string => {
-  return answer
-    .toLowerCase()
-    .trim()
-    .replace(/[\/-\s]/g, "");
-};
+const normToken = (s: string): string =>
+  s.toLowerCase().trim().replace(/[\/\-\s]+/g, "");
 
 /**
- * Enhanced answer checking that handles:
+ * Split a term that may list multiple forms separated by commas.
+ * "hem/o, hemat/o"   → ["hem/o", "hemat/o"]
+ * "a-, an-"          → ["a-", "an-"]
+ * "ven/o, phleb/o"   → ["ven/o", "phleb/o"]
+ */
+export const splitTermForms = (term: string): string[] =>
+  term.split(/,\s*/).map(f => f.trim()).filter(Boolean);
+
+/**
+ * Normalize a single answer token for comparison.
+ * Removes hyphens, slashes, spaces; lowercases.
+ */
+export const normalizeAnswer = (answer: string): string => normToken(answer);
+
+/**
+ * Check whether userAnswer matches correctAnswer.
+ *
+ * Handles:
  * - Case insensitivity
- * - Whitespace trimming
- * - Flexible a/an prefix matching
- * - Hyphen and slash variations
+ * - Leading/trailing whitespace
+ * - Hyphen and slash variants  (hemo === hem/o, brady === brady-)
+ * - Multi-form terms separated by commas  (accepts ANY listed form)
+ * - 1-character typo tolerance on words >= 7 chars
  */
 export const checkAnswer = (userAnswer: string, correctAnswer: string): boolean => {
-  const normalized = normalizeAnswer(userAnswer);
-  const correctNormalized = normalizeAnswer(correctAnswer);
+  const userNorm = normToken(userAnswer);
+  if (!userNorm) return false;
 
-  // Exact match after normalization
-  if (normalized === correctNormalized) {
-    return true;
-  }
+  const forms = splitTermForms(correctAnswer);
 
-  // Handle a/an prefix variations
-  // If correct answer is "a" or "an", accept any of: a, A, an, An
-  if (
-    (correctNormalized === "a" || correctNormalized === "an") &&
-    (normalized === "a" || normalized === "an")
-  ) {
-    return true;
+  for (const form of forms) {
+    const formNorm = normToken(form);
+    if (userNorm === formNorm) return true;
+
+    // 1-char typo tolerance for longer words
+    if (
+      formNorm.length >= 7 &&
+      Math.abs(userNorm.length - formNorm.length) <= 1 &&
+      (formNorm.startsWith(userNorm.slice(0, formNorm.length - 1)) ||
+        userNorm.startsWith(formNorm.slice(0, formNorm.length - 1)))
+    ) {
+      return true;
+    }
   }
 
   return false;
 };
 
 /**
- * Validate user input for fill-in-the-blank questions
+ * Validate user input for fill-in-the-blank questions.
  */
-export const validateFillBlank = (userInput: string, correctTerm: string): boolean => {
-  return checkAnswer(userInput, correctTerm);
-};
+export const validateFillBlank = (userInput: string, correctTerm: string): boolean =>
+  checkAnswer(userInput, correctTerm);

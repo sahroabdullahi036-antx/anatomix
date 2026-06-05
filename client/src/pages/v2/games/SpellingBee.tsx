@@ -3,6 +3,8 @@ import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
 import { shuffle, WrongAnswer, WrongAnswerReview } from "./shared";
+import { checkAnswer } from "@/lib/answerUtils";
+import { SpeakButton } from "@/components/SpeakButton";
 
 export default function SpellingBee() {
   const [, navigate] = useLocation();
@@ -30,12 +32,10 @@ export default function SpellingBee() {
 
   const start = () => { setStarted(true); setIdx(0); setTyped(""); setRevealed(false); setResults([]); setFinished(false); setTimeout(() => inputRef.current?.focus(), 100); };
 
-  const normalize = (s: string) => s.toLowerCase().replace(/[\s-]/g, "").replace(/[^a-z]/g, "");
-
   const submit = () => {
     if (!typed.trim()) return;
     const term = terms[idx];
-    const correct = normalize(typed) === normalize(term.term);
+    const correct = checkAnswer(typed, term.term);
     if (correct) recordCorrect(term.id);
     else recordMiss(term.id, term.term);
     setResults(r => [...r, { correct, term: term.term, typed }]);
@@ -55,10 +55,10 @@ export default function SpellingBee() {
 
   if (!started) return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <div style={hdr}><button onClick={() => navigate("/")} style={backBtn}>← Dashboard</button><span style={{ color: "#fcfaf7", fontWeight: "700" }}>Spelling Bee</span></div>
+      <div style={hdr}><button onClick={() => navigate("/")} style={backBtn}>Back</button><span style={{ color: "#fcfaf7", fontWeight: "700" }}>Spelling Bee</span></div>
       <div style={{ maxWidth: "560px", margin: "0 auto", padding: "60px 24px", textAlign: "center" }}>
         <h1 style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", marginBottom: "8px" }}>Spelling Bee</h1>
-        <p style={{ color: "rgba(252,250,247,0.45)", marginBottom: "32px" }}>Read the definition. Type the correct medical term spelling. 10 terms per session.</p>
+        <p style={{ color: "rgba(252,250,247,0.45)", marginBottom: "32px" }}>Read the definition. Type the correct medical term. 10 terms per session. Any accepted form of a multi-form term counts.</p>
         <div style={{ marginBottom: "28px" }}>
           <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Chapter</div>
           <select value={chapterFilter} onChange={e => setChapterFilter(+e.target.value)} style={{ width: "100%", padding: "12px 16px", borderRadius: "10px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "1rem" }}>
@@ -96,7 +96,7 @@ export default function SpellingBee() {
   }
 
   const current = terms[idx];
-  const isCorrect = normalize(typed) === normalize(current.term);
+  const isCorrect = checkAnswer(typed, current.term);
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
@@ -117,9 +117,12 @@ export default function SpellingBee() {
         {revealed ? (
           <div style={{ textAlign: "center" }}>
             <div style={{ backgroundColor: isCorrect ? "rgba(60,130,80,0.2)" : "rgba(160,60,60,0.2)", borderRadius: "12px", padding: "20px", marginBottom: "16px", border: `1px solid ${isCorrect ? "rgba(80,160,100,0.3)" : "rgba(180,80,80,0.3)"}` }}>
-              <div style={{ color: isCorrect ? "#7aaa7a" : "#c07070", fontWeight: "700", marginBottom: "6px" }}>{isCorrect ? "Correct!" : "Incorrect"}</div>
-              <div style={{ color: "#fcfaf7", fontFamily: "monospace", fontSize: "1.2rem", fontWeight: "800" }}>{current.term}</div>
-              {!isCorrect && <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", marginTop: "4px" }}>You typed: {typed}</div>}
+              <div style={{ color: isCorrect ? "#7aaa7a" : "#c07070", fontWeight: "700", marginBottom: "10px" }}>{isCorrect ? "Correct!" : "Incorrect"}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                <div style={{ color: "#fcfaf7", fontFamily: "monospace", fontSize: "1.2rem", fontWeight: "800" }}>{current.term}</div>
+                <SpeakButton text={current.term.split(",")[0].replace(/[\/\-]/g, "")} size="md" />
+              </div>
+              {!isCorrect && <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", marginTop: "6px" }}>You typed: {typed}</div>}
             </div>
             <button onClick={next} style={{ padding: "12px 32px", borderRadius: "10px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>{idx + 1 >= terms.length ? "See Results" : "Next"}</button>
           </div>
