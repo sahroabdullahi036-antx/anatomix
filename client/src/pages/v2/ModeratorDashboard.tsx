@@ -106,8 +106,8 @@ export default function ModeratorDashboard() {
       {!ready && <div style={{ backgroundColor: "rgba(200,150,50,0.12)", padding: "10px 24px", color: "rgba(252,250,247,0.6)", fontSize: "0.82rem" }}>Connecting to server...</div>}
 
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "28px 24px" }}>
-        <div style={{ display: "flex", gap: "10px", marginBottom: "28px" }}>
-          <button onClick={() => setTab("roster")} style={tabBtn("roster")}>Student Roster ({students.length})</button>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "28px" }}>
+          <button onClick={() => setTab("roster")} style={tabBtn("roster")}>Roster ({students.length})</button>
           <button onClick={() => setTab("classes")} style={tabBtn("classes")}>Classes ({classes.length})</button>
           <button onClick={() => setTab("games")} style={tabBtn("games")}>Game Rooms</button>
           <button onClick={() => setTab("teachers")} style={tabBtn("teachers")}>Teachers ({teachers.length})</button>
