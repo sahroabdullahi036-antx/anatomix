@@ -1,63 +1,51 @@
 import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import { FirebaseProvider } from "./contexts/FirebaseContext";
-// Pages
-import Home from "./pages/Home";
-import StudyDecks from "./pages/StudyDecks";
-import Hangman from "./pages/Hangman";
-import SpellingBee from "./pages/SpellingBee";
-import SimilarTermsQuiz from "./pages/SimilarTermsQuiz";
-import GameHub from "./pages/GameHub";
-import Matching from "./pages/Matching";
-import Memory from "./pages/Memory";
-import Trivia from "./pages/Trivia";
-import TermBuilder from "./pages/TermBuilder";
-import Crossword from "./pages/Crossword";
-import WordSearch from "./pages/WordSearch";
-import MainMenu from "./pages/MainMenu";
-import WordBuilding from "./pages/WordBuilding";
-import Dictionary from "./pages/Dictionary";
-import Flashcards from "./pages/Flashcards";
-import Quizzes from "./pages/Quizzes";
-import SimilarTerms from "./pages/SimilarTerms";
-import Anatomy from "./pages/Anatomy";
-import Progress from "./pages/Progress";
-import StudyTips from "./pages/StudyTips";
-import UploadSyllabus from "./pages/UploadSyllabus";
-import FocusHere from "./pages/FocusHere";
-import NotFound from "./pages/NotFound";
+import { UserProvider, useUser } from "./contexts/UserContext";
+import LoginGate from "./pages/v2/LoginGate";
+import Dashboard from "./pages/v2/Dashboard";
+import SystemExplorer from "./pages/v2/SystemExplorer";
+import DictionarySearch from "./pages/v2/DictionarySearch";
+import RootBuilder from "./pages/v2/RootBuilder";
+import FlashcardsHub from "./pages/v2/FlashcardsHub";
+import GameSelector from "./pages/v2/GameSelector";
+import MultipleChoice from "./pages/v2/games/MultipleChoice";
+import TypingQuiz from "./pages/v2/games/TypingQuiz";
+import LinguisticAutopsy from "./pages/v2/games/LinguisticAutopsy";
+import ChartTriage from "./pages/v2/games/ChartTriage";
+import TextbookTrap from "./pages/v2/games/TextbookTrap";
+import RootRace from "./pages/v2/games/RootRace";
+import RootSwap from "./pages/v2/games/RootSwap";
+import StructuralHole from "./pages/v2/games/StructuralHole";
+import TextbookDefender from "./pages/v2/games/TextbookDefender";
+import CombiningFormLinker from "./pages/v2/games/CombiningFormLinker";
+import ChartAuditor from "./pages/v2/games/ChartAuditor";
+import IschemicCountdown from "./pages/v2/games/IschemicCountdown";
 
-function Router() {
+function AppRoutes() {
+  const { user } = useUser();
+  if (!user) return <LoginGate />;
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/main-menu" component={MainMenu} />
-      <Route path="/word-building" component={WordBuilding} />
-      <Route path="/dictionary" component={Dictionary} />
-      <Route path="/flashcards" component={Flashcards} />
-      <Route path="/quizzes" component={Quizzes} />
-      <Route path="/similar-terms" component={SimilarTerms} />
-      <Route path="/anatomy" component={Anatomy} />
-      <Route path="/progress" component={Progress} />
-      <Route path="/study-tips" component={StudyTips} />
-      <Route path="/upload-syllabus" component={UploadSyllabus} />
-      <Route path="/focus-here" component={FocusHere} />
-      <Route path="/study-decks" component={StudyDecks} />
-      <Route path="/game-hub" component={GameHub} />
-      <Route path="/hangman" component={Hangman} />
-      <Route path="/spelling-bee" component={SpellingBee} />
-      <Route path="/matching" component={Matching} />
-      <Route path="/memory" component={Memory} />
-      <Route path="/trivia" component={Trivia} />
-      <Route path="/term-builder" component={TermBuilder} />
-      <Route path="/crossword" component={Crossword} />
-      <Route path="/word-search" component={WordSearch} />
-      <Route path="/similar-terms-quiz" component={SimilarTermsQuiz} />
-      <Route path="/404" component={NotFound} />
-      <Route component={NotFound} />
+      <Route path="/" component={Dashboard} />
+      <Route path="/explorer" component={SystemExplorer} />
+      <Route path="/dictionary" component={DictionarySearch} />
+      <Route path="/root-builder" component={RootBuilder} />
+      <Route path="/flashcards" component={FlashcardsHub} />
+      <Route path="/games" component={GameSelector} />
+      <Route path="/games/multiple-choice" component={MultipleChoice} />
+      <Route path="/games/typing-quiz" component={TypingQuiz} />
+      <Route path="/games/linguistic-autopsy" component={LinguisticAutopsy} />
+      <Route path="/games/chart-triage" component={ChartTriage} />
+      <Route path="/games/textbook-trap" component={TextbookTrap} />
+      <Route path="/games/root-race" component={RootRace} />
+      <Route path="/games/root-swap" component={RootSwap} />
+      <Route path="/games/structural-hole" component={StructuralHole} />
+      <Route path="/games/textbook-defender" component={TextbookDefender} />
+      <Route path="/games/combining-linker" component={CombiningFormLinker} />
+      <Route path="/games/chart-auditor" component={ChartAuditor} />
+      <Route path="/games/ischemic-countdown" component={IschemicCountdown} />
+      <Route component={Dashboard} />
     </Switch>
   );
 }
@@ -65,14 +53,10 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <FirebaseProvider>
-        <ThemeProvider defaultTheme="light">
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </ThemeProvider>
-      </FirebaseProvider>
+      <UserProvider>
+        <Toaster />
+        <AppRoutes />
+      </UserProvider>
     </ErrorBoundary>
   );
 }

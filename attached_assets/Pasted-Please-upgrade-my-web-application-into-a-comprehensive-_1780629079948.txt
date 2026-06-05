@@ -1,0 +1,42 @@
+Please upgrade my web application into a comprehensive, single-file medical terminology study platform based strictly on Davi-Ellen Chabner's textbook, "The Language of Medicine." Replace the active content of my index.html file with a unified, text-driven application containing these exact modules and design rules:
+
+1. ARCHITECTURE, DEEP NAVIGATION, & NO-CODE ACCOUNT SELECTOR:
+- INITIAL ENTRANCE: When the page loads, hide all study content and show a clean, centered box on our solid Dusty Crimson background that says: "Enter Your Username to Load Your Textbook Progress." Include a text field and an [ Open My Study Space ] button. Use responsive flexbox layouts so the iPad virtual keyboard never shrinks or breaks the inputs.
+- PROFILE ISOLATION: Save all custom cards, game scores, and the Automatic Critical Review Tracker to LocalStorage using unique user keys (e.g., "User_Alex_Decks" vs "User_Sam_Decks"). This ensures different people can type their names and study separate sets without mixing data or creating duplicates. Add a [ Switch User / Sign Out ] link at the top corner to return to the entrance.
+- SYSTEM EXPLORER: Build a complete folder directory tree for all 11 body systems (Digestive, Cardiovascular, Respiratory, Nervous, Musculoskeletal, Urinary, Endocrine, Integumentary, Lymphatic, Reproductive, and Blood/Hematic). Buttons must show ONLY casual, everyday names (e.g., "Food Pipe" or "Big Brain"). 
+- TERMINAL VIEW PANEL: Clicking a casual button must instantly display a clean off-white card at the top showing the Official Medical Term, Casual Name, and exact Chabner Definition. Any deeper sub-parts must appear neatly as casual buttons directly below this text card.
+- STATE RECOVERY: Include a bulletproof "← Back" button to step backward exactly one directory folder level at a time. The app must use LocalStorage memory so if the iPad browser refreshes, the user boots back up exactly where they left off.
+
+2. TEXTBOOK-PRECISE DICTIONARY SEARCH & GROUP FILTERS:
+- REVERSE LOOKUP FIELD: Add a universal search bar. If a user types everyday words or definition fragments (e.g., "kidney", "rapid", "swallowing", or "inflammation"), the engine must run a reverse search and instantly reveal all formal medical terms containing those descriptors.
+- FILTER BY GROUP: Place a row of minimalist text buttons next to the search bar to filter terms by their linguistic categories: Prefixes, Combining Forms/Roots, Suffixes, Pathology & Conditions, or Surgical Procedures.
+- HOMONYM TRAP WARNINGS: Track dual-meaning roots (like myel/o or cyst/o) that change definitions depending on the system. When an overlapping root is accessed, display a warning footnote banner alerting the user to its alternative textbook meanings and where they apply.
+
+3. DYNAMIC ROOT BUILDING WORKSPACE:
+- FRAGMENT EQUATION SLOTS: Replace the cluttered, mushed-together root builder text layout with an interactive assembly matrix. Place three clean target slots at the top: [ Active Prefix ] + [ Active Root / Combining Form ] + [ Active Suffix ], with a clear workspace button.
+- ROOT CLUTTER REMOVAL: Separate word parts into three isolated columns. Place an "Anatomical System Filter" bar above the Root column; selecting a system (e.g., "Digestive") must instantly filter the root column to display ONLY relevant organ roots (like gastr/o), hiding the rest.
+- REAL-TIME VALIDATION: Tapping a fragment button from a column loads it into its equation slot. If it forms a valid textbook term, instantly display its precise definition card below. If invalid, display a simple placeholder text instruction.
+
+4. AUTOMATIC CRITICAL REVIEW TRACKER & TWICE-IN-A-ROW REDEMPTION:
+- AUTOMATED TRACKING: Monitor all quiz and game performance. Users do not manually flag words. The moment a user misses a typed word, clicks a wrong distractor, or triggers a game error, automatically stamp that term and copy it into a separate "Critical Review Deck" visible in the Flashcards tab.
+- REDEMPTION LOOP: To automatically remove a word from the Critical Review Deck, the user must answer it correctly TWICE IN A ROW during practice sessions. Once achieved, wipe the error strikes and return the term to the standard pool automatically.
+
+5. 12 INTERACTIVE, TEXT-DRIVEN GAME MODES:
+Build an interactive game selector that loads vocabulary based on the active body system or custom deck, utilizing these 12 strict text-driven modes with zero lag-inducing graphics:
+1. MULTIPLE CHOICE QUIZ: 4 choices using system-isolated sound-alike distractors with overlapping roots (e.g., matching Arteriosclerosis vs Atherosclerosis) to simulate real test traps.
+2. TYPING INPUT QUIZ: Text field running an input normalization function that drops casing and strips extra whitespace, hyphens, or slashes so typos never break score streaks. Includes an irregular singular/plural grammar fail-safe (accepting both Atrium and Atria but showing a clarifying tip banner).
+3. LINGUISTIC AUTOPSY: Displays a casual prompt with scrambled word-part buttons below it; users must tap them in the exact physiological sequence to correctly assemble the medical term.
+4. THE CHART TRIAGE: A speed sorting game showing casual patient complaints where the user must tap the matching textbook term before a shrinking progress bar countdown timer hits zero.
+5. THE TEXTBOOK TRAP: A critical-reading true/false engine where definitions are intentionally altered with hidden anatomical errors that the user must flag.
+6. ROOT RACE: A fast-paced suffix-chaining mode that locks onto one combining form root and forces the user to link every legal textbook suffix that can attach to it.
+7. THE ROOT SWAP: An active surgical modifier game forcing users to swap out suffixes dynamically as a clinical operation description alters in real-time.
+8. FILL THE STRUCTURAL HOLE: A pathway logic puzzle displaying chains of casual anatomy folders with one link blanked out; users must repair the chain to match a terminal definition.
+9. THE TEXTBOOK DEFENDER: A target elimination mode displaying one term and three casual definitions; users must tap and destroy the incorrect "invading" descriptions.
+10. COMBINING FORM LINKER: A domino-style chain game where users must continuously select vocabulary cards that share exactly one overlapping root or suffix with the prior card.
+11. THE CHART AUDITOR: An editing game where users inspect simulated clinical paragraphs, catch lazy/incorrect terminology errors, and replace them with precise Chabner terms.
+12. THE ISCHEMIC COUNTDOWN: A high-speed survival mode with a shrinking progress bar timer that gains time on correct answers and drops speed on incorrect options.
+
+6. ACCESSORIES & STYLING RULES:
+- THE DESIGN: The canvas background must be a solid, non-white Dusty Crimson (#8b4f58) with zero default white gaps anywhere on the screen. Use a modern sans-serif font like 'Inter' or 'Plus Jakarta Sans'. High-contrast off-white text (#fcfaf7) handles readability.
+- SYSTEM COLORS: Separate active sections using a low-saturation, professional color scheme: Digestive is Muted Sage Green (#596e60), Cardiovascular/Blood is Deep Slate Blue (#4a5a6a), Respiratory is Soft Terracotta (#9c6f5e), Nervous is Deep Muted Purple (#5c4a6a), Musculoskeletal is Warm Charcoal (#4f4f4f), and Urinary/Endocrine/Integumentary is Dark Teal Blue (#3b5e66).
+- EMBEDDED TEXTBOOK DATASET: Hardcode the unified 11-system dictionary payload (including word part breakdowns, everyday terms, and definitions) straight into the source script, utilizing dynamic virtual DOM lazy-loading so the iPad only renders buttons for the path currently being viewed. Add a Word-Part Breakdown Toggle inside the view card, and a plain-text Export button in the flashcard builder to copy custom lists to the clipboard.
