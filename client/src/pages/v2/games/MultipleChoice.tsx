@@ -84,7 +84,7 @@ export default function MultipleChoice() {
             {correct ? `✓ Correct! +${10 + (streak - 1) * 2} pts` : "✗ Incorrect"}
           </div>
           {!correct && <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.85rem", marginBottom: "14px" }}>Correct: <strong>{current.meaning}</strong></div>}
-          <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.82rem", marginBottom: "16px" }}>{current.chabnerDef}</div>
+          <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.82rem", marginBottom: "16px" }}>{current.definition}</div>
           <button onClick={next} style={{ padding: "12px 28px", borderRadius: "10px", backgroundColor: "#fcfaf7", color: "#8b4f58", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Next Question →</button>
         </div>
       )}

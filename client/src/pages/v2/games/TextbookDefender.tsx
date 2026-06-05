@@ -55,10 +55,10 @@ export default function TextbookDefender() {
     <GameShell title="Textbook Defender" emoji="🛡️" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "24px", textAlign: "center" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>
-          TAP and DESTROY the 2 INCORRECT definitions — protect the true one!
+          TAP and DESTROY the 2 INCORRECT definitions  -  protect the true one!
         </div>
         <div style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", fontFamily: "monospace" }}>{current.term}</div>
-        <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", marginTop: "6px" }}>{current.type} — {current.system}</div>
+        <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", marginTop: "6px" }}>{current.type}  -  {current.system}</div>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
@@ -89,7 +89,7 @@ export default function TextbookDefender() {
       {done && (
         <div style={{ textAlign: "center" }}>
           <div style={{ color: "#90e090", fontWeight: "700", marginBottom: "10px" }}>✓ Defended! +{15 + (streak - 1) * 3} pts</div>
-          <div style={{ color: "rgba(252,250,247,0.65)", fontSize: "0.85rem", marginBottom: "14px" }}>{current.chabnerDef}</div>
+          <div style={{ color: "rgba(252,250,247,0.65)", fontSize: "0.85rem", marginBottom: "14px" }}>{current.definition}</div>
           <button onClick={next} style={{ padding: "12px 28px", borderRadius: "10px", backgroundColor: "#fcfaf7", color: "#8b4f58", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Next →</button>
         </div>
       )}

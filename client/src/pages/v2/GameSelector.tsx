@@ -3,17 +3,17 @@ import { useUser } from "@/contexts/UserContext";
 
 const GAMES = [
   { path: "/games/multiple-choice", emoji: "🎯", num: 1, title: "Multiple Choice Quiz", desc: "4 choices with sound-alike distractors to simulate real exam traps", color: "#4a5a6a" },
-  { path: "/games/typing-quiz", emoji: "⌨️", num: 2, title: "Typing Input Quiz", desc: "Type the medical term — input normalized for typos & plural forms", color: "#596e60" },
+  { path: "/games/typing-quiz", emoji: "⌨️", num: 2, title: "Typing Input Quiz", desc: "Type the medical term  -  input normalized for typos & plural forms", color: "#596e60" },
   { path: "/games/linguistic-autopsy", emoji: "🧩", num: 3, title: "Linguistic Autopsy", desc: "Tap scrambled word-parts in correct physiological sequence", color: "#9c6f5e" },
   { path: "/games/chart-triage", emoji: "⏱️", num: 4, title: "Chart Triage", desc: "Match patient complaint to textbook term before countdown hits zero", color: "#5c4a6a" },
-  { path: "/games/textbook-trap", emoji: "🪤", num: 5, title: "Textbook Trap", desc: "True/False — spot intentionally altered definitions with hidden errors", color: "#4f4f4f" },
+  { path: "/games/textbook-trap", emoji: "🪤", num: 5, title: "Textbook Trap", desc: "True/False  -  spot intentionally altered definitions with hidden errors", color: "#4f4f4f" },
   { path: "/games/root-race", emoji: "🏁", num: 6, title: "Root Race", desc: "Link every legal suffix to one combining form root as fast as possible", color: "#3b5e66" },
   { path: "/games/root-swap", emoji: "🔄", num: 7, title: "Root Swap", desc: "Swap suffixes dynamically as a clinical scenario changes in real-time", color: "#4a5a6e" },
   { path: "/games/structural-hole", emoji: "🕳️", num: 8, title: "Fill the Structural Hole", desc: "Repair a chain of anatomy folders with one link blanked out", color: "#6a4a5e" },
   { path: "/games/textbook-defender", emoji: "🛡️", num: 9, title: "Textbook Defender", desc: "Destroy the 2 incorrect casual definitions before they overwhelm you", color: "#4a5a6a" },
-  { path: "/games/combining-linker", emoji: "🔗", num: 10, title: "Combining Form Linker", desc: "Domino chain — each card must share one overlapping root or suffix", color: "#596e60" },
+  { path: "/games/combining-linker", emoji: "🔗", num: 10, title: "Combining Form Linker", desc: "Domino chain  -  each card must share one overlapping root or suffix", color: "#596e60" },
   { path: "/games/chart-auditor", emoji: "📝", num: 11, title: "Chart Auditor", desc: "Find and replace lazy/incorrect terms in clinical paragraphs", color: "#9c6f5e" },
-  { path: "/games/ischemic-countdown", emoji: "💥", num: 12, title: "Ischemic Countdown", desc: "Survival mode — correct answers gain time, wrong answers speed up the countdown", color: "#5c4a6a" },
+  { path: "/games/ischemic-countdown", emoji: "💥", num: 12, title: "Ischemic Countdown", desc: "Survival mode  -  correct answers gain time, wrong answers speed up the countdown", color: "#5c4a6a" },
 ];
 
 export default function GameSelector() {
@@ -32,7 +32,7 @@ export default function GameSelector() {
         <p style={{ color: "rgba(252,250,247,0.6)", marginBottom: "10px" }}>All games automatically track missed terms into your Critical Review deck.</p>
         {Object.keys(user?.criticalReview ?? {}).length > 0 && (
           <div style={{ color: "#f5a0a0", fontSize: "0.85rem", marginBottom: "24px" }}>
-            ⚠️ You have {Object.keys(user!.criticalReview).length} term{Object.keys(user!.criticalReview).length !== 1 ? "s" : ""} in Critical Review — they'll appear more frequently!
+            ⚠️ You have {Object.keys(user!.criticalReview).length} term{Object.keys(user!.criticalReview).length !== 1 ? "s" : ""} in Critical Review  -  they'll appear more frequently!
           </div>
         )}
 

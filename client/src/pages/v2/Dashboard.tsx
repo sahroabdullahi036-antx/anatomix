@@ -29,7 +29,7 @@ export default function Dashboard() {
           <span style={{ fontSize: "28px" }}>🫀</span>
           <div>
             <span style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.2rem" }}>AnatomiX</span>
-            <span style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem", display: "block", lineHeight: 1 }}>Language of Medicine</span>
+            <span style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem", display: "block", lineHeight: 1 }}>Medical Terminology</span>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -49,7 +49,7 @@ export default function Dashboard() {
             Welcome back, {user?.username} 👋
           </h1>
           <p style={{ color: "rgba(252,250,247,0.6)", fontSize: "1rem", margin: 0 }}>
-            Your personalized Chabner study hub — all progress saved locally to your profile.
+            Your personalized study hub - all progress saved locally to your profile.
           </p>
         </div>
 
@@ -75,7 +75,7 @@ export default function Dashboard() {
             <span style={{ fontSize: "24px" }}>⚠️</span>
             <div>
               <div style={{ color: "#f5a0a0", fontWeight: "700" }}>{critCount} term{critCount !== 1 ? "s" : ""} in Critical Review</div>
-              <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.85rem" }}>Click to practice — answer correctly twice in a row to clear each term.</div>
+              <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.85rem" }}>Click to practice  -  answer correctly twice in a row to clear each term.</div>
             </div>
           </div>
         )}

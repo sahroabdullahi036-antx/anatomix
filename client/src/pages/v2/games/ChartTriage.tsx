@@ -61,9 +61,9 @@ export default function ChartTriage() {
       <ProgressBar value={timeLeft} max={TIME_PER_Q} color={timeLeft > 6 ? "#70b070" : timeLeft > 3 ? "#e0a040" : "#e06060"} label={`Time: ${Math.ceil(timeLeft)}s`} />
 
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>
-        <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>Patient Chart — What is the medical term?</div>
+        <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>Patient Chart  -  What is the medical term?</div>
         <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "8px" }}>Patient presents with: <em>{current.casualMeaning}</em></div>
-        <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.85rem" }}>{current.chabnerDef}</div>
+        <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.85rem" }}>{current.definition}</div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "16px" }}>

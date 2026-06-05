@@ -48,7 +48,7 @@ export default function CombiningFormLinker() {
     <GameShell title="Combining Form Linker" emoji="🔗" score={score} streak={streak} idx={chain.length - 1} total={8} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "20px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "12px" }}>
-          Build a chain of 8 — each card must share a root or suffix with the previous one:
+          Build a chain of 8  -  each card must share a root or suffix with the previous one:
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {chain.map((t, i) => (

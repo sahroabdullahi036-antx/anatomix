@@ -96,7 +96,7 @@ export default function SystemExplorer() {
         </div>
         <div style={styles.body}>
           <h1 style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", marginBottom: "8px" }}>Body System Explorer</h1>
-          <p style={{ color: "rgba(252,250,247,0.6)", marginBottom: "32px" }}>Select a system below — shown by casual, everyday name.</p>
+          <p style={{ color: "rgba(252,250,247,0.6)", marginBottom: "32px" }}>Select a system below - shown by casual, everyday name.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: "14px" }}>
             {SYSTEMS.map(sys => (
               <button key={sys.id} onClick={() => selectSystem(sys)} style={styles.btn(SYSTEM_COLORS[sys.id])}>
@@ -125,7 +125,7 @@ export default function SystemExplorer() {
             <div style={styles.label}>Casual Name</div>
             <div style={styles.value}>{currentSystem.emoji} {currentSystem.casualName}</div>
             <div style={styles.label}>Overview</div>
-            <div style={styles.def}>Select a structure below to explore its Chabner definition and combining forms.</div>
+            <div style={styles.def}>Select a structure below to explore its definition and combining forms.</div>
           </div>
           <h2 style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.85rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>Structures & Organs</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: "12px" }}>
@@ -157,8 +157,8 @@ export default function SystemExplorer() {
             <div style={styles.label}>Combining Form(s)</div>
             <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "1rem", fontFamily: "monospace", marginBottom: "14px", backgroundColor: "rgba(252,250,247,0.1)", display: "inline-block", padding: "4px 10px", borderRadius: "6px" }}>{selected.combiningForm}</div>
             <div style={{ clear: "both" }} />
-            <div style={styles.label}>Chabner Definition</div>
-            <div style={styles.def}>{selected.chabnerDef}</div>
+            <div style={styles.label}>Definition</div>
+            <div style={styles.def}>{selected.definition}</div>
           </div>
 
           {selected.children && selected.children.length > 0 && (

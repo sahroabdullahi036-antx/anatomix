@@ -7,7 +7,7 @@ import { GameShell, shuffle } from "./shared";
 const AUDITS = [
   {
     id: "a1",
-    paragraph: "The patient presented with a rapid heart rate (tachycardia) and was found to have thickening of the arteries, a condition known as atherosclerosis. Her liver appeared enlarged — a finding called hepatomegaly. Lab results confirmed low red blood cells (iron-deficiency weakness).",
+    paragraph: "The patient presented with a rapid heart rate (tachycardia) and was found to have thickening of the arteries, a condition known as atherosclerosis. Her liver appeared enlarged  -  a finding called hepatomegaly. Lab results confirmed low red blood cells (iron-deficiency weakness).",
     errors: ["thickening of the arteries", "iron-deficiency weakness"],
     fixes: ["atherosclerosis", "anemia"],
     explanation: "Thickening → atherosclerosis (fatty plaque deposits). Iron-deficiency weakness → anemia (deficiency of red blood cells or hemoglobin).",
@@ -31,7 +31,7 @@ const AUDITS = [
     paragraph: "Cardiology consult: Patient has a slow heart rate (bradycardia) and shows signs of heart muscle disease (cardiomyopathy). Echo revealed fluid sac around the heart (pericarditis). ECG confirms abnormal heartbeat pattern (arrhythmia).",
     errors: ["fluid sac around the heart", "abnormal heartbeat pattern"],
     fixes: ["pericarditis (inflammation)", "arrhythmia"],
-    explanation: "The pericardium is the sac — pericarditis means inflammation of it, not 'fluid sac'. Arrhythmia is correct (any abnormal heart rhythm).",
+    explanation: "The pericardium is the sac  -  pericarditis means inflammation of it, not 'fluid sac'. Arrhythmia is correct (any abnormal heart rhythm).",
   },
 ];
 
@@ -88,7 +88,7 @@ export default function ChartAuditor() {
           {highlightText(current.paragraph)}
         </div>
         <div style={{ marginTop: "14px", color: "rgba(252,250,247,0.4)", fontSize: "0.8rem" }}>
-          {found.length} / {current.errors.length} found — tap the underlined terms to flag them
+          {found.length} / {current.errors.length} found  -  tap the underlined terms to flag them
         </div>
       </div>
 

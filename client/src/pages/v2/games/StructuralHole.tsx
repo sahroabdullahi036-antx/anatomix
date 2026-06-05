@@ -50,7 +50,7 @@ export default function StructuralHole() {
   return (
     <GameShell title="Fill the Structural Hole" emoji="🕳️" score={score} streak={streak} idx={idx} total={puzzles.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>
-        <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "16px" }}>Repair the anatomy chain — fill in the missing link:</div>
+        <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "16px" }}>Repair the anatomy chain  -  fill in the missing link:</div>
         <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
           {chain.map((link, i) => (
             <>

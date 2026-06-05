@@ -34,7 +34,7 @@ export default function DictionarySearch() {
       t.term.toLowerCase().includes(q) ||
       t.meaning.toLowerCase().includes(q) ||
       t.casualMeaning.toLowerCase().includes(q) ||
-      t.chabnerDef.toLowerCase().includes(q) ||
+      t.definition.toLowerCase().includes(q) ||
       t.example.toLowerCase().includes(q) ||
       (t.system && t.system.toLowerCase().includes(q))
     );
@@ -111,8 +111,8 @@ export default function DictionarySearch() {
                         <div style={{ color: "rgba(252,250,247,0.8)", fontSize: "0.85rem" }}>{term.homonymWarning}</div>
                       </div>
                     )}
-                    <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Chabner Definition</div>
-                    <div style={{ color: "rgba(252,250,247,0.85)", fontSize: "0.88rem", lineHeight: 1.6, marginBottom: "12px" }}>{term.chabnerDef}</div>
+                    <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Definition</div>
+                    <div style={{ color: "rgba(252,250,247,0.85)", fontSize: "0.88rem", lineHeight: 1.6, marginBottom: "12px" }}>{term.definition}</div>
                     {term.example && (
                       <>
                         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Clinical Example</div>

@@ -7,59 +7,59 @@ const ROOTS = ALL_TERMS.filter(t => t.type === "root");
 const SUFFIXES = ALL_TERMS.filter(t => t.type === "suffix");
 
 const VALID_COMBOS: Record<string, string> = {
-  "cardi/o-logy": "Cardiology — the study of the heart",
-  "cardi/o-itis": "Carditis — inflammation of the heart",
-  "cardi/o-megaly": "Cardiomegaly — abnormal enlargement of the heart",
-  "cardi/o-pathy": "Cardiomyopathy — disease of the heart muscle",
-  "gastr/o-itis": "Gastritis — inflammation of the stomach lining",
-  "gastr/o-scopy": "Gastroscopy — visual examination of the stomach",
-  "gastr/o-ectomy": "Gastrectomy — surgical removal of all or part of the stomach",
-  "gastr/o-algia": "Gastralgia — pain in the stomach",
-  "hepat/o-itis": "Hepatitis — inflammation of the liver",
-  "hepat/o-megaly": "Hepatomegaly — abnormal enlargement of the liver",
-  "hepat/o-ectomy": "Hepatectomy — surgical removal of part of the liver",
-  "nephr/o-itis": "Nephritis — inflammation of the kidneys",
-  "nephr/o-logy": "Nephrology — the study of kidney diseases",
-  "nephr/o-ectomy": "Nephrectomy — surgical removal of a kidney",
-  "neur/o-logy": "Neurology — the study of the nervous system",
-  "neur/o-itis": "Neuritis — inflammation of a nerve",
-  "neur/o-pathy": "Neuropathy — disease of the nerves",
-  "oste/o-itis": "Osteitis — inflammation of bone",
-  "oste/o-logy": "Osteology — the study of bones",
-  "arthr/o-itis": "Arthritis — inflammation of the joints",
-  "arthr/o-scopy": "Arthroscopy — visual examination of the interior of a joint",
-  "arthr/o-plasty": "Arthroplasty — surgical repair or replacement of a joint",
-  "bronch/o-itis": "Bronchitis — inflammation of the bronchial tubes",
-  "bronch/o-scopy": "Bronchoscopy — visual examination of the bronchi",
-  "pulmon/o-logy": "Pulmonology — the study and treatment of lung diseases",
-  "thromb/o-osis": "Thrombosis — formation of a blood clot inside a vessel",
-  "thromb/o-lysis": "Thrombolysis — dissolution (breaking down) of a blood clot",
-  "hem/o-stasis": "Hemostasis — stopping the flow of blood",
-  "hem/o-lysis": "Hemolysis — destruction of red blood cells",
-  "leuk/o-emia": "Leukemia — malignant disease with excessive white blood cells",
-  "leuk/o-penia": "Leukopenia — deficiency of white blood cells",
-  "erythr/o-cyte": "Erythrocyte — a red blood cell",
-  "erythr/o-penia": "Erythropenia — deficiency of red blood cells",
-  "col/o-scopy": "Colonoscopy — visual examination of the colon",
-  "col/o-ectomy": "Colectomy — surgical removal of part or all of the colon",
-  "col/o-itis": "Colitis — inflammation of the colon",
-  "cyst/o-itis": "Cystitis — inflammation of the urinary bladder",
-  "cyst/o-scopy": "Cystoscopy — visual examination of the bladder",
-  "cyst/o-ectomy": "Cystectomy — surgical removal of the bladder",
-  "derm/o-itis": "Dermatitis — inflammation of the skin",
-  "derm/o-logy": "Dermatology — the study of skin diseases",
-  "thyr/o-itis": "Thyroiditis — inflammation of the thyroid gland",
-  "thyr/o-ectomy": "Thyroidectomy — surgical removal of the thyroid gland",
-  "splen/o-megaly": "Splenomegaly — abnormal enlargement of the spleen",
-  "splen/o-ectomy": "Splenectomy — surgical removal of the spleen",
-  "mening/o-itis": "Meningitis — inflammation of the meninges (brain membranes)",
-  "encephal/o-itis": "Encephalitis — inflammation of the brain",
-  "hyster/o-ectomy": "Hysterectomy — surgical removal of the uterus",
-  "mamm/o-graphy": "Mammography — X-ray imaging of breast tissue",
-  "pancreat/o-itis": "Pancreatitis — inflammation of the pancreas",
-  "prostat/o-itis": "Prostatitis — inflammation of the prostate gland",
-  "trache/o-stomy": "Tracheostomy — surgical creation of an opening in the trachea",
-  "trache/o-tomy": "Tracheotomy — surgical incision into the trachea",
+  "cardi/o-logy": "Cardiology  -  the study of the heart",
+  "cardi/o-itis": "Carditis  -  inflammation of the heart",
+  "cardi/o-megaly": "Cardiomegaly  -  abnormal enlargement of the heart",
+  "cardi/o-pathy": "Cardiomyopathy  -  disease of the heart muscle",
+  "gastr/o-itis": "Gastritis  -  inflammation of the stomach lining",
+  "gastr/o-scopy": "Gastroscopy  -  visual examination of the stomach",
+  "gastr/o-ectomy": "Gastrectomy  -  surgical removal of all or part of the stomach",
+  "gastr/o-algia": "Gastralgia  -  pain in the stomach",
+  "hepat/o-itis": "Hepatitis  -  inflammation of the liver",
+  "hepat/o-megaly": "Hepatomegaly  -  abnormal enlargement of the liver",
+  "hepat/o-ectomy": "Hepatectomy  -  surgical removal of part of the liver",
+  "nephr/o-itis": "Nephritis  -  inflammation of the kidneys",
+  "nephr/o-logy": "Nephrology  -  the study of kidney diseases",
+  "nephr/o-ectomy": "Nephrectomy  -  surgical removal of a kidney",
+  "neur/o-logy": "Neurology  -  the study of the nervous system",
+  "neur/o-itis": "Neuritis  -  inflammation of a nerve",
+  "neur/o-pathy": "Neuropathy  -  disease of the nerves",
+  "oste/o-itis": "Osteitis  -  inflammation of bone",
+  "oste/o-logy": "Osteology  -  the study of bones",
+  "arthr/o-itis": "Arthritis  -  inflammation of the joints",
+  "arthr/o-scopy": "Arthroscopy  -  visual examination of the interior of a joint",
+  "arthr/o-plasty": "Arthroplasty  -  surgical repair or replacement of a joint",
+  "bronch/o-itis": "Bronchitis  -  inflammation of the bronchial tubes",
+  "bronch/o-scopy": "Bronchoscopy  -  visual examination of the bronchi",
+  "pulmon/o-logy": "Pulmonology  -  the study and treatment of lung diseases",
+  "thromb/o-osis": "Thrombosis  -  formation of a blood clot inside a vessel",
+  "thromb/o-lysis": "Thrombolysis  -  dissolution (breaking down) of a blood clot",
+  "hem/o-stasis": "Hemostasis  -  stopping the flow of blood",
+  "hem/o-lysis": "Hemolysis  -  destruction of red blood cells",
+  "leuk/o-emia": "Leukemia  -  malignant disease with excessive white blood cells",
+  "leuk/o-penia": "Leukopenia  -  deficiency of white blood cells",
+  "erythr/o-cyte": "Erythrocyte  -  a red blood cell",
+  "erythr/o-penia": "Erythropenia  -  deficiency of red blood cells",
+  "col/o-scopy": "Colonoscopy  -  visual examination of the colon",
+  "col/o-ectomy": "Colectomy  -  surgical removal of part or all of the colon",
+  "col/o-itis": "Colitis  -  inflammation of the colon",
+  "cyst/o-itis": "Cystitis  -  inflammation of the urinary bladder",
+  "cyst/o-scopy": "Cystoscopy  -  visual examination of the bladder",
+  "cyst/o-ectomy": "Cystectomy  -  surgical removal of the bladder",
+  "derm/o-itis": "Dermatitis  -  inflammation of the skin",
+  "derm/o-logy": "Dermatology  -  the study of skin diseases",
+  "thyr/o-itis": "Thyroiditis  -  inflammation of the thyroid gland",
+  "thyr/o-ectomy": "Thyroidectomy  -  surgical removal of the thyroid gland",
+  "splen/o-megaly": "Splenomegaly  -  abnormal enlargement of the spleen",
+  "splen/o-ectomy": "Splenectomy  -  surgical removal of the spleen",
+  "mening/o-itis": "Meningitis  -  inflammation of the meninges (brain membranes)",
+  "encephal/o-itis": "Encephalitis  -  inflammation of the brain",
+  "hyster/o-ectomy": "Hysterectomy  -  surgical removal of the uterus",
+  "mamm/o-graphy": "Mammography  -  X-ray imaging of breast tissue",
+  "pancreat/o-itis": "Pancreatitis  -  inflammation of the pancreas",
+  "prostat/o-itis": "Prostatitis  -  inflammation of the prostate gland",
+  "trache/o-stomy": "Tracheostomy  -  surgical creation of an opening in the trachea",
+  "trache/o-tomy": "Tracheotomy  -  surgical incision into the trachea",
 };
 
 export default function RootBuilder() {
@@ -81,7 +81,7 @@ export default function RootBuilder() {
     if (root && suffix) {
       const rootTerm = ALL_TERMS.find(t => t.term === root);
       const suffTerm = ALL_TERMS.find(t => t.term === suffix);
-      if (rootTerm && suffTerm) return `Possible term: ${root.replace("/o", "")}${suffix} — combining "${rootTerm.meaning}" + "${suffTerm.meaning}"`;
+      if (rootTerm && suffTerm) return `Possible term: ${root.replace("/o", "")}${suffix}  -  combining "${rootTerm.meaning}" + "${suffTerm.meaning}"`;
     }
     return null;
   }, [root, suffix]);
@@ -110,24 +110,24 @@ export default function RootBuilder() {
 
       <div style={{ maxWidth: "960px", margin: "0 auto", padding: "28px 24px" }}>
         <h1 style={{ color: "#fcfaf7", fontSize: "1.6rem", fontWeight: "800", marginBottom: "6px" }}>🔬 Dynamic Root Builder</h1>
-        <p style={{ color: "rgba(252,250,247,0.6)", marginBottom: "24px" }}>Tap a fragment from each column to load it into its slot. A valid Chabner term will display below.</p>
+        <p style={{ color: "rgba(252,250,247,0.6)", marginBottom: "24px" }}>Tap a fragment from each column to load it into its slot. A valid term will display below.</p>
 
         <div style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
           <div style={slotStyle(!!prefix, "#9c6f5e")}>
             <div style={{ fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase", opacity: 0.6, marginBottom: "6px" }}>Active Prefix</div>
-            <div style={{ fontWeight: "700", fontFamily: "monospace", fontSize: "1.1rem" }}>{prefix ?? "—"}</div>
+            <div style={{ fontWeight: "700", fontFamily: "monospace", fontSize: "1.1rem" }}>{prefix ?? " - "}</div>
             {prefix && <button onClick={() => setPrefix(null)} style={{ marginTop: "6px", fontSize: "0.7rem", color: "rgba(252,250,247,0.5)", background: "none", border: "none", cursor: "pointer" }}>✕ clear</button>}
           </div>
           <div style={{ display: "flex", alignItems: "center", color: "rgba(252,250,247,0.4)", fontSize: "1.5rem" }}>+</div>
           <div style={slotStyle(!!root, "#596e60")}>
             <div style={{ fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase", opacity: 0.6, marginBottom: "6px" }}>Active Root / Combining Form</div>
-            <div style={{ fontWeight: "700", fontFamily: "monospace", fontSize: "1.1rem" }}>{root ?? "—"}</div>
+            <div style={{ fontWeight: "700", fontFamily: "monospace", fontSize: "1.1rem" }}>{root ?? " - "}</div>
             {root && <button onClick={() => setRoot(null)} style={{ marginTop: "6px", fontSize: "0.7rem", color: "rgba(252,250,247,0.5)", background: "none", border: "none", cursor: "pointer" }}>✕ clear</button>}
           </div>
           <div style={{ display: "flex", alignItems: "center", color: "rgba(252,250,247,0.4)", fontSize: "1.5rem" }}>+</div>
           <div style={slotStyle(!!suffix, "#4a5a6a")}>
             <div style={{ fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase", opacity: 0.6, marginBottom: "6px" }}>Active Suffix</div>
-            <div style={{ fontWeight: "700", fontFamily: "monospace", fontSize: "1.1rem" }}>{suffix ?? "—"}</div>
+            <div style={{ fontWeight: "700", fontFamily: "monospace", fontSize: "1.1rem" }}>{suffix ?? " - "}</div>
             {suffix && <button onClick={() => setSuffix(null)} style={{ marginTop: "6px", fontSize: "0.7rem", color: "rgba(252,250,247,0.5)", background: "none", border: "none", cursor: "pointer" }}>✕ clear</button>}
           </div>
           <button onClick={clear} style={{ padding: "10px 16px", borderRadius: "10px", backgroundColor: "rgba(252,250,247,0.1)", color: "rgba(252,250,247,0.7)", border: "1px solid rgba(252,250,247,0.15)", cursor: "pointer", fontFamily: "inherit", alignSelf: "center" }}>Clear All</button>
@@ -140,7 +140,7 @@ export default function RootBuilder() {
           </div>
         ) : (root || suffix) ? (
           <div style={{ backgroundColor: "rgba(0,0,0,0.15)", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "12px", padding: "16px 20px", marginBottom: "24px", color: "rgba(252,250,247,0.5)", fontSize: "0.9rem" }}>
-            Add a root + suffix combination to check for a valid Chabner term. Prefix is optional.
+            Add a root + suffix combination to check for a valid term. Prefix is optional.
           </div>
         ) : null}
 

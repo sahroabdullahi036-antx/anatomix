@@ -55,7 +55,7 @@ export default function LinguisticAutopsy() {
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>Assemble the word parts in physiological order:</div>
         <div style={{ color: "#fcfaf7", fontSize: "1.2rem", fontWeight: "700", marginBottom: "8px" }}>💬 {current.casualMeaning}</div>
-        <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.88rem" }}>{current.chabnerDef}</div>
+        <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.88rem" }}>{current.definition}</div>
       </div>
 
       <div style={{ marginBottom: "16px" }}>

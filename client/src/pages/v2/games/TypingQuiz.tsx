@@ -57,7 +57,7 @@ export default function TypingQuiz() {
     <GameShell title="Typing Input Quiz" emoji="⌨️" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "28px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>{current.type} · {current.system}</div>
-        <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", lineHeight: 1.6, marginBottom: "12px" }}>{current.chabnerDef}</div>
+        <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", lineHeight: 1.6, marginBottom: "12px" }}>{current.definition}</div>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem" }}>💬 {current.casualMeaning}</div>
         {current.example && <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.82rem", marginTop: "6px", fontStyle: "italic" }}>e.g. {current.example}</div>}
         {hint && <div style={{ marginTop: "12px", color: "#f0c060", fontSize: "0.85rem" }}>Hint: starts with <strong style={{ fontFamily: "monospace" }}>{current.term[0].toUpperCase()}</strong> ({current.term.length} characters)</div>}

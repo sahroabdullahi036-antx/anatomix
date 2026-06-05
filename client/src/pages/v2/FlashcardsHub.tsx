@@ -43,7 +43,7 @@ export default function FlashcardsHub() {
   };
 
   const exportDeck = () => {
-    const text = currentTerms.map(t => `${t.term}: ${t.meaning}\n${t.chabnerDef}`).join("\n\n");
+    const text = currentTerms.map(t => `${t.term}: ${t.meaning}\n${t.definition}`).join("\n\n");
     navigator.clipboard.writeText(text).catch(() => {});
     alert("Copied to clipboard!");
   };
@@ -164,7 +164,7 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
           <>
             <div style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.6)", marginBottom: "12px" }}>{card.term}</div>
             <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "10px" }}>{card.meaning}</div>
-            <div style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{card.chabnerDef}</div>
+            <div style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{card.definition}</div>
             <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem", marginTop: "10px" }}>💬 {card.casualMeaning}</div>
           </>
         )}

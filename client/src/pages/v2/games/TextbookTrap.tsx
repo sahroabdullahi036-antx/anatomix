@@ -24,7 +24,7 @@ function alterDef(original: string): string {
 export default function TextbookTrap() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect, updateScore } = useUser();
-  const terms = useMemo(() => shuffle(ALL_TERMS.filter(t => t.chabnerDef.length > 30)), []);
+  const terms = useMemo(() => shuffle(ALL_TERMS.filter(t => t.definition.length > 30)), []);
   const [idx, setIdx] = useState(0);
   const [answered, setAnswered] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
@@ -33,7 +33,7 @@ export default function TextbookTrap() {
   const current = terms[idx % terms.length];
   const { isTrapped, displayDef } = useMemo(() => {
     const trap = Math.random() > 0.5;
-    return { isTrapped: trap, displayDef: trap ? alterDef(current?.chabnerDef ?? "") : (current?.chabnerDef ?? "") };
+    return { isTrapped: trap, displayDef: trap ? alterDef(current?.definition ?? "") : (current?.definition ?? "") };
   }, [idx, current?.id]);
 
   const guess = (userSaysTrue: boolean) => {
@@ -76,8 +76,8 @@ export default function TextbookTrap() {
         <div>
           <div style={{ padding: "16px", borderRadius: "10px", backgroundColor: answered ? "rgba(80,160,80,0.25)" : "rgba(200,80,80,0.25)", border: `1px solid ${answered ? "rgba(100,200,100,0.4)" : "rgba(220,100,100,0.4)"}`, marginBottom: "14px" }}>
             <div style={{ color: answered ? "#90e090" : "#e09090", fontWeight: "700", marginBottom: "8px" }}>{answered ? `✓ Correct! +${12 + (streak - 1) * 2} pts` : "✗ Wrong"}</div>
-            {isTrapped && <div style={{ color: "rgba(252,250,247,0.75)", fontSize: "0.85rem", marginBottom: "6px" }}>⚠️ This definition WAS altered. The correct Chabner definition is:</div>}
-            <div style={{ color: "#fcfaf7", fontSize: "0.88rem", lineHeight: 1.6 }}>{current.chabnerDef}</div>
+            {isTrapped && <div style={{ color: "rgba(252,250,247,0.75)", fontSize: "0.85rem", marginBottom: "6px" }}>⚠️ This definition WAS altered. The correct definition is:</div>}
+            <div style={{ color: "#fcfaf7", fontSize: "0.88rem", lineHeight: 1.6 }}>{current.definition}</div>
           </div>
           <button onClick={next} style={{ width: "100%", padding: "12px", borderRadius: "10px", backgroundColor: "#fcfaf7", color: "#8b4f58", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Next →</button>
         </div>

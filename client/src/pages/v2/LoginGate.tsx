@@ -16,7 +16,7 @@ export default function LoginGate() {
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <div style={{ fontSize: "64px", marginBottom: "12px" }}>🫀</div>
           <h1 style={{ color: "#fcfaf7", fontSize: "2.5rem", fontWeight: "800", margin: "0 0 8px", letterSpacing: "-0.02em" }}>AnatomiX</h1>
-          <p style={{ color: "rgba(252,250,247,0.7)", fontSize: "1rem", margin: 0 }}>Chabner's Language of Medicine</p>
+          <p style={{ color: "rgba(252,250,247,0.7)", fontSize: "1rem", margin: 0 }}>Medical Terminology Study Platform</p>
         </div>
 
         <div style={{ backgroundColor: "rgba(0,0,0,0.25)", borderRadius: "16px", padding: "32px", backdropFilter: "blur(10px)", border: "1px solid rgba(252,250,247,0.1)" }}>
