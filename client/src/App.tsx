@@ -9,6 +9,9 @@ import DictionarySearch from "./pages/v2/DictionarySearch";
 import RootBuilder from "./pages/v2/RootBuilder";
 import FlashcardsHub from "./pages/v2/FlashcardsHub";
 import GameSelector from "./pages/v2/GameSelector";
+import PracticeTest from "./pages/v2/PracticeTest";
+import DailyChallenge from "./pages/v2/DailyChallenge";
+import ChapterSummary from "./pages/v2/ChapterSummary";
 import MultipleChoice from "./pages/v2/games/MultipleChoice";
 import TypingQuiz from "./pages/v2/games/TypingQuiz";
 import LinguisticAutopsy from "./pages/v2/games/LinguisticAutopsy";
@@ -33,6 +36,9 @@ function AppRoutes() {
       <Route path="/root-builder" component={RootBuilder} />
       <Route path="/flashcards" component={FlashcardsHub} />
       <Route path="/games" component={GameSelector} />
+      <Route path="/practice-test" component={PracticeTest} />
+      <Route path="/daily-challenge" component={DailyChallenge} />
+      <Route path="/chapter-summary/:num" component={ChapterSummary} />
       <Route path="/games/multiple-choice" component={MultipleChoice} />
       <Route path="/games/typing-quiz" component={TypingQuiz} />
       <Route path="/games/linguistic-autopsy" component={LinguisticAutopsy} />

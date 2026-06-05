@@ -20,6 +20,8 @@ export default function FlashcardsHub() {
   const [flipped, setFlipped] = useState(false);
   const [newDeckName, setNewDeckName] = useState("");
 
+  const cleared = useMemo(() => new Set(user?.clearedTermIds ?? []), [user?.clearedTermIds]);
+
   useEffect(() => {
     const stored = localStorage.getItem(STUDY_CHAPTER_KEY);
     if (stored) setChapterFilter(parseInt(stored, 10));
@@ -38,12 +40,24 @@ export default function FlashcardsHub() {
     return getTermsByChapter(chapterFilter);
   }, [chapterFilter]);
 
-  const critTerms = useMemo(() => {
+  const dueTerms = useMemo(() => {
+    const now = Date.now();
+    return Object.values(user?.criticalReview ?? {}).filter(e => e.nextReview <= now);
+  }, [user?.criticalReview]);
+
+  const allCritTerms = useMemo(() => {
     return Object.values(user?.criticalReview ?? {}).map(e => {
       const term = ALL_TERMS.find(t => t.id === e.termId);
       return { ...e, termData: term };
     });
   }, [user?.criticalReview]);
+
+  const critTerms = useMemo(() => {
+    const dueIds = new Set(dueTerms.map(e => e.termId));
+    const due = allCritTerms.filter(c => dueIds.has(c.termId));
+    const notDue = allCritTerms.filter(c => !dueIds.has(c.termId));
+    return [...due, ...notDue];
+  }, [allCritTerms, dueTerms]);
 
   const currentTerms = tab === "critical"
     ? (critTerms.map(c => c.termData).filter(Boolean) as typeof ALL_TERMS)
@@ -62,29 +76,34 @@ export default function FlashcardsHub() {
     alert("Copied to clipboard!");
   };
 
-  const tabBtn = (key: Tab, label: string, count?: number) => (
+  const tabBtn = (key: Tab, label: string, badge?: number) => (
     <button
       onClick={() => { setTab(key); setCardIndex(0); setFlipped(false); }}
       style={{ padding: "10px 20px", borderRadius: "10px", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.9rem", backgroundColor: tab === key ? "#4a6080" : "rgba(255,255,255,0.06)", color: "#fcfaf7", transition: "all 0.15s" }}
     >
-      {label}{count !== undefined && count > 0 ? ` (${count})` : ""}
+      {label}{badge !== undefined && badge > 0 ? ` (${badge})` : ""}
     </button>
   );
 
   const critEntry = currentCard ? (user?.criticalReview[currentCard.id]) : null;
   const activeChapter = CHAPTERS.find(c => c.num === chapterFilter);
 
+  const chapterProficiency = (ch: typeof CHAPTERS[0]) => {
+    const count = ch.termIds.filter(id => cleared.has(id)).length;
+    return ch.termIds.length > 0 ? count / ch.termIds.length : 0;
+  };
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
         <button onClick={() => navigate("/")} style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" }}>← Dashboard</button>
-        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>Flashcards & Critical Review</span>
+        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>Flashcards</span>
       </div>
 
       <div style={{ maxWidth: "700px", margin: "0 auto", padding: "28px 24px" }}>
         <div style={{ display: "flex", gap: "10px", marginBottom: "28px", flexWrap: "wrap" }}>
           {tabBtn("study", "Study Deck")}
-          {tabBtn("critical", "Critical Review", Object.keys(user?.criticalReview ?? {}).length)}
+          {tabBtn("critical", "Critical Review", allCritTerms.length)}
           {tabBtn("decks", "Custom Decks", user?.decks.length)}
         </div>
 
@@ -103,16 +122,34 @@ export default function FlashcardsHub() {
                 {CHAPTERS.map((ch, i) => {
                   const isActive = chapterFilter === ch.num;
                   const tone = CHAPTER_TONES[i % CHAPTER_TONES.length];
+                  const prof = chapterProficiency(ch);
+                  const isProficient = prof >= 0.8;
                   return (
-                    <button
-                      key={ch.num}
-                      onClick={() => changeChapter(ch.num)}
-                      style={{ padding: "10px 14px", borderRadius: "10px", border: isActive ? "2px solid rgba(255,255,255,0.3)" : "1px solid rgba(255,255,255,0.07)", backgroundColor: isActive ? tone : "rgba(255,255,255,0.04)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", textAlign: "left" as const, transition: "all 0.15s" }}
-                    >
-                      <div style={{ fontWeight: "700", fontSize: "0.82rem" }}>{ch.title}</div>
-                      <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.7rem", marginTop: "2px", lineHeight: 1.3 }}>{ch.subtitle}</div>
-                      <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.7rem", marginTop: "4px" }}>{ch.termIds.length} terms</div>
-                    </button>
+                    <div key={ch.num} style={{ position: "relative" }}>
+                      <button
+                        onClick={() => changeChapter(ch.num)}
+                        style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: isActive ? "2px solid rgba(255,255,255,0.3)" : isProficient ? "1px solid rgba(80,160,100,0.3)" : "1px solid rgba(255,255,255,0.07)", backgroundColor: isActive ? tone : "rgba(255,255,255,0.04)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", textAlign: "left" as const, transition: "all 0.15s" }}
+                      >
+                        <div style={{ fontWeight: "700", fontSize: "0.82rem" }}>{ch.title}</div>
+                        <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.7rem", marginTop: "2px", lineHeight: 1.3 }}>{ch.subtitle}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" }}>
+                          <div style={{ flex: 1, height: "3px", borderRadius: "2px", backgroundColor: "rgba(0,0,0,0.3)", overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${Math.round(prof * 100)}%`, backgroundColor: isProficient ? "#7aaa7a" : "#4a6080", borderRadius: "2px" }} />
+                          </div>
+                          <span style={{ color: isProficient ? "#7aaa7a" : "rgba(252,250,247,0.3)", fontSize: "0.65rem", fontWeight: "700", whiteSpace: "nowrap" as const }}>
+                            {Math.round(prof * 100)}%
+                          </span>
+                        </div>
+                      </button>
+                      {isProficient && (
+                        <button
+                          onClick={e => { e.stopPropagation(); navigate(`/chapter-summary/${ch.num}`); }}
+                          style={{ position: "absolute", top: "6px", right: "6px", backgroundColor: "rgba(60,130,80,0.3)", border: "1px solid rgba(80,160,100,0.3)", borderRadius: "4px", color: "#7aaa7a", fontSize: "0.6rem", fontWeight: "700", padding: "2px 5px", cursor: "pointer", fontFamily: "inherit" }}
+                        >
+                          Summary
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -139,19 +176,28 @@ export default function FlashcardsHub() {
         {tab === "critical" && (
           <>
             <div style={{ backgroundColor: "rgba(160,70,70,0.2)", border: "1px solid rgba(200,90,90,0.25)", borderRadius: "12px", padding: "14px 18px", marginBottom: "24px" }}>
-              <div style={{ color: "#e09090", fontWeight: "700", marginBottom: "4px" }}>Critical Review Deck</div>
+              <div style={{ color: "#e09090", fontWeight: "700", marginBottom: "4px" }}>Critical Review</div>
               <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem" }}>
-                Terms are added automatically when you miss them in any quiz or game. Answer each term correctly <strong>twice in a row</strong> to remove it.
+                Terms added automatically when missed. Spaced repetition schedules reviews at increasing intervals. Answer correctly to advance toward removal.
               </div>
+              {dueTerms.length > 0 && (
+                <div style={{ marginTop: "10px", color: "rgba(252,250,247,0.7)", fontSize: "0.82rem" }}>
+                  <span style={{ color: "#e09090", fontWeight: "700" }}>{dueTerms.length} due now</span>
+                  {allCritTerms.length > dueTerms.length && ` - ${allCritTerms.length - dueTerms.length} scheduled for later`}
+                </div>
+              )}
             </div>
             {critTerms.length === 0 ? (
               <div style={{ textAlign: "center", padding: "60px 24px", color: "rgba(252,250,247,0.3)" }}>
-                <div style={{ fontWeight: "700", fontSize: "1.1rem", marginBottom: "6px" }}>Critical Review deck is empty</div>
-                <div>Play games or take quizzes to automatically add missed terms here.</div>
+                <div style={{ fontWeight: "700", fontSize: "1.1rem", marginBottom: "6px" }}>Critical Review is empty</div>
+                <div>Play games or study flashcards to add missed terms here.</div>
               </div>
             ) : (
               <>
-                <div style={{ marginBottom: "12px", color: "rgba(252,250,247,0.45)", fontSize: "0.85rem" }}>{critTerms.length} term{critTerms.length !== 1 ? "s" : ""} need attention</div>
+                <div style={{ marginBottom: "12px", color: "rgba(252,250,247,0.45)", fontSize: "0.85rem" }}>
+                  {allCritTerms.length} term{allCritTerms.length !== 1 ? "s" : ""} tracked
+                  {dueTerms.length > 0 && ` - reviewing ${cardIndex + 1} of ${currentTerms.length}`}
+                </div>
                 {currentCard && <FlashCard card={currentCard} flipped={flipped} onFlip={() => setFlipped(!flipped)} onNext={handleNext} onPrev={handlePrev} onCorrect={handleCorrect} onMiss={handleMiss} index={cardIndex} total={currentTerms.length} critEntry={critEntry} />}
               </>
             )}
@@ -176,7 +222,7 @@ export default function FlashcardsHub() {
               <div key={deck.id} style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "10px", padding: "16px 20px", marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(252,250,247,0.06)" }}>
                 <div>
                   <div style={{ color: "#fcfaf7", fontWeight: "700" }}>{deck.name}</div>
-                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>{deck.termIds.length} terms · Created {new Date(deck.createdAt).toLocaleDateString()}</div>
+                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>{deck.termIds.length} terms - Created {new Date(deck.createdAt).toLocaleDateString()}</div>
                 </div>
                 <button onClick={() => removeDeck(deck.id)} style={{ backgroundColor: "rgba(160,70,70,0.3)", color: "#e09090", border: "none", borderRadius: "6px", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.82rem" }}>Remove</button>
               </div>
@@ -198,16 +244,24 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
     condition: "#4a3d62", procedure: "#424242", word: "#2e4e58",
   };
   const color = TYPE_COLORS[card.type] ?? "#394d62";
+  const nextReviewDays = critEntry
+    ? Math.max(0, Math.round((critEntry.nextReview - Date.now()) / 86_400_000))
+    : null;
+
   return (
     <div>
       <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.8rem", textAlign: "center", marginBottom: "12px" }}>
         {index + 1} / {total}
-        {critEntry && <span style={{ color: "#e09090", marginLeft: "12px" }}>{critEntry.correctStreak}/2 correct streak</span>}
+        {critEntry && (
+          <span style={{ color: "#e09090", marginLeft: "12px" }}>
+            {critEntry.correctStreak} correct - next review in {nextReviewDays === 0 ? "less than 1" : nextReviewDays} day{nextReviewDays !== 1 ? "s" : ""}
+          </span>
+        )}
       </div>
       <div onClick={onFlip} style={{ backgroundColor: color, borderRadius: "16px", padding: "40px 32px", minHeight: "220px", cursor: "pointer", textAlign: "center", marginBottom: "16px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", userSelect: "none", transition: "transform 0.15s", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
         {!flipped ? (
           <>
-            <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.type} · {card.system}</div>
+            <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{card.type} - {card.system}</div>
             <div style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", fontFamily: "monospace" }}>{card.term}</div>
             <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.85rem", marginTop: "16px" }}>Tap to reveal definition</div>
           </>
