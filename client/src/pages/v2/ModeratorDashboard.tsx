@@ -2,8 +2,13 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
-import { CHAPTERS } from "@/data/medicalData";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
+import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides } from "@/data/medicalData";
+
+const TERM_SYSTEMS = ["General","Cardiovascular","Digestive","Respiratory","Nervous","Musculoskeletal","Urinary","Endocrine","Integumentary","Blood","Reproductive","Lymphatic"];
+const TERM_TYPES: MedicalTerm["type"][] = ["prefix","suffix","root","condition","procedure","word"];
+
+type EditForm = { term: string; type: MedicalTerm["type"]; meaning: string; casualMeaning: string; system: string; example: string; definition: string; homonymWarning: string; };
 
 const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 
@@ -18,7 +23,7 @@ export default function ModeratorDashboard() {
   const { db, ready } = useFirebase();
   const [students, setStudents] = useState<FirestoreUserProgress[]>([]);
   const [classes, setClasses] = useState<FirestoreClass[]>([]);
-  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers">("roster");
+  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers" | "terms">("roster");
   const [filterClass, setFilterClass] = useState<string>("all");
   const [newClassName, setNewClassName] = useState("");
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
@@ -33,6 +38,17 @@ export default function ModeratorDashboard() {
   const [renameSaving, setRenameSaving] = useState(false);
   const [removeConfirm, setRemoveConfirm] = useState(false);
   const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
+
+  const [termSearch, setTermSearch] = useState("");
+  const [editingTerm, setEditingTerm] = useState<MedicalTerm | null>(null);
+  const [editForm, setEditForm] = useState<EditForm | null>(null);
+  const [termOverrideIds, setTermOverrideIds] = useState<Set<string>>(new Set());
+  const [termSaving, setTermSaving] = useState(false);
+
+  useEffect(() => {
+    if (!db) return;
+    getTermOverrides(db).then(o => setTermOverrideIds(new Set(Object.keys(o))));
+  }, [db]);
 
   useEffect(() => {
     if (!IS_HOST(user?.username ?? "")) navigate("/");
@@ -95,6 +111,7 @@ export default function ModeratorDashboard() {
           <button onClick={() => setTab("classes")} style={tabBtn("classes")}>Classes ({classes.length})</button>
           <button onClick={() => setTab("games")} style={tabBtn("games")}>Game Rooms</button>
           <button onClick={() => setTab("teachers")} style={tabBtn("teachers")}>Teachers ({teachers.length})</button>
+          <button onClick={() => setTab("terms")} style={tabBtn("terms")}>Term Editor ({ALL_TERMS.length})</button>
         </div>
 
         {tab === "roster" && (
@@ -194,6 +211,36 @@ export default function ModeratorDashboard() {
             ))}
           </>
         )}
+
+        {tab === "terms" && (() => {
+          const q = termSearch.trim().toLowerCase();
+          const filtered = q
+            ? ALL_TERMS.filter(t => t.term.toLowerCase().includes(q) || t.meaning.toLowerCase().includes(q) || t.system.toLowerCase().includes(q) || t.type.toLowerCase().includes(q))
+            : ALL_TERMS;
+          const openEdit = (t: MedicalTerm) => {
+            setEditingTerm(t);
+            setEditForm({ term: t.term, type: t.type, meaning: t.meaning, casualMeaning: t.casualMeaning, system: t.system, example: t.example, definition: t.definition, homonymWarning: t.homonymWarning ?? "" });
+          };
+          return (
+            <>
+              <div style={{ display: "flex", gap: "10px", marginBottom: "18px", alignItems: "center" }}>
+                <input value={termSearch} onChange={e => setTermSearch(e.target.value)} placeholder="Search by term, meaning, type, or system..." style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem" }} />
+                <span style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.82rem", whiteSpace: "nowrap" }}>{filtered.length} terms</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px", maxHeight: "60vh", overflowY: "auto" }}>
+                {filtered.map(t => (
+                  <div key={t.id} onClick={() => openEdit(t)} style={{ padding: "10px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.04)", border: `1px solid ${termOverrideIds.has(t.id) ? "rgba(100,160,100,0.35)" : "rgba(252,250,247,0.06)"}`, cursor: "pointer", display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span style={{ color: "#fcfaf7", fontFamily: "monospace", fontWeight: "700", minWidth: "120px" }}>{t.term}</span>
+                    <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem", backgroundColor: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: "4px" }}>{t.type}</span>
+                    <span style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem", flex: 1 }}>{t.meaning}</span>
+                    <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.75rem" }}>{t.system}</span>
+                    {termOverrideIds.has(t.id) && <span style={{ color: "#7aaa7a", fontSize: "0.7rem", fontWeight: "700" }}>EDITED</span>}
+                  </div>
+                ))}
+              </div>
+            </>
+          );
+        })()}
 
         {tab === "games" && (
           <div style={{ textAlign: "center", padding: "40px" }}>
@@ -298,6 +345,85 @@ export default function ModeratorDashboard() {
               </div>
 
               <button onClick={() => setManageModal(null)} style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Close</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {editingTerm && editForm && (() => {
+        const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: "7px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "0.9rem", boxSizing: "border-box" as const };
+        const lbl: React.CSSProperties = { color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "5px", display: "block" };
+        const field = (key: keyof EditForm, label: string, multiline?: boolean) => (
+          <div>
+            <span style={lbl}>{label}</span>
+            {multiline
+              ? <textarea rows={3} value={editForm[key]} onChange={e => setEditForm(f => f && ({ ...f, [key]: e.target.value }))} style={{ ...inp, resize: "vertical" as const }} />
+              : <input value={editForm[key]} onChange={e => setEditForm(f => f && ({ ...f, [key]: e.target.value }))} style={inp} />
+            }
+          </div>
+        );
+        const saveTerm = async () => {
+          if (!db || !editForm) return;
+          setTermSaving(true);
+          const fields: Record<string, unknown> = { ...editForm };
+          if (!editForm.homonymWarning) delete fields.homonymWarning;
+          await saveTermOverride(db, editingTerm.id, fields);
+          applyTermOverrides({ [editingTerm.id]: editForm as never });
+          setTermOverrideIds(s => new Set([...s, editingTerm.id]));
+          setTermSaving(false);
+          setEditingTerm(null);
+          setEditForm(null);
+        };
+        const resetTerm = async () => {
+          if (!db) return;
+          await deleteTermOverride(db, editingTerm.id);
+          setTermOverrideIds(s => { const n = new Set(s); n.delete(editingTerm.id); return n; });
+          setEditingTerm(null);
+          setEditForm(null);
+        };
+        return (
+          <div onClick={() => { setEditingTerm(null); setEditForm(null); }} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "16px" }}>
+            <div onClick={e => e.stopPropagation()} style={{ backgroundColor: "#2e3240", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "520px", border: "1px solid rgba(252,250,247,0.1)", display: "flex", flexDirection: "column", gap: "14px", maxHeight: "90vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3 style={{ color: "#fcfaf7", fontWeight: "700", margin: 0 }}>Edit Term</h3>
+                <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.75rem", fontFamily: "monospace" }}>id: {editingTerm.id}</span>
+              </div>
+
+              {field("term", "Term")}
+
+              <div>
+                <span style={lbl}>Type</span>
+                <select value={editForm.type} onChange={e => setEditForm(f => f && ({ ...f, type: e.target.value as MedicalTerm["type"] }))} style={{ ...inp }}>
+                  {TERM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <span style={lbl}>System</span>
+                <select value={editForm.system} onChange={e => setEditForm(f => f && ({ ...f, system: e.target.value }))} style={{ ...inp }}>
+                  {TERM_SYSTEMS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              {field("meaning", "Meaning (short)")}
+              {field("casualMeaning", "Casual Meaning")}
+              {field("example", "Example")}
+              {field("definition", "Full Definition", true)}
+              {field("homonymWarning", "Homonym Warning (optional)")}
+
+              <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                <button onClick={saveTerm} disabled={termSaving} style={{ flex: 1, padding: "11px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", opacity: termSaving ? 0.5 : 1 }}>
+                  {termSaving ? "Saving..." : "Save Changes"}
+                </button>
+                {termOverrideIds.has(editingTerm.id) && (
+                  <button onClick={resetTerm} style={{ padding: "11px 14px", borderRadius: "8px", backgroundColor: "rgba(160,100,40,0.3)", color: "#d4a843", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.82rem" }}>
+                    Reset to Original
+                  </button>
+                )}
+                <button onClick={() => { setEditingTerm(null); setEditForm(null); }} style={{ padding: "11px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(252,250,247,0.6)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         );

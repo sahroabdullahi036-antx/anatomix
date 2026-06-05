@@ -264,6 +264,25 @@ export async function removeUserEntirely(
   await clearUserPin(db, username);
 }
 
+// ── Term overrides (owner-editable corrections) ─────────────────────────────
+
+export async function getTermOverrides(db: Firestore): Promise<Record<string, Record<string, unknown>>> {
+  try {
+    const snap = await getDocs(collection(db, "termOverrides"));
+    const result: Record<string, Record<string, unknown>> = {};
+    snap.docs.forEach(d => { result[d.id] = d.data(); });
+    return result;
+  } catch { return {}; }
+}
+
+export async function saveTermOverride(db: Firestore, termId: string, fields: Record<string, unknown>): Promise<void> {
+  await setDoc(doc(db, "termOverrides", termId), fields);
+}
+
+export async function deleteTermOverride(db: Firestore, termId: string): Promise<void> {
+  await deleteDoc(doc(db, "termOverrides", termId));
+}
+
 export function subscribeToTeachers(db: Firestore, cb: (usernames: string[]) => void): Unsubscribe {
   return onSnapshot(doc(db, "config", "roles"), snap => {
     cb(snap.exists() ? ((snap.data() as any).teacherUsernames ?? []) : []);

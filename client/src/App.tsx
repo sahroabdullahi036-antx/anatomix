@@ -6,7 +6,8 @@ import { UserProvider, useUser } from "./contexts/UserContext";
 import { FirebaseProvider, useFirebase } from "./contexts/FirebaseContext";
 import { PaletteProvider, usePalette } from "./contexts/ThemeContext";
 import { useFirebaseSync } from "./hooks/useFirebaseSync";
-import { subscribeToTeachers } from "./firebase/firestoreService";
+import { subscribeToTeachers, getTermOverrides } from "./firebase/firestoreService";
+import { applyTermOverrides } from "./data/medicalData";
 import LoginGate from "./pages/v2/LoginGate";
 import Dashboard from "./pages/v2/Dashboard";
 import TeacherDashboard from "./pages/v2/TeacherDashboard";
@@ -97,6 +98,17 @@ function AppRoutes() {
 function InnerApp() {
   useFirebaseSync();
   const { filter } = usePalette();
+  const { db } = useFirebase();
+
+  useEffect(() => {
+    if (!db) return;
+    getTermOverrides(db).then(overrides => {
+      if (Object.keys(overrides).length > 0) {
+        applyTermOverrides(overrides as Record<string, Record<string, never>>);
+      }
+    });
+  }, [db]);
+
   return (
     <div style={{ filter, minHeight: "100vh", transition: "filter 0.3s ease" }}>
       <Toaster />

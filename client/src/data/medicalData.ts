@@ -593,3 +593,18 @@ export function getTermChapter(termId: string): number {
 }
 
 export const STUDY_CHAPTER_KEY = 'anatomix_study_chapter';
+
+/**
+ * Apply owner-saved overrides on top of ALL_TERMS in-place.
+ * Called once at app startup after loading from Firestore.
+ * Also called immediately after the mod saves an edit so all pages
+ * see the change without a reload.
+ */
+export function applyTermOverrides(overrides: Record<string, Partial<MedicalTerm>>): void {
+  for (let i = 0; i < ALL_TERMS.length; i++) {
+    const patch = overrides[ALL_TERMS[i].id];
+    if (patch && Object.keys(patch).length > 0) {
+      ALL_TERMS[i] = { ...ALL_TERMS[i], ...patch };
+    }
+  }
+}
