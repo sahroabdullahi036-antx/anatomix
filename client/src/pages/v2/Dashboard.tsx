@@ -49,7 +49,7 @@ const ONBOARDING_ITEMS = [
   { id: "game",        label: "Play any game",               done: (u: any) => Object.keys(u.gameScores ?? {}).length > 0 },
   { id: "test",        label: "Take a Practice Test",        done: (u: any) => "practice-test" in (u.gameScores ?? {}) },
   { id: "password",    label: "Set a profile password",      done: (u: any) => hasPassword(u.username) },
-  { id: "chapter",     label: "Reach 80% in one chapter",   done: (u: any) => CHAPTERS.some(ch => ch.termIds.filter((id: string) => (u.clearedTermIds ?? []).includes(id)).length / ch.termIds.length >= 0.8) },
+  { id: "chapter",     label: "Reach 80% in one chapter",   done: (u: any) => CHAPTERS.some(ch => { const studyIds = ch.termIds.filter((id: string) => { const t = ALL_TERMS.find(x => x.id === id); return t && t.type !== "condition" && t.type !== "procedure"; }); return studyIds.length > 0 && studyIds.filter((id: string) => (u.clearedTermIds ?? []).includes(id)).length / studyIds.length >= 0.8; }) },
 ];
 
 export default function Dashboard() {
@@ -65,8 +65,9 @@ export default function Dashboard() {
   const earned = user?.earnedAchievements ?? [];
 
   const proficientCount = CHAPTERS.filter(ch => {
-    const c = ch.termIds.filter((id: string) => cleared.has(id)).length;
-    return ch.termIds.length > 0 && c / ch.termIds.length >= 0.8;
+    const studyIds = ch.termIds.filter((id: string) => { const t = ALL_TERMS.find(x => x.id === id); return t && t.type !== "condition" && t.type !== "procedure"; });
+    const c = studyIds.filter((id: string) => cleared.has(id)).length;
+    return studyIds.length > 0 && c / studyIds.length >= 0.8;
   }).length;
 
   const spotlight = useMemo(() => getSpotlightTerm(), []);

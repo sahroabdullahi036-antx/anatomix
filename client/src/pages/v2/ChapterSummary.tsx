@@ -10,10 +10,12 @@ export default function ChapterSummary() {
   const { user } = useUser();
   const chapterNum = parseInt(num ?? "1", 10);
   const chapter = CHAPTERS.find(c => c.num === chapterNum);
-  const terms = getTermsByChapter(chapterNum);
+  const allChapterTerms = getTermsByChapter(chapterNum);
+  const terms = allChapterTerms.filter(t => t.type !== "condition" && t.type !== "procedure");
   const cleared = new Set(user?.clearedTermIds ?? []);
-  const clearedCount = chapter?.termIds.filter(id => cleared.has(id)).length ?? 0;
-  const total = chapter?.termIds.length ?? 0;
+  const studyIds = new Set(terms.map(t => t.id));
+  const clearedCount = [...studyIds].filter(id => cleared.has(id)).length;
+  const total = studyIds.size;
   const pct = total > 0 ? clearedCount / total : 0;
   const isProficient = pct >= PROFICIENCY_THRESHOLD;
 

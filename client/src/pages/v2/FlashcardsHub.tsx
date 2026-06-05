@@ -37,9 +37,12 @@ export default function FlashcardsHub() {
     else localStorage.removeItem(STUDY_CHAPTER_KEY);
   };
 
+  const isStudyable = (t: typeof ALL_TERMS[0]) =>
+    t.type !== "condition" && t.type !== "procedure";
+
   const baseStudyTerms = useMemo(() => {
-    if (chapterFilter === 0) return ALL_TERMS;
-    return getTermsByChapter(chapterFilter);
+    const pool = chapterFilter === 0 ? ALL_TERMS : getTermsByChapter(chapterFilter);
+    return pool.filter(isStudyable);
   }, [chapterFilter]);
 
   const studyTerms = useMemo(() => {
@@ -122,8 +125,9 @@ export default function FlashcardsHub() {
   const activeChapter = CHAPTERS.find(c => c.num === chapterFilter);
 
   const chapterProficiency = (ch: typeof CHAPTERS[0]) => {
-    const count = ch.termIds.filter((id: string) => cleared.has(id)).length;
-    return ch.termIds.length > 0 ? count / ch.termIds.length : 0;
+    const studyIds = ch.termIds.filter((id: string) => { const t = ALL_TERMS.find(x => x.id === id); return t && t.type !== "condition" && t.type !== "procedure"; });
+    const count = studyIds.filter((id: string) => cleared.has(id)).length;
+    return studyIds.length > 0 ? count / studyIds.length : 0;
   };
 
   return (

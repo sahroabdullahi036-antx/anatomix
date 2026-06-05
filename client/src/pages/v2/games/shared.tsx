@@ -20,8 +20,10 @@ export function useGameTerms(overridePool?: typeof ALL_TERMS) {
       const ch = stored ? parseInt(stored, 10) : 0;
       pool = ch > 0 ? getTermsByChapter(ch) : ALL_TERMS;
     }
-    const filtered = pool.filter(t => t.type !== "prefix" || t.example);
-    return shuffle(filtered.length >= 4 ? filtered : ALL_TERMS.filter(t => t.type !== "prefix" || t.example));
+    const isStudyable = (t: typeof ALL_TERMS[0]) =>
+      t.type !== "condition" && t.type !== "procedure" && (t.type !== "prefix" || t.example);
+    const filtered = pool.filter(isStudyable);
+    return shuffle(filtered.length >= 4 ? filtered : ALL_TERMS.filter(isStudyable));
   }, [overridePool]);
 }
 
