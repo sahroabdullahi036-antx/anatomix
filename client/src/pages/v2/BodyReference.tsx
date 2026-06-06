@@ -162,9 +162,9 @@ export default function BodyReference() {
   };
 
   const layerSrc = (lid: string) => LAYER_IMAGES[`${gender}_${lid}`];
-  // Outer layers peel away as depth grows; deeper layers stay visible so they
-  // show through the transparent parts of the current layer (the depth feel).
-  const opacityFor = (i: number) => Math.max(0, Math.min(1, i - depth + 1));
+  // Show only the current layer; adjacent layers crossfade while dragging the
+  // slider so peeling reveals one layer at a time (no full stack at once).
+  const opacityFor = (i: number) => Math.max(0, 1 - Math.abs(i - depth));
   const activeLayerIndex = Math.round(depth);
   // The first available layer is the in-flow size anchor, so the figure still
   // has dimensions even if an outer layer (e.g. skin) is ever missing.
