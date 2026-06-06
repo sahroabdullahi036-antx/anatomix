@@ -1,24 +1,9 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { SYSTEMS as DATA_SYSTEMS } from "@/data/medicalData";
-import { ChevronRight, ArrowLeft, Search, Info } from "lucide-react";
+import { ChevronRight, ArrowLeft, Search, Info, Layers as LayersIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePalette } from "@/contexts/ThemeContext";
-
-import bodyMale from "@assets/generated_images/systems/_body_male.png";
-import bodyFemale from "@assets/generated_images/systems/_body_female.png";
-import imgDigestive from "@assets/generated_images/systems/digestive.png";
-import imgCardiovascular from "@assets/generated_images/systems/cardiovascular.png";
-import imgRespiratory from "@assets/generated_images/systems/respiratory.png";
-import imgNervous from "@assets/generated_images/systems/nervous.png";
-import imgMusculoskeletal from "@assets/generated_images/systems/musculoskeletal.png";
-import imgUrinary from "@assets/generated_images/systems/urinary.png";
-import imgEndocrine from "@assets/generated_images/systems/endocrine.png";
-import imgIntegumentary from "@assets/generated_images/systems/integumentary.png";
-import imgLymphatic from "@assets/generated_images/systems/lymphatic.png";
-import imgReproductive from "@assets/generated_images/systems/reproductive.png";
-import imgBlood from "@assets/generated_images/systems/blood.png";
-import imgSpecialSenses from "@assets/generated_images/systems/special-senses.png";
 
 // Fixed per-system colors. These are intentionally hard-coded hex (not theme
 // vars) and rendered with an inverse palette filter so the system colors stay
@@ -38,68 +23,81 @@ const SYSTEM_COLORS: Record<string, string> = {
   "special-senses": "#ef7a23",
 };
 
-// Per-part detailed images, auto-loaded from the parts folder as they are
-// generated. Keyed by structure id (filename without extension). Missing images
-// gracefully fall back to the parent system image at render time.
-const PART_IMAGE_MODULES = import.meta.glob(
-  "../../../../attached_assets/generated_images/parts/*.png",
+// Aligned full-body layer illustrations (one consistent style, identical pose
+// per gender), auto-loaded from the layers folder. Keyed by "{gender}_{layer}".
+const LAYER_MODULES = import.meta.glob(
+  "../../../../attached_assets/generated_images/layers/*.png",
   { eager: true, query: "?url", import: "default" },
 ) as Record<string, string>;
 
-const PART_IMAGES: Record<string, string> = Object.fromEntries(
-  Object.entries(PART_IMAGE_MODULES).map(([p, url]) => [
+const LAYER_IMAGES: Record<string, string> = Object.fromEntries(
+  Object.entries(LAYER_MODULES).map(([p, url]) => [
     p.split("/").pop()!.replace(/\.png$/, ""),
     url,
   ]),
 );
 
-const SYSTEM_IMAGES: Record<string, string> = {
-  "digestive": imgDigestive,
-  "cardiovascular": imgCardiovascular,
-  "respiratory": imgRespiratory,
-  "nervous": imgNervous,
-  "musculoskeletal": imgMusculoskeletal,
-  "urinary": imgUrinary,
-  "endocrine": imgEndocrine,
-  "integumentary": imgIntegumentary,
-  "lymphatic": imgLymphatic,
-  "reproductive": imgReproductive,
-  "blood": imgBlood,
-  "special-senses": imgSpecialSenses,
+// Peel order from outermost (skin) to innermost (nerves).
+const LAYER_ORDER = ["skin", "muscle", "skeleton", "organs", "circulatory", "nervous"] as const;
+type LayerId = (typeof LAYER_ORDER)[number];
+
+const LAYER_META: Record<LayerId, { label: string; color: string }> = {
+  skin: { label: "Skin", color: "#d9a07a" },
+  muscle: { label: "Muscle", color: "#c0504d" },
+  skeleton: { label: "Skeleton", color: "#d8c8a8" },
+  organs: { label: "Organs", color: "#c2746a" },
+  circulatory: { label: "Vessels", color: "#e5484d" },
+  nervous: { label: "Nerves", color: "#8b5cf6" },
 };
 
-// Hotspot positions as percentages over each body illustration, calibrated to
-// the organ locations in the male and female figures respectively.
+// Which layer each system lives in (used to auto-peel to it on tap).
+const SYSTEM_LAYER: Record<string, LayerId> = {
+  integumentary: "skin",
+  musculoskeletal: "muscle",
+  cardiovascular: "circulatory",
+  lymphatic: "circulatory",
+  blood: "circulatory",
+  nervous: "nervous",
+  "special-senses": "nervous",
+  respiratory: "organs",
+  digestive: "organs",
+  urinary: "organs",
+  endocrine: "organs",
+  reproductive: "organs",
+};
+
+// Region of the figure (percentages) to zoom into / highlight per system,
+// calibrated to the male and female layer figures respectively.
 type Hotspot = { id: string; x: number; y: number };
 
 const HOTSPOTS_MALE: Hotspot[] = [
   { id: "nervous", x: 50, y: 9 },
-  { id: "special-senses", x: 46, y: 12 },
-  { id: "endocrine", x: 50, y: 20 },
-  { id: "respiratory", x: 43, y: 26 },
+  { id: "special-senses", x: 46, y: 11 },
+  { id: "endocrine", x: 50, y: 19 },
+  { id: "respiratory", x: 43, y: 27 },
   { id: "cardiovascular", x: 51, y: 28 },
-  { id: "musculoskeletal", x: 32, y: 27 },
-  { id: "lymphatic", x: 59, y: 36 },
-  { id: "urinary", x: 44, y: 35 },
-  { id: "digestive", x: 48, y: 44 },
-  { id: "reproductive", x: 50, y: 53 },
-  { id: "integumentary", x: 61, y: 60 },
-  { id: "blood", x: 30, y: 47 },
+  { id: "musculoskeletal", x: 33, y: 30 },
+  { id: "lymphatic", x: 58, y: 35 },
+  { id: "urinary", x: 45, y: 40 },
+  { id: "digestive", x: 49, y: 44 },
+  { id: "reproductive", x: 50, y: 50 },
+  { id: "integumentary", x: 62, y: 58 },
+  { id: "blood", x: 30, y: 46 },
 ];
 
 const HOTSPOTS_FEMALE: Hotspot[] = [
-  { id: "nervous", x: 50, y: 10 },
-  { id: "special-senses", x: 47, y: 13 },
-  { id: "endocrine", x: 50, y: 20 },
-  { id: "respiratory", x: 44, y: 27 },
+  { id: "nervous", x: 50, y: 9 },
+  { id: "special-senses", x: 46, y: 11 },
+  { id: "endocrine", x: 50, y: 19 },
+  { id: "respiratory", x: 44, y: 28 },
   { id: "cardiovascular", x: 51, y: 28 },
-  { id: "musculoskeletal", x: 33, y: 27 },
-  { id: "lymphatic", x: 58, y: 37 },
-  { id: "urinary", x: 44, y: 37 },
-  { id: "digestive", x: 48, y: 45 },
-  { id: "reproductive", x: 50, y: 55 },
-  { id: "integumentary", x: 60, y: 62 },
-  { id: "blood", x: 32, y: 48 },
+  { id: "musculoskeletal", x: 34, y: 30 },
+  { id: "lymphatic", x: 57, y: 36 },
+  { id: "urinary", x: 45, y: 41 },
+  { id: "digestive", x: 49, y: 45 },
+  { id: "reproductive", x: 50, y: 52 },
+  { id: "integumentary", x: 61, y: 59 },
+  { id: "blood", x: 31, y: 47 },
 ];
 
 export default function BodyReference() {
@@ -107,8 +105,10 @@ export default function BodyReference() {
   const { inverseFilter } = usePalette();
   const [hoveredSystem, setHoveredSystem] = useState<string | null>(null);
   const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
-
   const [drillPath, setDrillPath] = useState<any[]>([]);
+  // Peel depth: continuous 0..LAYER_ORDER.length-1 for smooth fading.
+  const [depth, setDepth] = useState<number>(0);
+
   const [gender, setGender] = useState<"male" | "female">(() => {
     try { return localStorage.getItem("anatomix_body_gender") === "female" ? "female" : "male"; } catch { return "male"; }
   });
@@ -118,7 +118,6 @@ export default function BodyReference() {
     try { localStorage.setItem("anatomix_body_gender", g); } catch {}
   };
 
-  const bodyImg = gender === "male" ? bodyMale : bodyFemale;
   const HOTSPOTS = gender === "male" ? HOTSPOTS_MALE : HOTSPOTS_FEMALE;
   const activeHotspot = activeSystemId ? HOTSPOTS.find((h) => h.id === activeSystemId) ?? null : null;
 
@@ -135,13 +134,6 @@ export default function BodyReference() {
         )
       : rawList;
 
-  const systemImage = activeSystem ? SYSTEM_IMAGES[activeSystem.id] : undefined;
-  const headerImage = currentLevel ? PART_IMAGES[currentLevel.id] || systemImage : systemImage;
-  const headerOfficial = currentLevel ? currentLevel.officialName : activeSystem?.officialName;
-  const headerCasual = currentLevel
-    ? currentLevel.casualName || currentLevel.officialName
-    : activeSystem?.casualName || activeSystem?.officialName;
-
   const handleBack = () => {
     if (drillPath.length > 0) {
       setDrillPath((prev) => prev.slice(0, -1));
@@ -155,6 +147,8 @@ export default function BodyReference() {
   const handleSystemClick = (id: string) => {
     setActiveSystemId(id);
     setDrillPath([]);
+    const layer = SYSTEM_LAYER[id];
+    if (layer) setDepth(LAYER_ORDER.indexOf(layer));
   };
 
   const handleStructureClick = (struct: any) => {
@@ -167,9 +161,18 @@ export default function BodyReference() {
     return s?.casualName || s?.officialName || id;
   };
 
+  const layerSrc = (lid: string) => LAYER_IMAGES[`${gender}_${lid}`];
+  // Outer layers peel away as depth grows; deeper layers stay visible so they
+  // show through the transparent parts of the current layer (the depth feel).
+  const opacityFor = (i: number) => Math.max(0, Math.min(1, i - depth + 1));
+  const activeLayerIndex = Math.round(depth);
+  // The first available layer is the in-flow size anchor, so the figure still
+  // has dimensions even if an outer layer (e.g. skin) is ever missing.
+  const anchorLayer = LAYER_ORDER.find((l) => layerSrc(l));
+
   return (
     <div className="min-h-[100dvh] flex flex-col bg-[var(--bg-base)] text-[var(--fg-primary)] overflow-hidden">
-      <header className="px-4 py-4 flex items-center justify-between bg-[var(--bg-surface)] border-b border-[var(--bg-card)] shadow-sm z-10 relative">
+      <header className="px-4 py-4 flex items-center justify-between bg-[var(--bg-surface)] border-b border-[var(--bg-card)] shadow-sm z-30 relative">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -182,7 +185,8 @@ export default function BodyReference() {
           <div className="font-extrabold text-xl tracking-tight">
             {activeSystem ? (
               <div className="flex items-center gap-2 flex-wrap">
-                <span
+                <button
+                  type="button"
                   className="opacity-60 hidden md:inline cursor-pointer"
                   onClick={() => {
                     setActiveSystemId(null);
@@ -190,8 +194,9 @@ export default function BodyReference() {
                   }}
                 >
                   Explorer /
-                </span>
-                <span
+                </button>
+                <button
+                  type="button"
                   className="hidden md:inline"
                   style={{
                     color: SYSTEM_COLORS[activeSystem.id] || "var(--fg-primary)",
@@ -201,16 +206,18 @@ export default function BodyReference() {
                   onClick={() => setDrillPath([])}
                 >
                   {activeSystem.casualName || activeSystem.officialName}
-                </span>
+                </button>
                 {drillPath.map((crumb, idx) => (
                   <span key={crumb.id} className="flex items-center gap-2">
                     <span className="opacity-40">/</span>
-                    <span
+                    <button
+                      type="button"
+                      disabled={idx === drillPath.length - 1}
                       className={idx === drillPath.length - 1 ? "" : "opacity-60 cursor-pointer hover:opacity-100 transition-opacity"}
                       onClick={() => setDrillPath(drillPath.slice(0, idx + 1))}
                     >
                       {crumb.casualName || crumb.officialName}
-                    </span>
+                    </button>
                   </span>
                 ))}
               </div>
@@ -239,11 +246,6 @@ export default function BodyReference() {
               </button>
             ))}
           </div>
-          {!activeSystemId && (
-            <div className="text-sm font-bold text-[var(--fg-muted)] hidden lg:block">
-              Tap a glowing spot
-            </div>
-          )}
         </div>
       </header>
 
@@ -251,32 +253,117 @@ export default function BodyReference() {
         <div className="flex-1 w-full flex items-center justify-center p-4 absolute inset-0 md:relative overflow-hidden">
           <style>{`
             @keyframes hotspotPulse {
-              0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 var(--hs-color); }
-              50% { transform: translate(-50%, -50%) scale(1.12); box-shadow: 0 0 0 8px transparent; }
+              0%, 100% { transform: translate(-50%, -50%) scale(1); }
+              50% { transform: translate(-50%, -50%) scale(1.14); }
+            }
+            @keyframes ringPulse {
+              0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.9; }
+              70% { transform: translate(-50%, -50%) scale(1.9); opacity: 0; }
+              100% { transform: translate(-50%, -50%) scale(1.9); opacity: 0; }
             }
             .hotspot-dot { animation: hotspotPulse 2.2s ease-in-out infinite; }
+            .highlight-ring { animation: ringPulse 1.8s ease-out infinite; }
           `}</style>
+
+          {/* Layer peel controls */}
+          <div
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2 bg-[var(--bg-surface)] border border-[rgba(255,255,255,0.06)] rounded-3xl p-3 shadow-xl max-h-[90%]"
+            data-testid="panel-layers"
+          >
+            <div className="flex items-center gap-2 px-1 pb-1 text-[var(--fg-muted)]">
+              <LayersIcon className="w-4 h-4" />
+              <span className="text-xs font-extrabold uppercase tracking-wider">Layers</span>
+            </div>
+            {LAYER_ORDER.map((lid, i) => {
+              const isActive = activeLayerIndex === i;
+              return (
+                <button
+                  key={lid}
+                  type="button"
+                  onClick={() => setDepth(i)}
+                  aria-pressed={isActive}
+                  data-testid={`button-layer-${lid}`}
+                  className="flex items-center gap-2 px-3 py-2 rounded-2xl text-sm font-extrabold transition-all"
+                  style={{
+                    background: isActive ? "var(--accent-blue)" : "var(--bg-card)",
+                    color: isActive ? "#ffffff" : "var(--fg-secondary)",
+                  }}
+                >
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ background: LAYER_META[lid].color, filter: inverseFilter }}
+                  />
+                  {LAYER_META[lid].label}
+                </button>
+              );
+            })}
+            <input
+              type="range"
+              min={0}
+              max={LAYER_ORDER.length - 1}
+              step={0.01}
+              value={depth}
+              onChange={(e) => setDepth(parseFloat(e.target.value))}
+              aria-label="Peel depth"
+              data-testid="slider-depth"
+              className="w-full mt-1 accent-[var(--accent-blue)]"
+            />
+          </div>
 
           <div className="relative h-full max-h-[82vh] flex items-center justify-center">
             <div
               className="relative inline-block h-full"
               style={{
-                transform: activeHotspot ? "scale(1.85)" : "scale(1)",
+                transform: activeHotspot ? "scale(1.7)" : "scale(1)",
                 transformOrigin: activeHotspot ? `${activeHotspot.x}% ${activeHotspot.y}%` : "center center",
                 transition: "transform 0.5s ease",
                 filter: inverseFilter,
               }}
             >
-              <img
-                src={bodyImg}
-                alt="Human body reference with internal organs"
-                className="h-full max-h-[82vh] w-auto object-contain drop-shadow-2xl select-none pointer-events-none"
-                draggable={false}
-              />
+              {LAYER_ORDER.map((lid, i) => {
+                const src = layerSrc(lid);
+                if (!src) return null;
+                const base = lid === anchorLayer;
+                return (
+                  <img
+                    key={lid}
+                    src={src}
+                    alt={`${gender} ${LAYER_META[lid].label} layer`}
+                    className={
+                      base
+                        ? "h-full max-h-[82vh] w-auto block select-none pointer-events-none drop-shadow-2xl"
+                        : "absolute inset-0 h-full w-full object-contain select-none pointer-events-none"
+                    }
+                    style={{
+                      opacity: opacityFor(i),
+                      zIndex: LAYER_ORDER.length - i,
+                      transition: "opacity 0.4s ease",
+                    }}
+                    draggable={false}
+                  />
+                );
+              })}
 
+              {/* Highlight ring on the selected region */}
+              {activeHotspot && (
+                <span
+                  className="absolute pointer-events-none"
+                  style={{ left: `${activeHotspot.x}%`, top: `${activeHotspot.y}%`, zIndex: 25 }}
+                >
+                  <span
+                    className="highlight-ring absolute block rounded-full"
+                    style={{
+                      width: 60,
+                      height: 60,
+                      border: `4px solid ${SYSTEM_COLORS[activeHotspot.id] || "#ffffff"}`,
+                    }}
+                  />
+                </span>
+              )}
+
+              {/* Pickable system dots (only before a system is chosen) */}
               {!activeSystemId && HOTSPOTS.map((hs) => {
                 const color = SYSTEM_COLORS[hs.id] || "var(--accent-blue)";
-                const isActive = activeSystemId === hs.id;
                 const isHovered = hoveredSystem === hs.id;
                 return (
                   <button
@@ -288,7 +375,8 @@ export default function BodyReference() {
                     onMouseLeave={() => setHoveredSystem(null)}
                     onFocus={() => setHoveredSystem(hs.id)}
                     onBlur={() => setHoveredSystem(null)}
-                    className="absolute z-20 flex items-center justify-center rounded-full outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-[var(--accent-blue)]"
+                    data-testid={`hotspot-${hs.id}`}
+                    className="absolute z-40 flex items-center justify-center rounded-full outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-[var(--accent-blue)]"
                     style={{
                       left: `${hs.x}%`,
                       top: `${hs.y}%`,
@@ -302,24 +390,21 @@ export default function BodyReference() {
                     }}
                   >
                     <span
-                      className={isActive ? "" : "hotspot-dot"}
-                      style={
-                        {
-                          ["--hs-color" as any]: color,
-                          width: isActive || isHovered ? 22 : 16,
-                          height: isActive || isHovered ? 22 : 16,
-                          borderRadius: "9999px",
-                          background: color,
-                          border: "3px solid var(--bg-surface)",
-                          boxShadow: `0 2px 8px rgba(0,0,0,0.25)`,
-                          transition: "width 0.2s, height 0.2s",
-                          display: "block",
-                        } as React.CSSProperties
-                      }
+                      className="hotspot-dot"
+                      style={{
+                        width: isHovered ? 22 : 16,
+                        height: isHovered ? 22 : 16,
+                        borderRadius: "9999px",
+                        background: color,
+                        border: "3px solid var(--bg-surface)",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                        transition: "width 0.2s, height 0.2s",
+                        display: "block",
+                      }}
                     />
-                    {isHovered && !activeSystemId && (
+                    {isHovered && (
                       <span
-                        className="absolute whitespace-nowrap px-3 py-1.5 rounded-xl shadow-xl font-bold text-sm pointer-events-none z-30"
+                        className="absolute whitespace-nowrap px-3 py-1.5 rounded-xl shadow-xl font-bold text-sm pointer-events-none z-50"
                         style={{
                           bottom: "calc(100% + 6px)",
                           left: "50%",
@@ -337,6 +422,12 @@ export default function BodyReference() {
               })}
             </div>
           </div>
+
+          {!activeSystemId && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm font-bold text-[var(--fg-muted)] bg-[var(--bg-surface)] px-4 py-2 rounded-full shadow-md hidden md:block">
+              Tap a glowing spot, or peel the layers on the left
+            </div>
+          )}
         </div>
 
         <div
@@ -346,27 +437,16 @@ export default function BodyReference() {
         >
           {activeSystemId && activeSystem && (
             <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide pb-20 md:pb-6">
-              <div className="space-y-4">
-                {headerImage && (
-                  <div className="w-full rounded-3xl bg-[var(--bg-surface)] border border-[rgba(255,255,255,0.05)] p-4 flex items-center justify-center">
-                    <img
-                      src={headerImage}
-                      alt={headerOfficial || ""}
-                      className="h-44 w-auto object-contain drop-shadow-md"
-                      style={{ filter: inverseFilter }}
-                      draggable={false}
-                    />
-                  </div>
-                )}
-                <div>
-                  <h2
-                    className="text-3xl font-black mb-1 tracking-tight"
-                    style={{ color: SYSTEM_COLORS[activeSystem.id] || "inherit", filter: inverseFilter }}
-                  >
-                    {headerCasual}
-                  </h2>
-                  <p className="text-[var(--fg-secondary)] font-medium text-lg">{headerOfficial}</p>
-                </div>
+              <div>
+                <h2
+                  className="text-3xl font-black mb-1 tracking-tight"
+                  style={{ color: SYSTEM_COLORS[activeSystem.id] || "inherit", filter: inverseFilter }}
+                >
+                  {currentLevel ? currentLevel.casualName || currentLevel.officialName : activeSystem.casualName || activeSystem.officialName}
+                </h2>
+                <p className="text-[var(--fg-secondary)] font-medium text-lg">
+                  {currentLevel ? currentLevel.officialName : activeSystem.officialName}
+                </p>
               </div>
 
               {!isDetailView ? (
@@ -377,28 +457,18 @@ export default function BodyReference() {
 
                   <div className="grid gap-3">
                     {listData.map((item: any) => (
-                      <div
+                      <button
+                        type="button"
                         key={item.id}
-                        className="bg-[var(--bg-surface)] p-4 rounded-2xl border border-[rgba(255,255,255,0.05)] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-between group"
+                        className="w-full text-left bg-[var(--bg-surface)] p-4 rounded-2xl border border-[rgba(255,255,255,0.05)] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-between group"
                         onClick={() => handleStructureClick(item)}
+                        data-testid={`row-structure-${item.id}`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-12 h-12 rounded-xl bg-[var(--bg-card)] flex items-center justify-center overflow-hidden shrink-0">
-                            {PART_IMAGES[item.id] ? (
-                              <img
-                                src={PART_IMAGES[item.id]}
-                                alt={item.officialName}
-                                className="w-full h-full object-contain"
-                                style={{ filter: inverseFilter }}
-                                draggable={false}
-                              />
-                            ) : (
-                              <span
-                                className="w-3 h-3 rounded-full"
-                                style={{ background: SYSTEM_COLORS[activeSystem.id], filter: inverseFilter }}
-                              />
-                            )}
-                          </div>
+                          <span
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ background: SYSTEM_COLORS[activeSystem.id], filter: inverseFilter }}
+                          />
                           <div className="min-w-0">
                             <div className="font-extrabold text-lg text-[var(--fg-primary)] group-hover:text-[var(--accent-blue)] transition-colors truncate">
                               {item.casualName || item.officialName}
@@ -409,7 +479,7 @@ export default function BodyReference() {
                         <div className="bg-[var(--bg-card)] p-2 rounded-full text-[var(--fg-muted)] group-hover:bg-[var(--accent-blue)] group-hover:text-white transition-colors">
                           <ChevronRight className="w-5 h-5" />
                         </div>
-                      </div>
+                      </button>
                     ))}
                     {listData.length === 0 && (
                       <div className="text-center py-8 text-[var(--fg-muted)] italic">No sub-structures defined.</div>

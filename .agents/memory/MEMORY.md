@@ -1,7 +1,7 @@
 - [Term lookup engine](ai-lookup.md) — FREE offline morphological decomposition in client/src/data/termLookup.ts (lookupLocalTerm); Gemini/paid AI fully removed by design (hard no-billing requirement)
-- [Body Explorer hotspots](body-explorer.md) — BodyReference.tsx uses one generated illustration (@assets/.../_body.png) + percentage-positioned clickable hotspots; coords are tied to that exact image composition
 - [Chapter order](chapter-order.md) — moderator-only reorder saved to Firestore config/chapterOrder; applyChapterOrder() reorders CHAPTERS in place
 - [Term dedup rule](term-dedup.md) — dedupeTerms() runs after sortTerms() at startup; custom ct_* terms win over base terms on same key
 - [Firestore auth timing](firestore-auth-timing.md) — gate all Firestore reads on `ready` (anon auth); reads before auth fail silently and fall back to defaults
+- [Body Explorer layers](body-explorer-layers.md) — aligned 2D layer-stack viewer: peel math, zoom+highlight, inverseFilter must NOT double-apply inside the figure wrapper
 - [Palette true-color](palette-true-color.md) — apply inverseFilter to any fixed-hex/anatomy element so the global App palette filter doesn't shift its color (Body Explorer)
 - [Owner account security](owner-account-security.md) — anatomixowner secured via write-once `config/owner` hash; rules must be deployed to Firebase to take effect

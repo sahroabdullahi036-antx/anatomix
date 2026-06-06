@@ -726,3 +726,75 @@ id = "qB6xFVqz-PgSCLG-b1wec"
 uri = "file://attached_assets/generated_images/parts/kidneys.png"
 type = "image"
 title = "kidneys"
+
+[[generated]]
+id = "YKQEtNrvRBUN_7qy9DfJc"
+uri = "file://attached_assets/generated_images/layers/male_skin.png"
+type = "image"
+title = "male_skin"
+
+[[generated]]
+id = "oj7IF8e0N7eIaWZYryx3O"
+uri = "file://attached_assets/generated_images/layers/female_skin.png"
+type = "image"
+title = "female_skin"
+
+[[generated]]
+id = "uJwtDrd-15gQ-sqPUzdDD"
+uri = "file://attached_assets/generated_images/layers/male_muscle.png"
+type = "image"
+title = "male_muscle"
+
+[[generated]]
+id = "Htf1IgkXdbQlgH8eRLNuN"
+uri = "file://attached_assets/generated_images/layers/female_muscle.png"
+type = "image"
+title = "female_muscle"
+
+[[generated]]
+id = "HlMgYnLFuZg0qfETBVmhm"
+uri = "file://attached_assets/generated_images/layers/male_skeleton.png"
+type = "image"
+title = "male_skeleton"
+
+[[generated]]
+id = "KVqYH360Wq3ICjobcxL3I"
+uri = "file://attached_assets/generated_images/layers/female_skeleton.png"
+type = "image"
+title = "female_skeleton"
+
+[[generated]]
+id = "1TLpXmykxI-li0P9ONSzT"
+uri = "file://attached_assets/generated_images/layers/male_organs.png"
+type = "image"
+title = "male_organs"
+
+[[generated]]
+id = "-EdMdbIzxb8EKAXZVqM-x"
+uri = "file://attached_assets/generated_images/layers/female_organs.png"
+type = "image"
+title = "female_organs"
+
+[[generated]]
+id = "Ycs0pVW16ddvIUSjcmsYe"
+uri = "file://attached_assets/generated_images/layers/male_circulatory.png"
+type = "image"
+title = "male_circulatory"
+
+[[generated]]
+id = "D1Eby0X2wEbH06ippkkRK"
+uri = "file://attached_assets/generated_images/layers/female_circulatory.png"
+type = "image"
+title = "female_circulatory"
+
+[[generated]]
+id = "0zdIkBqOohgLIz9tIuqrt"
+uri = "file://attached_assets/generated_images/layers/female_nervous.png"
+type = "image"
+title = "female_nervous"
+
+[[generated]]
+id = "vDZ5Q46dsQf6lvgN8wS-9"
+uri = "file://attached_assets/generated_images/layers/male_nervous.png"
+type = "image"
+title = "male_nervous"
