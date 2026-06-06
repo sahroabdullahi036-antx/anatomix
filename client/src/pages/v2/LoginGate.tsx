@@ -12,21 +12,21 @@ const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "14px 16px", borderRadius: "10px", fontSize: "1rem",
-  backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(252,250,247,0.15)",
-  color: "#fcfaf7", outline: "none", boxSizing: "border-box", marginBottom: "14px",
+  backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(247,244,239,0.15)",
+  color: "#F7F4EF", outline: "none", boxSizing: "border-box", marginBottom: "14px",
   fontFamily: "inherit",
 };
 
 const primaryBtn = (disabled: boolean): React.CSSProperties => ({
   width: "100%", padding: "14px", borderRadius: "10px", fontSize: "1rem", fontWeight: "700",
-  backgroundColor: disabled ? "rgba(255,255,255,0.08)" : "#4a6080",
-  color: disabled ? "rgba(252,250,247,0.3)" : "#fcfaf7",
+  backgroundColor: disabled ? "rgba(255,255,255,0.08)" : "#F7F4EF",
+  color: disabled ? "rgba(247,244,239,0.3)" : "#3E1015",
   border: "none", cursor: disabled ? "default" : "pointer", transition: "all 0.2s",
   fontFamily: "inherit",
 });
 
 const ghostBtn: React.CSSProperties = {
-  background: "none", border: "none", color: "rgba(252,250,247,0.35)", fontSize: "0.82rem",
+  background: "none", border: "none", color: "rgba(247,244,239,0.35)", fontSize: "0.82rem",
   cursor: "pointer", fontFamily: "inherit", padding: "6px", textDecoration: "underline",
 };
 
@@ -193,14 +193,14 @@ export default function LoginGate() {
   const isExistingAccount = accountExists(username.trim());
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#252830", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", fontFamily: "'Inter', 'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#3E1015", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", fontFamily: "'Inter', 'Plus Jakarta Sans', sans-serif" }}>
       <div style={{ width: "100%", maxWidth: "440px" }}>
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <h1 style={{ color: "#fcfaf7", fontSize: "2.5rem", fontWeight: "800", margin: "0 0 8px", letterSpacing: "-0.02em" }}>AnatomiX</h1>
-          <p style={{ color: "rgba(252,250,247,0.5)", fontSize: "1rem", margin: 0 }}>Medical Terminology Study Platform</p>
+          <h1 style={{ color: "#F7F4EF", fontSize: "2.5rem", fontWeight: "800", margin: "0 0 8px", letterSpacing: "-0.02em" }}>AnatomiX</h1>
+          <p style={{ color: "rgba(247,244,239,0.5)", fontSize: "1rem", margin: 0 }}>Medical Terminology Study Platform</p>
         </div>
 
-        <div style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "16px", padding: "32px", border: "1px solid rgba(252,250,247,0.08)" }}>
+        <div style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "16px", padding: "32px", border: "1px solid rgba(247,244,239,0.08)" }}>
 
           {step === "username" && (
             <>
@@ -209,7 +209,7 @@ export default function LoginGate() {
                   <button
                     key={m}
                     onClick={() => { setLoginMode(m); setError(""); }}
-                    style={{ flex: 1, padding: "10px", borderRadius: "7px", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.88rem", backgroundColor: loginMode === m ? "#4a6080" : "transparent", color: loginMode === m ? "#fcfaf7" : "rgba(252,250,247,0.4)", transition: "all 0.15s" }}
+                    style={{ flex: 1, padding: "10px", borderRadius: "7px", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.88rem", backgroundColor: loginMode === m ? "#F7F4EF" : "transparent", color: loginMode === m ? "#3E1015" : "rgba(247,244,239,0.4)", transition: "all 0.15s" }}
                   >
                     {m === "login" ? "Sign In" : "Create Account"}
                   </button>
@@ -217,8 +217,8 @@ export default function LoginGate() {
               </div>
 
               {loginMode === "signup" && (
-                <p style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem", marginBottom: "16px", textAlign: "center", lineHeight: 1.5 }}>
-                  Enter your name as: <span style={{ color: "#fcfaf7", fontWeight: "700" }}>First Name. Last Initial</span><br />
+                <p style={{ color: "rgba(247,244,239,0.4)", fontSize: "0.82rem", marginBottom: "16px", textAlign: "center", lineHeight: 1.5 }}>
+                  Enter your name as: <span style={{ color: "#F7F4EF", fontWeight: "700" }}>First Name. Last Initial</span><br />
                   <span style={{ fontSize: "0.75rem" }}>Example: John S.</span>
                 </p>
               )}
@@ -240,19 +240,19 @@ export default function LoginGate() {
 
               {recentUsers.length > 0 && (
                 <div style={{ marginTop: "24px" }}>
-                  <p style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.75rem", marginBottom: "10px", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.06em" }}>Recent Profiles</p>
+                  <p style={{ color: "rgba(247,244,239,0.35)", fontSize: "0.75rem", marginBottom: "10px", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.06em" }}>Recent Profiles</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
                     {recentUsers.map(u => {
                       const hasPIN = !!getPinEntry(u)?.pin;
                       const hasPwd = hasPassword(u);
                       return (
-                        <button key={u} onClick={() => handleRecentUser(u)} style={{ padding: "6px 14px", borderRadius: "20px", fontSize: "0.85rem", fontWeight: "600", backgroundColor: "rgba(255,255,255,0.08)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.12)", cursor: "pointer", fontFamily: "inherit" }}>
+                        <button key={u} onClick={() => handleRecentUser(u)} style={{ padding: "6px 14px", borderRadius: "20px", fontSize: "0.85rem", fontWeight: "600", backgroundColor: "rgba(255,255,255,0.08)", color: "#F7F4EF", border: "1px solid rgba(247,244,239,0.12)", cursor: "pointer", fontFamily: "inherit" }}>
                           {u}{hasPIN ? " #" : hasPwd ? " 🔒" : " ⚠"}
                         </button>
                       );
                     })}
                   </div>
-                  <p style={{ color: "rgba(252,250,247,0.2)", fontSize: "0.7rem", textAlign: "center", marginTop: "8px" }}>🔒 password protected &nbsp; ⚠ no password set</p>
+                  <p style={{ color: "rgba(247,244,239,0.2)", fontSize: "0.7rem", textAlign: "center", marginTop: "8px" }}>🔒 password protected &nbsp; ⚠ no password set</p>
                 </div>
               )}
             </>
@@ -260,8 +260,8 @@ export default function LoginGate() {
 
           {step === "pin" && (
             <>
-              <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>Enter PIN</h2>
-              <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "24px", textAlign: "center" }}>{username}</p>
+              <h2 style={{ color: "#F7F4EF", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>Enter PIN</h2>
+              <p style={{ color: "rgba(247,244,239,0.45)", fontSize: "0.85rem", marginBottom: "24px", textAlign: "center" }}>{username}</p>
               <form onSubmit={handlePinSubmit}>
                 <input
                   type="password"
@@ -283,8 +283,8 @@ export default function LoginGate() {
 
           {step === "password" && (
             <>
-              <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>Welcome back, {username}</h2>
-              <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "24px", textAlign: "center" }}>Enter your password to continue.</p>
+              <h2 style={{ color: "#F7F4EF", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>Welcome back, {username}</h2>
+              <p style={{ color: "rgba(247,244,239,0.45)", fontSize: "0.85rem", marginBottom: "24px", textAlign: "center" }}>Enter your password to continue.</p>
               <form onSubmit={handlePasswordSubmit}>
                 <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} placeholder="Password..." autoFocus style={inputStyle} />
                 {error && <div style={{ color: "#e09090", fontSize: "0.85rem", marginBottom: "12px" }}>{error}</div>}
@@ -298,10 +298,10 @@ export default function LoginGate() {
 
           {step === "new-account" && (
             <>
-              <h2 style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>
+              <h2 style={{ color: "#F7F4EF", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>
                 {isHost ? "Moderator Account Setup" : isExistingAccount ? `Set a Password for ${username}` : `Create Account: ${username}`}
               </h2>
-              <p style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.85rem", marginBottom: "20px", textAlign: "center" }}>
+              <p style={{ color: "rgba(247,244,239,0.45)", fontSize: "0.85rem", marginBottom: "20px", textAlign: "center" }}>
                 {isHost
                   ? "Set a password to secure the moderator account."
                   : isExistingAccount
