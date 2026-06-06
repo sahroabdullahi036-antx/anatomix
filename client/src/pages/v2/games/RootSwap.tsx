@@ -58,7 +58,7 @@ export default function RootSwap() {
   const isCorrect = selected === current.correct;
 
   return (
-    <GameShell title="Root Swap" emoji="🔄" score={score} streak={streak} idx={idx} total={scenarios.length} onBack={() => navigate("/games")}>
+    <GameShell title="Root Swap" score={score} streak={streak} idx={idx} total={scenarios.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>Clinical Scenario  -  select the correct suffix:</div>
         <div style={{ color: "#fcfaf7", fontSize: "1rem", fontWeight: "600", lineHeight: 1.6, marginBottom: "16px" }}>{current.scenario}</div>

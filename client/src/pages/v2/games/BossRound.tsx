@@ -6,7 +6,7 @@ import { shuffle, WrongAnswer, WrongAnswerReview } from "./shared";
 
 const BOSS_COUNT = 15;
 
-function buildQ(term: typeof ALL_TERMS[0], pool: typeof ALL_TERMS[]) {
+function buildQ(term: typeof ALL_TERMS[0], pool: typeof ALL_TERMS) {
   const wrong = shuffle(pool.filter(t => t.id !== term.id)).slice(0, 3);
   const choices = shuffle([term, ...wrong]);
   return { term, choices };

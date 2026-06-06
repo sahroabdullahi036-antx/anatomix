@@ -48,10 +48,10 @@ export default function LinguisticAutopsy() {
     setResult(null); setAssembled([]); setIdx(i => i + 1);
   };
 
-  if (!current) return <GameShell title="Linguistic Autopsy" emoji="🧩" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}><div style={{ color: "#fcfaf7" }}>No terms with word parts available.</div></GameShell>;
+  if (!current) return <GameShell title="Linguistic Autopsy" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}><div style={{ color: "#fcfaf7" }}>No terms with word parts available.</div></GameShell>;
 
   return (
-    <GameShell title="Linguistic Autopsy" emoji="🧩" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
+    <GameShell title="Linguistic Autopsy" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>Assemble the word parts in physiological order:</div>
         <div style={{ color: "#fcfaf7", fontSize: "1.2rem", fontWeight: "700", marginBottom: "8px" }}>💬 {current.casualMeaning}</div>

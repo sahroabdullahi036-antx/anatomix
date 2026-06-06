@@ -13,6 +13,7 @@ export interface Structure {
   casualName: string;
   combiningForm: string;
   definition: string;
+  homonymWarning?: string;
   children?: Structure[];
 }
 

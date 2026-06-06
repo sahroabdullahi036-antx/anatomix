@@ -52,7 +52,7 @@ export default function TextbookTrap() {
   if (!current) return null;
 
   return (
-    <GameShell title="Textbook Trap" emoji="🪤" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
+    <GameShell title="Textbook Trap" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>
           Is this definition CORRECT or does it contain a hidden error?

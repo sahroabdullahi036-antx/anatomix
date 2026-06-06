@@ -7,7 +7,7 @@ import { shuffle } from "./games/shared";
 const Q_COUNT = 20;
 const TIME_LIMIT = 600;
 
-function buildQuestion(term: typeof ALL_TERMS[0], pool: typeof ALL_TERMS[]) {
+function buildQuestion(term: typeof ALL_TERMS[0], pool: typeof ALL_TERMS) {
   const wrong = shuffle(pool.filter(t => t.id !== term.id)).slice(0, 3);
   const choices = shuffle([term, ...wrong]);
   return { term, choices, correct: term.id };

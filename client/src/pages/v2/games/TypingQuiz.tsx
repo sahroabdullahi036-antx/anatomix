@@ -43,7 +43,7 @@ export default function TypingQuiz() {
   if (!current) return null;
 
   return (
-    <GameShell title="Typing Input Quiz" emoji="⌨️" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
+    <GameShell title="Typing Input Quiz" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "28px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>{current.type} · {current.system}</div>
         <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "600", lineHeight: 1.6, marginBottom: "12px" }}>{current.definition}</div>

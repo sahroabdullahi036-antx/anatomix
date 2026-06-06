@@ -56,7 +56,7 @@ export default function RootRace() {
   const allFound = found.length === validSuffixes.length;
 
   return (
-    <GameShell title="Root Race" emoji="🏁" score={score} streak={found.length} idx={rootIdx} total={allRoots.length} onBack={() => navigate("/games")}>
+    <GameShell title="Root Race" score={score} streak={found.length} idx={rootIdx} total={allRoots.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px", textAlign: "center" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>
           Link every valid suffix to this combining form:

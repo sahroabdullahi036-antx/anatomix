@@ -57,7 +57,7 @@ export default function ChartTriage() {
   const isTimeout = selected === "timeout";
 
   return (
-    <GameShell title="Chart Triage" emoji="⏱️" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
+    <GameShell title="Chart Triage" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
       <ProgressBar value={timeLeft} max={TIME_PER_Q} color={timeLeft > 6 ? "#70b070" : timeLeft > 3 ? "#e0a040" : "#e06060"} label={`Time: ${Math.ceil(timeLeft)}s`} />
 
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>

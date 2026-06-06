@@ -45,7 +45,7 @@ export default function MultipleChoice() {
   const correct = selected === current.meaning;
 
   return (
-    <GameShell title="Multiple Choice Quiz" emoji="🎯" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
+    <GameShell title="Multiple Choice Quiz" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "28px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>
           {current.type} · {current.system}

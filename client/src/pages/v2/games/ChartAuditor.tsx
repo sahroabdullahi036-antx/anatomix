@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, type ReactElement } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS } from "@/data/medicalData";
@@ -58,7 +58,7 @@ export default function ChartAuditor() {
   };
 
   const highlightText = (text: string) => {
-    let parts = [text];
+    let parts: (string | ReactElement)[] = [text];
     for (const err of current.errors) {
       parts = parts.flatMap(part => {
         if (typeof part !== "string") return [part];
@@ -79,7 +79,7 @@ export default function ChartAuditor() {
   };
 
   return (
-    <GameShell title="Chart Auditor" emoji="📝" score={score} streak={found.length} idx={idx} total={audits.length} onBack={() => navigate("/games")}>
+    <GameShell title="Chart Auditor" score={score} streak={found.length} idx={idx} total={audits.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "12px" }}>
           Find and tap the {current.errors.length} incorrect/imprecise terms in this clinical note:

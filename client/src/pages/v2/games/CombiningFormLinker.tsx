@@ -45,7 +45,7 @@ export default function CombiningFormLinker() {
   const reset = () => { updateScore("combining-linker", score); setChain([shuffle(pool)[0]]); setScore(0); setStreak(0); setCompleted(false); };
 
   return (
-    <GameShell title="Combining Form Linker" emoji="🔗" score={score} streak={streak} idx={chain.length - 1} total={8} onBack={() => navigate("/games")}>
+    <GameShell title="Combining Form Linker" score={score} streak={streak} idx={chain.length - 1} total={8} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "20px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "12px" }}>
           Build a chain of 8  -  each card must share a root or suffix with the previous one:

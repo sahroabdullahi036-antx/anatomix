@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { accountExists, hasPassword, verifyPassword, setPassword } from "@/utils/auth";
+import { accountExists, hasPassword, verifyPassword, setPassword as savePassword } from "@/utils/auth";
 import { subscribeToUserPins, UserPinEntry } from "@/firebase/firestoreService";
 
 type Step = "username" | "password" | "pin" | "new-account";
@@ -126,7 +126,7 @@ export default function LoginGate() {
     if (newPassword.length < 4) { setError("Password must be at least 4 characters."); return; }
     if (newPassword !== newConfirm) { setError("Passwords do not match."); return; }
     setLoading(true);
-    await setPassword(trimmed, newPassword);
+    await savePassword(trimmed, newPassword);
     setLoading(false);
     login(trimmed);
   };

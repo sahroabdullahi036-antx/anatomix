@@ -1,707 +1,427 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
-import { ALL_TERMS, SYSTEMS as DATA_SYSTEMS } from "@/data/medicalData";
+import { SYSTEMS as DATA_SYSTEMS } from "@/data/medicalData";
+import { ChevronRight, ArrowLeft, Search, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const SYSTEMS = [
-  { id: "cardiovascular",  label: "Cardiovascular",  color: "#c04848", region: { type: "ellipse", cx: 80, cy: 90, rx: 14, ry: 15 }, desc: "Heart, arteries, veins, and blood circulation" },
-  { id: "respiratory",     label: "Respiratory",     color: "#4870b0", region: { type: "twoEllipse", cx1: 63, cy1: 90, rx1: 10, ry1: 18, cx2: 97, cy2: 90, rx2: 10, ry2: 18 }, desc: "Airways, lungs, and gas exchange" },
-  { id: "digestive",       label: "Digestive",       color: "#a07040", region: { type: "rect", x: 56, y: 115, w: 48, h: 50 }, desc: "Esophagus, stomach, intestines, liver, and accessory organs" },
-  { id: "nervous",         label: "Nervous",         color: "#9060c0", region: { type: "head", cx: 80, cy: 28, r: 21 }, desc: "Brain, spinal cord, nerves, and sensory processing" },
-  { id: "musculoskeletal", label: "Musculoskeletal", color: "#507050", region: { type: "full" }, desc: "Bones, muscles, tendons, ligaments, and joints" },
-  { id: "urinary",         label: "Urinary",         color: "#4080a0", region: { type: "ellipse", cx: 80, cy: 158, rx: 22, ry: 16 }, desc: "Kidneys, ureters, bladder, and urethra" },
-  { id: "endocrine",       label: "Endocrine",       color: "#a08030", region: { type: "glands" }, desc: "Hormone-producing glands throughout the body" },
-  { id: "integumentary",   label: "Integumentary",   color: "#7a6050", region: { type: "outline" }, desc: "Skin, hair, nails, and associated glands" },
-  { id: "lymphatic",       label: "Lymphatic",       color: "#508080", region: { type: "lymph" }, desc: "Lymph nodes, vessels, spleen, thymus, and immune response" },
-  { id: "reproductive",    label: "Reproductive",    color: "#804060", region: { type: "ellipse", cx: 80, cy: 178, rx: 18, ry: 12 }, desc: "Gonads, ducts, and accessory reproductive organs" },
-  { id: "special-senses",  label: "Special Senses",  color: "#508868", region: { type: "senses" }, desc: "Eyes, ears, nose, tongue, and vestibular system" },
-];
+const SYSTEM_COLORS: Record<string, string> = {
+  "cardiovascular": "var(--accent-coral)",
+  "respiratory": "var(--accent-blue)",
+  "digestive": "var(--accent-amber)",
+  "nervous": "var(--accent-violet)",
+  "musculoskeletal": "var(--fg-secondary)",
+  "urinary": "var(--accent-teal)",
+  "endocrine": "var(--accent-rose)",
+  "integumentary": "var(--fg-muted)",
+  "lymphatic": "#20c997",
+  "reproductive": "#e83e8c",
+  "special-senses": "#fd7e14",
+};
 
-
-function SystemDiagram({ id }: { id: string }) {
-  switch (id) {
-    case "cardiovascular": return <CardioSVG />;
-    case "respiratory":    return <RespiratorySVG />;
-    case "digestive":      return <DigestiveSVG />;
-    case "nervous":        return <NervousSVG />;
-    case "musculoskeletal":return <MusculoskeletalSVG />;
-    case "urinary":        return <UrinarySVG />;
-    case "endocrine":      return <EndocrineSVG />;
-    case "integumentary":  return <IntegumentarySVG />;
-    case "lymphatic":      return <LymphaticSVG />;
-    case "reproductive":   return <ReproductiveSVG />;
-    case "special-senses": return <SpecialSensesSVG />;
-    default:               return null;
-  }
-}
-
-function Label({ x, y, text, anchor = "middle", small = false }: { x: number; y: number; text: string; anchor?: string; small?: boolean }) {
-  return <text x={x} y={y} fill="rgba(252,250,247,0.75)" fontSize={small ? 8 : 9.5} fontFamily="monospace" textAnchor={anchor as any}>{text}</text>;
-}
-function Line({ x1, y1, x2, y2, color = "rgba(252,250,247,0.25)" }: any) {
-  return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1} />;
-}
-
-function CardioSVG() {
-  return (
-    <svg viewBox="0 0 300 210" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="210" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Heart outline */}
-      <path d="M150,50 C145,32 118,28 105,45 C90,28 60,32 55,55 C45,85 80,120 150,165 C220,120 255,85 245,55 C240,32 210,28 195,45 C182,28 155,32 150,50Z" fill="rgba(160,50,50,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1.5} />
-      {/* Vertical septum */}
-      <path d="M150,55 L150,155" stroke="rgba(252,250,247,0.2)" strokeWidth={1.5} />
-      {/* Horizontal divider (AV valves) */}
-      <path d="M80,105 Q150,95 220,105" stroke="rgba(252,250,247,0.2)" strokeWidth={1.2} fill="none" />
-      {/* Chamber labels */}
-      <text x="103" y="90" fill="rgba(252,250,247,0.9)" fontSize={10} fontFamily="monospace" textAnchor="middle" fontWeight="bold">RA</text>
-      <text x="103" y="140" fill="rgba(252,250,247,0.9)" fontSize={10} fontFamily="monospace" textAnchor="middle" fontWeight="bold">RV</text>
-      <text x="197" y="90" fill="rgba(252,250,247,0.9)" fontSize={10} fontFamily="monospace" textAnchor="middle" fontWeight="bold">LA</text>
-      <text x="197" y="140" fill="rgba(252,250,247,0.9)" fontSize={10} fontFamily="monospace" textAnchor="middle" fontWeight="bold">LV</text>
-      {/* Aorta */}
-      <path d="M185,70 C195,45 205,30 210,20" stroke="rgba(220,100,100,0.8)" strokeWidth={3} fill="none" />
-      <Label x={215} y={17} text="Aorta" anchor="start" small />
-      {/* Pulmonary trunk */}
-      <path d="M115,75 C108,52 105,35 100,22" stroke="rgba(100,140,210,0.8)" strokeWidth={3} fill="none" />
-      <Label x={95} y={19} text="PA" anchor="end" small />
-      {/* SVC */}
-      <path d="M128,62 L128,18" stroke="rgba(100,140,210,0.6)" strokeWidth={2} fill="none" />
-      <Label x={128} y={14} text="SVC" anchor="middle" small />
-      {/* IVC */}
-      <path d="M128,148 L128,180" stroke="rgba(100,140,210,0.6)" strokeWidth={2} fill="none" />
-      <Label x={128} y={193} text="IVC" anchor="middle" small />
-      {/* Legend */}
-      <rect x="8" y="188" width="8" height="8" fill="rgba(220,100,100,0.8)" rx="2" />
-      <text x="20" y="195" fill="rgba(252,250,247,0.5)" fontSize={7.5} fontFamily="monospace">Systemic (arterial)</text>
-      <rect x="110" y="188" width="8" height="8" fill="rgba(100,140,210,0.8)" rx="2" />
-      <text x="122" y="195" fill="rgba(252,250,247,0.5)" fontSize={7.5} fontFamily="monospace">Pulmonary (venous)</text>
-    </svg>
-  );
-}
-
-function RespiratorySVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Larynx */}
-      <rect x="136" y="15" width="28" height="18" rx="4" fill="rgba(60,90,160,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      <Label x={150} y={28} text="Larynx" />
-      {/* Trachea */}
-      <rect x="140" y="32" width="20" height="40" rx="3" fill="rgba(60,90,160,0.45)" stroke="rgba(252,250,247,0.18)" strokeWidth={1} />
-      <Label x={150} y={58} text="Trachea" />
-      {/* Carina */}
-      <path d="M140,72 L100,88 M160,72 L200,88" stroke="rgba(252,250,247,0.3)" strokeWidth={2} fill="none" />
-      {/* Bronchi */}
-      <rect x="75" y="88" width="50" height="12" rx="3" fill="rgba(60,90,160,0.4)" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <rect x="175" y="88" width="50" height="12" rx="3" fill="rgba(60,90,160,0.4)" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <Label x={100} y={98} text="L. Bronchus" small />
-      <Label x={200} y={98} text="R. Bronchus" small />
-      {/* Left lung */}
-      <path d="M65,100 Q40,115 38,150 Q38,185 70,192 Q100,195 115,175 L115,100 Z" fill="rgba(60,80,150,0.35)" stroke="rgba(252,250,247,0.2)" strokeWidth={1.5} />
-      {/* Right lung (2 lobes, wider) */}
-      <path d="M185,100 Q260,115 262,150 Q262,185 230,192 Q200,195 185,175 L185,100 Z" fill="rgba(60,80,150,0.35)" stroke="rgba(252,250,247,0.2)" strokeWidth={1.5} />
-      {/* Lobe fissure right lung */}
-      <path d="M200,120 Q240,145 230,175" stroke="rgba(252,250,247,0.15)" strokeWidth={1} fill="none" />
-      <Label x={80} y={155} text="Left Lung" />
-      <Label x={222} y={150} text="Right Lung" />
-      {/* Diaphragm */}
-      <path d="M30,195 Q100,210 150,202 Q200,210 270,195" stroke="rgba(252,250,247,0.4)" strokeWidth={2.5} fill="none" />
-      <Label x={150} y={212} text="Diaphragm" />
-      {/* Alveolus */}
-      <circle cx="75" cy="165" r="7" fill="rgba(120,160,220,0.3)" stroke="rgba(252,250,247,0.2)" strokeWidth={0.8} />
-      <Label x={75} y={183} text="alveolus" small />
-    </svg>
-  );
-}
-
-function DigestiveSVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Pharynx / Throat */}
-      <path d="M128,1 Q150,-1 172,1 L169,10 Q150,13 131,10 Z" fill="rgba(160,100,50,0.32)" stroke="rgba(252,250,247,0.14)" strokeWidth={1} />
-      <Label x={150} y={7} text="Pharynx" small />
-      {/* Esophagus */}
-      <rect x="138" y="11" width="24" height="31" rx="4" fill="rgba(160,100,50,0.4)" stroke="rgba(252,250,247,0.18)" strokeWidth={1} />
-      <Label x={150} y={27} text="Esophagus" small />
-      {/* Liver (right, large) */}
-      <path d="M168,45 Q205,45 218,60 Q225,75 210,90 Q190,98 168,88 Z" fill="rgba(130,80,40,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      <Label x={196} y={72} text="Liver" />
-      {/* Gallbladder */}
-      <ellipse cx="178" cy="96" rx="8" ry="5" fill="rgba(100,140,50,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      <Label x={178} y={107} text="Gallbladder" small />
-      {/* Stomach */}
-      <path d="M140,43 Q120,45 108,58 Q100,75 110,92 Q125,108 148,108 L155,88 L155,43Z" fill="rgba(160,100,50,0.45)" stroke="rgba(252,250,247,0.18)" strokeWidth={1} />
-      <Label x={122} y={80} text="Stomach" />
-      {/* Pancreas (dotted, behind) */}
-      <path d="M118,100 Q145,95 168,98" stroke="rgba(180,140,60,0.6)" strokeWidth={5} strokeDasharray="3,2" fill="none" />
-      <Label x={143} y={110} text="Pancreas" small />
-      {/* Small intestine (coiled center) */}
-      <path d="M125,118 Q90,122 88,138 Q86,155 105,160 Q128,165 135,148 Q140,132 122,128 Q105,128 108,142 Q112,156 128,154 Q144,150 142,138" stroke="rgba(160,100,50,0.6)" strokeWidth={7} fill="none" strokeLinecap="round" />
-      <Label x={115} y={172} text="Small intestine" small />
-      {/* Large intestine */}
-      <path d="M145,118 L145,110 L240,110 L240,185 L60,185 L60,160 L88,160" stroke="rgba(180,120,60,0.6)" strokeWidth={8} fill="none" strokeLinejoin="round" strokeLinecap="round" />
-      <Label x={240} y={148} text="Colon" anchor="end" small />
-      {/* Rectum */}
-      <path d="M85,185 L95,205" stroke="rgba(180,120,60,0.6)" strokeWidth={6} fill="none" />
-      <Label x={95} y={212} text="Rectum" small />
-    </svg>
-  );
-}
-
-function NervousSVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Brain outline (lateral view, left) */}
-      <path d="M80,30 Q100,15 125,15 Q165,15 185,38 Q205,60 200,88 Q196,108 175,115 Q165,118 155,130 Q148,140 145,148 Q125,148 110,145 Q90,140 82,128 Q65,108 65,88 Q65,60 80,30Z" fill="rgba(90,50,130,0.45)" stroke="rgba(252,250,247,0.25)" strokeWidth={1.5} />
-      {/* Frontal lobe label */}
-      <Label x={98} y={55} text="Frontal" />
-      {/* Parietal lobe */}
-      <Label x={148} y={45} text="Parietal" />
-      {/* Temporal lobe */}
-      <Label x={88} y={110} text="Temporal" />
-      {/* Occipital lobe */}
-      <Label x={180} y={95} text="Occipital" />
-      {/* Central sulcus (rough divider) */}
-      <path d="M120,22 Q118,40 115,55 Q112,70 108,80" stroke="rgba(252,250,247,0.18)" strokeWidth={1} fill="none" />
-      {/* Lateral sulcus */}
-      <path d="M75,80 Q100,90 130,92 Q150,92 175,88" stroke="rgba(252,250,247,0.18)" strokeWidth={1} fill="none" />
-      {/* Cerebellum */}
-      <path d="M145,150 Q145,140 155,132 Q170,125 185,130 Q210,140 208,165 Q205,180 185,182 Q160,183 148,168 Z" fill="rgba(80,45,120,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1.2} />
-      {/* Cerebellum folds */}
-      <path d="M152,155 Q175,148 198,155 M150,162 Q175,156 200,162 M155,170 Q180,163 202,170" stroke="rgba(252,250,247,0.12)" strokeWidth={1} fill="none" />
-      <Label x={178} y={160} text="Cerebellum" />
-      {/* Brain stem */}
-      <path d="M128,148 L128,178 Q128,190 132,198 Q136,205 140,205" stroke="rgba(252,250,247,0.4)" strokeWidth={8} strokeLinecap="round" fill="none" />
-      <Label x={148} y={200} text="Brainstem" anchor="start" small />
-      {/* Spinal cord */}
-      <path d="M134,205 L134,215" stroke="rgba(252,250,247,0.35)" strokeWidth={5} fill="none" />
-      {/* Neuron illustration */}
-      <circle cx="252" cy="80" r="10" fill="rgba(120,70,160,0.4)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      <path d="M252,70 L252,55 M244,76 L234,70 M260,76 L270,70" stroke="rgba(252,250,247,0.35)" strokeWidth={1} fill="none" />
-      <path d="M252,90 L252,120 M248,100 L240,105 M256,100 L264,105" stroke="rgba(252,250,247,0.35)" strokeWidth={1} fill="none" />
-      <Label x={252} y={132} text="Neuron" />
-    </svg>
-  );
-}
-
-function MusculoskeletalSVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Long bone cross-section (femur-like) */}
-      {/* Outer bone cortex */}
-      <path d="M95,12 Q80,18 78,35 L78,175 Q80,192 95,198 L205,198 Q220,192 222,175 L222,35 Q220,18 205,12 Z" fill="rgba(200,180,140,0.35)" stroke="rgba(252,250,247,0.2)" strokeWidth={1.5} />
-      {/* Compact bone outer (thicker at diaphysis) */}
-      <path d="M95,12 Q80,18 88,35 L100,35 L100,175 L88,175 Q80,192 95,198 L205,198 Q220,192 212,175 L200,175 L200,35 L212,35 Q220,18 205,12 Z" fill="rgba(220,200,160,0.4)" />
-      {/* Periosteum (outer line) */}
-      <Label x={150} y={9} text="Periosteum" />
-      <Line x1={110} y1={11} x2={110} y2={15} />
-      {/* Spongy bone (ends) */}
-      <path d="M100,35 L200,35 Q190,50 170,55 L130,55 Q110,50 100,35Z" fill="rgba(200,170,120,0.5)" />
-      <path d="M100,175 L200,175 Q190,162 170,157 L130,157 Q110,162 100,175Z" fill="rgba(200,170,120,0.5)" />
-      {/* Trabeculae lines (spongy bone texture) */}
-      {[0,1,2,3,4].map(i => <line key={i} x1={108+i*16} y1={40} x2={115+i*16} y2={53} stroke="rgba(252,250,247,0.15)" strokeWidth={0.8} />)}
-      {[0,1,2,3,4].map(i => <line key={i+5} x1={108+i*16} y1={170} x2={115+i*16} y2={157} stroke="rgba(252,250,247,0.15)" strokeWidth={0.8} />)}
-      <Label x={150} y={47} text="Spongy bone" small />
-      {/* Medullary cavity (yellow marrow) */}
-      <rect x="100" y="55" width="100" height="102" fill="rgba(200,170,80,0.2)" />
-      <Label x={150} y={108} text="Medullary cavity" />
-      <Label x={150} y={120} text="(yellow marrow)" small />
-      {/* Compact bone label */}
-      <Label x={80} y={108} text="Compact" anchor="end" small />
-      <Label x={80} y={118} text="bone" anchor="end" small />
-      <Line x1={81} y1={113} x2={100} y2={113} />
-      {/* Endosteum */}
-      <Label x={220} y={108} text="Endosteum" anchor="start" small />
-      <Line x1={219} y1={108} x2={200} y2={108} />
-      {/* Articular cartilage */}
-      <rect x="95" y="198" width="110" height="10" rx="3" fill="rgba(60,160,120,0.4)" />
-      <rect x="95" y="2" width="110" height="12" rx="3" fill="rgba(60,160,120,0.4)" />
-      <Label x={212} y={205} text="Articular cartilage" anchor="start" small />
-    </svg>
-  );
-}
-
-function UrinarySVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Left kidney */}
-      <path d="M68,35 Q45,40 40,65 Q38,90 52,105 Q65,115 80,110 Q95,105 98,90 Q100,70 90,50 Q82,35 68,35Z" fill="rgba(160,80,40,0.5)" stroke="rgba(252,250,247,0.22)" strokeWidth={1.5} />
-      {/* Kidney hilum left */}
-      <path d="M98,72 Q92,70 88,75 Q92,80 98,78" fill="rgba(0,0,0,0.3)" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <Label x={60} y={75} text="Left Kidney" />
-      {/* Right kidney */}
-      <path d="M232,35 Q255,40 260,65 Q262,90 248,105 Q235,115 220,110 Q205,105 202,90 Q200,70 210,50 Q218,35 232,35Z" fill="rgba(160,80,40,0.5)" stroke="rgba(252,250,247,0.22)" strokeWidth={1.5} />
-      <Label x={240} y={75} text="Right Kidney" />
-      {/* Renal pelvis / ureter left */}
-      <path d="M98,75 L140,75 L140,158" stroke="rgba(120,160,200,0.7)" strokeWidth={4} fill="none" strokeLinecap="round" />
-      {/* Renal pelvis / ureter right */}
-      <path d="M202,75 L160,75 L160,158" stroke="rgba(120,160,200,0.7)" strokeWidth={4} fill="none" strokeLinecap="round" />
-      <Label x={115} y={115} text="Ureter" small />
-      <Label x={185} y={115} text="Ureter" small />
-      {/* Bladder */}
-      <path d="M105,158 Q95,175 100,190 Q110,208 150,210 Q190,208 200,190 Q205,175 195,158 Z" fill="rgba(60,100,160,0.45)" stroke="rgba(252,250,247,0.22)" strokeWidth={1.5} />
-      <Label x={150} y={188} text="Urinary bladder" />
-      {/* Urethra */}
-      <path d="M150,210 L150,215" stroke="rgba(120,160,200,0.6)" strokeWidth={4} fill="none" />
-      <Label x={155} y={214} text="Urethra" anchor="start" small />
-      {/* Adrenal gland indicator */}
-      <path d="M72,33 Q68,22 75,18 Q82,15 85,22" fill="rgba(180,140,40,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      <Label x={75} y={14} text="Adrenal" small />
-      <path d="M228,33 Q232,22 225,18 Q218,15 215,22" fill="rgba(180,140,40,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      <Label x={224} y={14} text="Adrenal" small />
-    </svg>
-  );
-}
-
-function EndocrineSVG() {
-  const glands = [
-    { cx: 150, cy: 28,  r: 7,  color: "#9060c0", label: "Hypothalamus", ly: 18 },
-    { cx: 150, cy: 42,  r: 5,  color: "#7048a0", label: "Pituitary",    ly: 56 },
-    { cx: 150, cy: 65,  r: 6,  color: "#4090b0", label: "Thyroid",      ly: 80 },
-    { cx: 150, cy: 100, r: 5,  color: "#6080a0", label: "Thymus",       ly: 114 },
-    { cx: 115, cy: 128, r: 5,  color: "#c07030", label: "Pancreas",     ly: 142 },
-    { cx: 115, cy: 155, r: 4,  color: "#a06030", label: "Adrenal (L)",  ly: 168 },
-    { cx: 185, cy: 155, r: 4,  color: "#a06030", label: "Adrenal (R)",  ly: 168 },
-    { cx: 120, cy: 188, r: 5,  color: "#a04870", label: "Ovary (L)",    ly: 202 },
-    { cx: 180, cy: 188, r: 5,  color: "#a04870", label: "Ovary (R)",    ly: 202 },
-  ];
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Body outline */}
-      <path d="M150,8 C148,8 136,10 130,15 L130,40 Q110,45 105,60 L90,60 L90,180 L210,180 L210,60 L195,60 Q190,45 170,40 L170,15 Q164,10 152,8Z" fill="rgba(255,255,255,0.04)" stroke="rgba(252,250,247,0.12)" strokeWidth={1} />
-      {glands.map(g => (
-        <g key={g.label}>
-          <circle cx={g.cx} cy={g.cy} r={g.r} fill={g.color + "99"} stroke="rgba(252,250,247,0.3)" strokeWidth={1} />
-          <text x={g.cx + g.r + 4} y={g.cy + 3} fill="rgba(252,250,247,0.7)" fontSize={8} fontFamily="monospace">{g.label}</text>
-        </g>
-      ))}
-      <text x="8" y="212" fill="rgba(252,250,247,0.3)" fontSize={7.5} fontFamily="monospace">Note: Parathyroids (behind thyroid) and pineal gland also shown</text>
-    </svg>
-  );
-}
-
-function IntegumentarySVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Skin surface */}
-      <rect x="15" y="20" width="270" height="195" fill="rgba(255,255,255,0.03)" rx="6" />
-      {/* Epidermis layer */}
-      <rect x="15" y="20" width="270" height="32" fill="rgba(200,160,100,0.45)" rx="4" />
-      <Label x={150} y={38} text="Epidermis" />
-      {/* Dermis layer */}
-      <rect x="15" y="52" width="270" height="80" fill="rgba(180,130,80,0.3)" />
-      <Label x={150} y={68} text="Dermis" />
-      {/* Hypodermis */}
-      <rect x="15" y="132" width="270" height="83" fill="rgba(220,190,100,0.2)" />
-      <Label x={150} y={150} text="Hypodermis (subcutaneous)" />
-      {/* Fat cells in hypodermis */}
-      {[0,1,2,3,4,5,6,7].map(i => <ellipse key={i} cx={35+i*33} cy={170} rx={12} ry={8} fill="rgba(220,190,60,0.2)" stroke="rgba(252,250,247,0.1)" strokeWidth={0.8} />)}
-      {/* Hair follicle */}
-      <path d="M85,20 L85,120 Q85,130 90,135 Q95,140 100,135 Q105,130 105,120 L105,20" fill="rgba(100,70,40,0.4)" stroke="rgba(252,250,247,0.15)" strokeWidth={0.8} />
-      <path d="M90,20 Q95,14 100,20" fill="rgba(80,60,30,0.6)" />
-      <Label x={95} y={12} text="Hair" />
-      {/* Sebaceous gland */}
-      <ellipse cx={108} cy={90} rx={10} ry={7} fill="rgba(180,160,60,0.4)" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <Label x={125} y={92} text="Sebaceous gland" anchor="start" small />
-      {/* Sweat gland (eccrine) - coiled at bottom */}
-      <path d="M180,132 L180,165 Q180,178 188,182 Q196,186 196,178 Q196,165 188,160 L188,132" stroke="rgba(100,160,200,0.6)" strokeWidth={3} fill="none" strokeLinecap="round" />
-      <circle cx={188} cy={182} r={6} fill="rgba(100,160,200,0.3)" stroke="rgba(100,160,200,0.5)" strokeWidth={1} />
-      <Label x={200} y={178} text="Sweat gland" anchor="start" small />
-      {/* Blood vessel */}
-      <path d="M220,60 L220,140" stroke="rgba(200,60,60,0.6)" strokeWidth={4} fill="none" strokeLinecap="round" />
-      <Label x={228} y={100} text="Blood vessel" anchor="start" small />
-      {/* Nerve ending */}
-      <path d="M250,52 L250,80 M245,70 L240,75 M255,70 L260,75" stroke="rgba(200,150,220,0.6)" strokeWidth={1.5} fill="none" />
-      <Label x={252} y={90} text="Sensory nerve" anchor="start" small />
-      {/* Layer labels on left */}
-      <line x1="15" y1="52" x2="8" y2="52" stroke="rgba(252,250,247,0.15)" strokeWidth={0.8} />
-      <line x1="15" y1="132" x2="8" y2="132" stroke="rgba(252,250,247,0.15)" strokeWidth={0.8} />
-    </svg>
-  );
-}
-
-function LymphaticSVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      {/* Thoracic duct (main lymph trunk) */}
-      <path d="M140,210 L140,120 L130,90 L135,55 L145,30 L150,18" stroke="rgba(100,180,180,0.5)" strokeWidth={3} fill="none" strokeDasharray="4,2" />
-      <Label x={118} y={160} text="Thoracic duct" anchor="end" small />
-      {/* Cervical lymph nodes */}
-      <circle cx={130} cy={55} r={6} fill="rgba(80,160,160,0.5)" stroke="rgba(252,250,247,0.25)" strokeWidth={1} />
-      <circle cx={168} cy={55} r={6} fill="rgba(80,160,160,0.5)" stroke="rgba(252,250,247,0.25)" strokeWidth={1} />
-      <Label x={150} y={46} text="Cervical nodes" />
-      {/* Axillary nodes (armpit) */}
-      <circle cx={80} cy={95} r={7} fill="rgba(80,160,160,0.5)" stroke="rgba(252,250,247,0.25)" strokeWidth={1} />
-      <circle cx={220} cy={95} r={7} fill="rgba(80,160,160,0.5)" stroke="rgba(252,250,247,0.25)" strokeWidth={1} />
-      <Label x={62} y={95} text="Axillary" anchor="end" small />
-      <Label x={238} y={95} text="Axillary" anchor="start" small />
-      {/* Spleen */}
-      <ellipse cx={210} cy={130} rx={22} ry={18} fill="rgba(140,60,100,0.45)" stroke="rgba(252,250,247,0.2)" strokeWidth={1.5} />
-      <Label x={210} y={132} text="Spleen" />
-      {/* Thymus */}
-      <path d="M132,80 Q140,75 148,80 L148,95 Q140,100 132,95 Z" fill="rgba(80,140,130,0.4)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      <Label x={140} y={108} text="Thymus" />
-      {/* Inguinal nodes */}
-      <circle cx={120} cy={185} r={5} fill="rgba(80,160,160,0.5)" stroke="rgba(252,250,247,0.25)" strokeWidth={1} />
-      <circle cx={180} cy={185} r={5} fill="rgba(80,160,160,0.5)" stroke="rgba(252,250,247,0.25)" strokeWidth={1} />
-      <Label x={150} y={200} text="Inguinal nodes" />
-      {/* Lymph vessels (simplified lines) */}
-      <path d="M80,95 L120,185 M220,95 L180,185" stroke="rgba(100,180,180,0.3)" strokeWidth={1.5} fill="none" strokeDasharray="3,2" />
-      <path d="M130,55 L80,95 M168,55 L220,95" stroke="rgba(100,180,180,0.3)" strokeWidth={1.5} fill="none" strokeDasharray="3,2" />
-      {/* Lymph node enlarged diagram */}
-      <ellipse cx={40} cy={165} rx={22} ry={32} fill="rgba(80,160,160,0.2)" stroke="rgba(80,160,160,0.4)" strokeWidth={1.2} />
-      {[0,1,2].map(i => <path key={i} d={`M18,${148+i*9} Q40,${144+i*9} 62,${148+i*9}`} stroke="rgba(100,180,180,0.25)" strokeWidth={0.8} fill="none" />)}
-      <Label x={40} y={205} text="Lymph node" small />
-    </svg>
-  );
-}
-
-function ReproductiveSVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      <text x="150" y="25" fill="rgba(252,250,247,0.6)" fontSize={11} fontFamily="monospace" textAnchor="middle" fontWeight="bold">Female Reproductive</text>
-      {/* Uterus */}
-      <path d="M110,80 Q100,82 95,95 Q90,112 100,128 Q115,148 150,152 Q185,148 200,128 Q210,112 205,95 Q200,82 190,80 Q180,78 170,82 L170,78 L150,72 L130,78 L130,82 Q120,78 110,80Z" fill="rgba(160,60,100,0.45)" stroke="rgba(252,250,247,0.22)" strokeWidth={1.5} />
-      <Label x={150} y={118} text="Uterus" />
-      {/* Cervix */}
-      <path d="M135,152 L135,175 Q150,180 165,175 L165,152" fill="rgba(140,50,85,0.4)" stroke="rgba(252,250,247,0.18)" strokeWidth={1} />
-      <Label x={175} y={170} text="Cervix" anchor="start" small />
-      {/* Vagina label */}
-      <path d="M140,175 L140,205 Q150,210 160,205 L160,175" fill="rgba(120,45,75,0.35)" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <Label x={165} y={195} text="Vagina" anchor="start" small />
-      {/* Fallopian tubes */}
-      <path d="M110,82 Q85,75 70,72 Q55,70 50,75 Q45,82 52,88" stroke="rgba(200,100,140,0.7)" strokeWidth={3} fill="none" strokeLinecap="round" />
-      <path d="M190,82 Q215,75 230,72 Q245,70 250,75 Q255,82 248,88" stroke="rgba(200,100,140,0.7)" strokeWidth={3} fill="none" strokeLinecap="round" />
-      <Label x={60} y={68} text="Fallopian tube" small />
-      {/* Fimbriae */}
-      {[-4,-2,0,2,4].map(i => <line key={i} x1={52+i} y1={88} x2={50+i*1.5} y2={98} stroke="rgba(200,100,140,0.6)" strokeWidth={1} />)}
-      {[-4,-2,0,2,4].map(i => <line key={i+5} x1={248+i} y1={88} x2={250+i*1.5} y2={98} stroke="rgba(200,100,140,0.6)" strokeWidth={1} />)}
-      {/* Ovaries */}
-      <ellipse cx={50} cy={92} rx={12} ry={9} fill="rgba(180,80,120,0.5)" stroke="rgba(252,250,247,0.22)" strokeWidth={1.2} />
-      <ellipse cx={250} cy={92} rx={12} ry={9} fill="rgba(180,80,120,0.5)" stroke="rgba(252,250,247,0.22)" strokeWidth={1.2} />
-      <Label x={38} y={105} text="Ovary" anchor="middle" small />
-      <Label x={262} y={105} text="Ovary" anchor="middle" small />
-      {/* Uterus cavity + endometrium label */}
-      <Label x={55} y={128} text="Endometrium" anchor="end" small />
-      <line x1={56} y1={125} x2={115} y2={118} stroke="rgba(252,250,247,0.15)" strokeWidth={0.8} />
-    </svg>
-  );
-}
-
-function SpecialSensesSVG() {
-  return (
-    <svg viewBox="0 0 300 215" style={{ width: "100%", maxWidth: 300 }}>
-      <rect width="300" height="215" fill="rgba(0,0,0,0.2)" rx="8" />
-      <text x="75" y="14" fill="rgba(252,250,247,0.55)" fontSize={9.5} fontFamily="monospace" textAnchor="middle">Eye</text>
-      <text x="225" y="14" fill="rgba(252,250,247,0.55)" fontSize={9.5} fontFamily="monospace" textAnchor="middle">Ear</text>
-      {/* Divider */}
-      <line x1="150" y1="10" x2="150" y2="215" stroke="rgba(252,250,247,0.07)" strokeWidth={1} />
-
-      {/* EYE cross-section */}
-      <ellipse cx={75} cy={110} rx={60} ry={55} fill="rgba(255,255,255,0.05)" stroke="rgba(252,250,247,0.2)" strokeWidth={1.5} />
-      {/* Sclera label */}
-      <Label x={130} y={88} text="Sclera" anchor="end" small />
-      {/* Choroid */}
-      <ellipse cx={75} cy={110} rx={54} ry={49} fill="rgba(100,60,30,0.3)" stroke="rgba(252,250,247,0.1)" strokeWidth={1} />
-      {/* Retina */}
-      <ellipse cx={75} cy={110} rx={48} ry={43} fill="rgba(40,60,80,0.4)" stroke="rgba(252,250,247,0.12)" strokeWidth={1} />
-      <Label x={40} y={145} text="Retina" small />
-      {/* Vitreous */}
-      <ellipse cx={75} cy={110} rx={42} ry={37} fill="rgba(100,140,180,0.15)" />
-      <Label x={75} y={115} text="Vitreous" small />
-      {/* Cornea (front dome) */}
-      <path d="M22,90 Q15,110 22,130" stroke="rgba(200,230,250,0.5)" strokeWidth={5} fill="none" strokeLinecap="round" />
-      <Label x={10} y={110} text="Cornea" anchor="end" small />
-      {/* Iris */}
-      <ellipse cx={32} cy={110} rx={9} ry={14} fill="rgba(60,100,150,0.5)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      {/* Pupil */}
-      <ellipse cx={32} cy={110} rx={4} ry={6} fill="rgba(0,0,0,0.8)" />
-      {/* Lens */}
-      <ellipse cx={43} cy={110} rx={7} ry={12} fill="rgba(220,220,180,0.3)" stroke="rgba(252,250,247,0.2)" strokeWidth={0.8} />
-      <Label x={48} y={108} text="Lens" anchor="start" small />
-      {/* Optic nerve */}
-      <path d="M123,110 L143,110" stroke="rgba(252,250,247,0.4)" strokeWidth={4} strokeLinecap="round" fill="none" />
-      <Label x={133} y={122} text="Optic nerve" small />
-
-      {/* EAR cross-section */}
-      {/* Outer ear (pinna) */}
-      <path d="M165,58 Q158,65 158,90 Q158,110 165,118 Q175,128 180,120 L180,115 Q175,118 170,110 Q167,98 167,82 Q167,68 173,62 Z" fill="rgba(180,140,80,0.35)" stroke="rgba(252,250,247,0.2)" strokeWidth={1} />
-      <Label x={157} y={62} text="Pinna" anchor="end" small />
-      {/* External auditory canal */}
-      <rect x="180" y="82" width="28" height="16" rx="4" fill="rgba(150,120,70,0.3)" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <Label x={194} y={108} text="Ext. canal" small />
-      {/* Tympanic membrane */}
-      <rect x="208" y="78" width="4" height="24" rx="1" fill="rgba(200,200,150,0.6)" />
-      <Label x={213} y={74} text="Tympanic membrane" anchor="start" small />
-      {/* Middle ear ossicles */}
-      {/* Malleus */}
-      <path d="M212,82 L222,78 L226,82" stroke="rgba(220,200,150,0.8)" strokeWidth={2.5} fill="none" strokeLinecap="round" />
-      {/* Incus */}
-      <path d="M226,82 L234,86 L232,92" stroke="rgba(220,200,150,0.8)" strokeWidth={2.5} fill="none" strokeLinecap="round" />
-      {/* Stapes */}
-      <path d="M232,92 L240,90 L245,96 L240,100 L232,98" stroke="rgba(220,200,150,0.7)" strokeWidth={2} fill="none" strokeLinecap="round" />
-      <Label x={228} y={75} text="Malleus Incus Stapes" anchor="middle" small />
-      {/* Oval window / Cochlea */}
-      <path d="M245,98 Q260,95 268,105 Q272,118 264,128 Q256,140 245,138 Q235,136 232,128 Q228,118 234,108Z" fill="rgba(60,100,150,0.4)" stroke="rgba(252,250,247,0.2)" strokeWidth={1.2} />
-      {[0,1].map(i => <path key={i} d={`M240,${108+i*12} Q255,${104+i*12} 268,${108+i*12}`} stroke="rgba(252,250,247,0.1)" strokeWidth={0.8} fill="none" />)}
-      <Label x={255} y={118} text="Cochlea" small />
-      {/* Semicircular canals */}
-      <path d="M255,98 Q275,82 285,100 Q285,115 268,115" stroke="rgba(100,150,200,0.5)" strokeWidth={3} fill="none" />
-      <path d="M258,96 Q268,78 280,90 Q285,100 272,108" stroke="rgba(100,150,200,0.4)" strokeWidth={2} fill="none" />
-      <Label x={283} y={88} text="Semicircular canals" anchor="end" small />
-      {/* Eustachian tube */}
-      <path d="M242,138 Q238,165 230,180 Q222,195 215,205" stroke="rgba(180,160,80,0.5)" strokeWidth={3} fill="none" strokeLinecap="round" />
-      <Label x={213} y={210} text="Eustachian tube" anchor="end" small />
-    </svg>
-  );
-}
-
-function BodyOverview({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {
-  return (
-    <svg viewBox="0 0 160 360" style={{ width: "100%", maxWidth: 160, display: "block" }}>
-      {/* Body fill */}
-      <circle cx="80" cy="28" r="22" fill="#2a3040" stroke="rgba(252,250,247,0.2)" strokeWidth={1.5} />
-      <rect x="70" y="49" width="20" height="10" fill="#2a3040" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <path d="M48,58 Q52,57 70,56 L90,56 Q108,57 112,58 L112,185 L48,185 Z" fill="#2a3040" stroke="rgba(252,250,247,0.18)" strokeWidth={1.2} />
-      <path d="M30,62 L30,142 L48,142 L48,60" fill="#2a3040" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <path d="M130,62 L130,142 L112,142 L112,60" fill="#2a3040" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <rect x="48" y="185" width="28" height="110" fill="#2a3040" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-      <rect x="84" y="185" width="28" height="110" fill="#2a3040" stroke="rgba(252,250,247,0.15)" strokeWidth={1} />
-
-      {SYSTEMS.map(sys => {
-        const isSelected = selected === sys.id;
-        const opacity = isSelected ? 0.65 : 0.22;
-        const region = sys.region;
-        const fill = sys.color + Math.round(opacity * 255).toString(16).padStart(2, "0");
-        const stroke = sys.color;
-        const common: React.SVGProps<SVGElement> = { onClick: () => onSelect(sys.id), style: { cursor: "pointer" } };
-        if (region.type === "ellipse") return <ellipse key={sys.id} {...common as any} cx={(region as any).cx} cy={(region as any).cy} rx={(region as any).rx} ry={(region as any).ry} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1.5} />;
-        if (region.type === "twoEllipse") return <g key={sys.id} {...common as any}><ellipse cx={(region as any).cx1} cy={(region as any).cy1} rx={(region as any).rx1} ry={(region as any).ry1} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1.2} /><ellipse cx={(region as any).cx2} cy={(region as any).cy2} rx={(region as any).rx2} ry={(region as any).ry2} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1.2} /></g>;
-        if (region.type === "rect") return <rect key={sys.id} {...common as any} x={(region as any).x} y={(region as any).y} width={(region as any).w} height={(region as any).h} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1.5} />;
-        if (region.type === "head") return <circle key={sys.id} {...common as any} cx={(region as any).cx} cy={(region as any).cy} r={(region as any).r} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1.5} />;
-        if (region.type === "full") return <path key={sys.id} {...common as any} d="M48,58 L48,185 L30,142 L30,62 Z M112,58 L112,185 L130,142 L130,62 Z M48,185 L48,295 L84,295 L84,185 Z M84,185 L84,295 L112,295 L112,185 Z M48,60 L112,60 L112,185 L48,185 Z" fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1.2} />;
-        if (region.type === "glands") return <g key={sys.id}>{[{ cx: 80, cy: 28, r: 5 }, { cx: 80, cy: 56, r: 4 }, { cx: 66, cy: 135, r: 4 }, { cx: 94, cy: 135, r: 4 }, { cx: 80, cy: 105, r: 4 }].map((g, i) => <circle key={i} {...common as any} cx={g.cx} cy={g.cy} r={g.r} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1.2} />)}</g>;
-        if (region.type === "outline") return <path key={sys.id} {...common as any} d="M80,6 Q102,6 102,28 Q102,50 80,50 Q58,6 58,28 Q58,6 80,6Z M48,58 Q52,57 70,56 L90,56 Q108,57 112,58 L112,185 L48,185 Z M30,62 L30,142 L48,142 L48,60 Z M130,62 L130,142 L112,142 L112,60 Z M48,185 L48,295 L76,295 L76,185 Z M84,185 L84,295 L112,295 L112,185 Z" fill={"transparent"} stroke={isSelected ? stroke : sys.color + "55"} strokeWidth={isSelected ? 3 : 1.5} />;
-        if (region.type === "lymph") return <g key={sys.id}>{[{ cx: 70, cy: 55, r: 4 }, { cx: 90, cy: 55, r: 4 }, { cx: 45, cy: 95, r: 5 }, { cx: 115, cy: 95, r: 5 }, { cx: 62, cy: 180, r: 4 }, { cx: 98, cy: 180, r: 4 }, { cx: 95, cy: 120, r: 5 }].map((g, i) => <circle key={i} {...common as any} cx={g.cx} cy={g.cy} r={g.r} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1} />)}</g>;
-        if (region.type === "senses") return <g key={sys.id}><ellipse {...common as any} cx={70} cy={24} rx={5} ry={3} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1} /><ellipse {...common as any} cx={90} cy={24} rx={5} ry={3} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1} /><circle {...common as any} cx={58} cy={28} r={4} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1} /><circle {...common as any} cx={102} cy={28} r={4} fill={fill} stroke={isSelected ? stroke : "transparent"} strokeWidth={1} /></g>;
-        return null;
-      })}
-    </svg>
-  );
-}
-
-function findStructureByPath(system: typeof DATA_SYSTEMS[0], structPath: string[]): any {
-  let items: any[] = system.structures as any[];
-  let found: any = null;
-  for (const id of structPath) {
-    found = items.find((s: any) => s.id === id);
-    if (!found) return null;
-    items = found.children ?? [];
-  }
-  return found;
-}
-
-function StructureCard({ structure, accentColor, onClick }: { structure: any; accentColor: string; onClick: () => void }) {
-  const hasChildren = structure.children && structure.children.length > 0;
-  const baseName = structure.officialName.split("(")[0].trim();
-  const parenPart = structure.officialName.match(/\(([^)]+)\)/)?.[1];
-  return (
-    <button
-      onClick={onClick}
-      style={{ textAlign: "left", padding: "16px 18px", borderRadius: "13px", backgroundColor: "rgba(255,255,255,0.05)", border: `1px solid ${accentColor}33`, color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", width: "100%", transition: "background 0.14s" }}
-      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = accentColor + "28"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(255,255,255,0.05)"; }}
-    >
-      <div style={{ fontWeight: "700", fontSize: "0.92rem", marginBottom: "1px" }}>{baseName}</div>
-      {parenPart && <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.73rem", marginBottom: "3px" }}>{parenPart}</div>}
-      {structure.casualName && <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.76rem", marginBottom: "6px" }}>{structure.casualName}</div>}
-      {structure.combiningForm && (
-        <div style={{ color: accentColor, fontFamily: "monospace", fontSize: "0.74rem", fontWeight: "700", marginBottom: "5px" }}>{structure.combiningForm}</div>
-      )}
-      <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", lineHeight: 1.4, marginBottom: "6px" }}>
-        {structure.definition?.slice(0, 70)}{structure.definition?.length > 70 ? "..." : ""}
-      </div>
-      {hasChildren
-        ? <div style={{ color: accentColor, fontSize: "0.73rem", fontWeight: "700" }}>{structure.children.length} parts inside ›</div>
-        : <div style={{ color: "rgba(252,250,247,0.22)", fontSize: "0.72rem" }}>View details ›</div>
-      }
-    </button>
-  );
-}
-
-function LeafDetail({ node, accentColor }: { node: any; accentColor: string }) {
-  if (!node) return null;
-  return (
-    <div style={{ maxWidth: "580px" }}>
-      <div style={{ backgroundColor: accentColor + "22", border: `1px solid ${accentColor}55`, borderRadius: "16px", padding: "26px 28px" }}>
-        <div style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.25rem", marginBottom: "4px" }}>{node.officialName}</div>
-        {node.casualName && <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.88rem", marginBottom: "14px" }}>{node.casualName}</div>}
-        {node.combiningForm && (
-          <div style={{ marginBottom: "16px" }}>
-            <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "4px" }}>Combining Form</div>
-            <div style={{ color: accentColor, fontFamily: "monospace", fontSize: "1.05rem", fontWeight: "700" }}>{node.combiningForm}</div>
-          </div>
-        )}
-        <div style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "6px" }}>Definition</div>
-        <div style={{ color: "rgba(252,250,247,0.8)", fontSize: "0.92rem", lineHeight: 1.65 }}>{node.definition}</div>
-        {node.homonymWarning && (
-          <div style={{ marginTop: "16px", backgroundColor: "rgba(200,160,50,0.15)", border: "1px solid rgba(200,160,50,0.3)", borderRadius: "9px", padding: "11px 14px" }}>
-            <div style={{ color: "#d4a830", fontSize: "0.75rem", fontWeight: "700", marginBottom: "3px" }}>Note</div>
-            <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.8rem", lineHeight: 1.4 }}>{node.homonymWarning}</div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+type Gender = "male" | "female";
 
 export default function BodyReference() {
-  const [, navigate] = useLocation();
-  const [path, setPath] = useState<string[]>([]);
-  const [animKey, setAnimKey] = useState(0);
+  const [, setLocation] = useLocation();
+  const [gender, setGender] = useState<Gender>("male");
+  const [hoveredSystem, setHoveredSystem] = useState<string | null>(null);
+  const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
+  
+  const [drillPath, setDrillPath] = useState<any[]>([]);
 
-  const drillInto = (id: string) => { setPath(p => [...p, id]); setAnimKey(k => k + 1); };
-  const goToLevel = (idx: number) => { setPath(p => p.slice(0, idx)); setAnimKey(k => k + 1); };
+  const activeSystem = useMemo(() => {
+    return DATA_SYSTEMS.find(s => s.id === activeSystemId);
+  }, [activeSystemId]);
 
-  const currentSystem = path.length > 0 ? DATA_SYSTEMS.find(s => s.id === path[0]) : null;
-  const uiSystem = path.length > 0 ? SYSTEMS.find(s => s.id === path[0]) : null;
+  const currentLevel = drillPath.length > 0 ? drillPath[drillPath.length - 1] : null;
+  const listData = currentLevel ? currentLevel.children || [] : (activeSystem ? activeSystem.structures : []);
 
-  const getCurrentItems = (): any[] => {
-    if (path.length === 0) return [];
-    if (path.length === 1) return (currentSystem?.structures as any[]) ?? [];
-    const node = findStructureByPath(currentSystem!, path.slice(1));
-    return node?.children ?? [];
+  const handleBack = () => {
+    if (drillPath.length > 0) {
+      setDrillPath(prev => prev.slice(0, -1));
+    } else if (activeSystemId) {
+      setActiveSystemId(null);
+    } else {
+      setLocation("/");
+    }
   };
 
-  const currentNode = path.length >= 2 ? findStructureByPath(currentSystem!, path.slice(1)) : null;
-  const items = getCurrentItems();
-  const isLeaf = path.length >= 2 && items.length === 0;
+  const handleSystemClick = (id: string) => {
+    setActiveSystemId(id);
+    setDrillPath([]);
+  };
 
-  const crumbs: Array<{ label: string; idx: number }> = [{ label: "Body Explorer", idx: 0 }];
-  if (path.length > 0 && currentSystem) {
-    crumbs.push({ label: currentSystem.officialName.replace(" System", ""), idx: 1 });
-  }
-  for (let i = 1; i < path.length; i++) {
-    const node = findStructureByPath(currentSystem!, path.slice(1, i + 1));
-    if (node) crumbs.push({ label: node.officialName.split("(")[0].trim(), idx: i + 1 });
-  }
+  const handleStructureClick = (struct: any) => {
+    setDrillPath(prev => [...prev, struct]);
+  };
+
+  const isDetailView = currentLevel && (!currentLevel.children || currentLevel.children.length === 0);
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <style>{`
-        @keyframes drillZoom {
-          from { opacity: 0; transform: scale(0.93) translateY(6px); }
-          to   { opacity: 1; transform: scale(1)    translateY(0);   }
-        }
-        .drill-anim { animation: drillZoom 0.22s cubic-bezier(0.22,1,0.36,1) forwards; }
-      `}</style>
-
-      {/* Header / breadcrumb */}
-      <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "12px 24px", display: "flex", alignItems: "center", gap: "10px", borderBottom: "1px solid rgba(252,250,247,0.07)", flexWrap: "wrap" as const }}>
-        <button onClick={() => navigate("/")} style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem", flexShrink: 0 }}>Back</button>
-        <div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" as const }}>
-          {crumbs.map((c, i) => (
-            <span key={i} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <button onClick={() => goToLevel(c.idx)} style={{ background: "none", border: "none", cursor: i < crumbs.length - 1 ? "pointer" : "default", fontFamily: "inherit", fontSize: "0.88rem", padding: "0", color: i === crumbs.length - 1 ? "#fcfaf7" : "rgba(252,250,247,0.4)", fontWeight: i === crumbs.length - 1 ? "700" : "400" }}>
-                {c.label}
-              </button>
-              {i < crumbs.length - 1 && <span style={{ color: "rgba(252,250,247,0.2)", fontSize: "0.8rem" }}>›</span>}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div key={animKey} className="drill-anim" style={{ maxWidth: "1100px", margin: "0 auto", padding: "28px 24px" }}>
-
-        {/* ── Level 0: All 11 body systems ── */}
-        {path.length === 0 && (
-          <>
-            <div style={{ marginBottom: "24px" }}>
-              <h1 style={{ color: "#fcfaf7", fontSize: "1.5rem", fontWeight: "800", marginBottom: "4px" }}>Body Systems Explorer</h1>
-              <p style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.88rem" }}>Click any system to zoom in and explore its anatomy.</p>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "13px" }}>
-              {DATA_SYSTEMS.map(sys => {
-                const ui = SYSTEMS.find(s => s.id === sys.id);
-                const col = ui?.color ?? "#4a5a6a";
-                return (
-                  <button
-                    key={sys.id}
-                    onClick={() => drillInto(sys.id)}
-                    style={{ textAlign: "left", padding: "20px 18px", borderRadius: "15px", backgroundColor: col + "22", border: `1px solid ${col}44`, color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", transition: "all 0.14s" }}
-                    onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.backgroundColor = col + "44"; b.style.borderColor = col + "88"; b.style.transform = "scale(1.02)"; }}
-                    onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.backgroundColor = col + "22"; b.style.borderColor = col + "44"; b.style.transform = "scale(1)"; }}
-                  >
-                    <div style={{ fontSize: "1.9rem", marginBottom: "9px", lineHeight: 1 }}>{sys.emoji}</div>
-                    <div style={{ fontWeight: "800", fontSize: "0.98rem", marginBottom: "2px" }}>{sys.officialName.replace(" System", "")}</div>
-                    <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.75rem", marginBottom: "7px" }}>{sys.casualName}</div>
-                    <div style={{ color: col, fontSize: "0.72rem", fontWeight: "700" }}>{sys.structures.length} structures › Explore</div>
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* ── Level 1: Inside a body system ── */}
-        {path.length === 1 && currentSystem && uiSystem && (
-          <div>
-            <div style={{ display: "flex", gap: "28px", marginBottom: "28px", flexWrap: "wrap" as const }}>
-              {/* SVG Diagram */}
-              <div style={{ flex: "0 0 240px", minWidth: "180px" }}>
-                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.65rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.07em", marginBottom: "8px" }}>Diagram</div>
-                <SystemDiagram id={path[0]} />
+    <div className="min-h-[100dvh] flex flex-col bg-[var(--bg-base)] text-[var(--fg-primary)] overflow-hidden">
+      <header className="px-4 py-4 flex items-center justify-between bg-[var(--bg-surface)] border-b border-[var(--bg-card)] shadow-sm z-10 relative">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={handleBack} className="btn-cartoon bg-[var(--bg-card)] hover:bg-[var(--bg-surface)] text-[var(--fg-primary)]">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="font-extrabold text-xl tracking-tight">
+            {activeSystem ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="opacity-60 hidden md:inline cursor-pointer" onClick={() => { setActiveSystemId(null); setDrillPath([]); }}>
+                  Explorer /
+                </span>
+                <span 
+                  className="hidden md:inline"
+                  style={{ color: SYSTEM_COLORS[activeSystem.id] || 'var(--fg-primary)', cursor: drillPath.length > 0 ? 'pointer' : 'default' }}
+                  onClick={() => setDrillPath([])}
+                >
+                  {activeSystem.casualName || activeSystem.officialName}
+                </span>
+                {drillPath.map((crumb, idx) => (
+                  <span key={crumb.id} className="flex items-center gap-2">
+                    <span className="opacity-40">/</span>
+                    <span 
+                      className={idx === drillPath.length - 1 ? "" : "opacity-60 cursor-pointer hover:opacity-100 transition-opacity"}
+                      onClick={() => setDrillPath(drillPath.slice(0, idx + 1))}
+                    >
+                      {crumb.casualName || crumb.officialName}
+                    </span>
+                  </span>
+                ))}
               </div>
-
-              {/* System info + structure grid */}
-              <div style={{ flex: 1, minWidth: "260px" }}>
-                <h2 style={{ color: "#fcfaf7", fontSize: "1.35rem", fontWeight: "800", marginBottom: "3px" }}>{currentSystem.officialName}</h2>
-                <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.85rem", marginBottom: "18px" }}>{uiSystem.desc}</div>
-                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "10px" }}>Structures (click to explore inside)</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: "10px" }}>
-                  {(currentSystem.structures as any[]).map((s: any) => (
-                    <StructureCard key={s.id} structure={s} accentColor={uiSystem.color} onClick={() => drillInto(s.id)} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Level 2+: Inside a structure ── */}
-        {path.length >= 2 && currentSystem && uiSystem && (
-          <div>
-            {isLeaf ? (
-              <LeafDetail node={currentNode} accentColor={uiSystem.color} />
             ) : (
-              <>
-                {/* Current node summary */}
-                <div style={{ backgroundColor: uiSystem.color + "22", border: `1px solid ${uiSystem.color}44`, borderRadius: "13px", padding: "18px 22px", marginBottom: "20px" }}>
-                  <div style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1.1rem", marginBottom: "3px" }}>{currentNode?.officialName}</div>
-                  {currentNode?.casualName && <div style={{ color: "rgba(252,250,247,0.38)", fontSize: "0.8rem", marginBottom: "6px" }}>{currentNode.casualName}</div>}
-                  {currentNode?.combiningForm && <div style={{ color: uiSystem.color, fontFamily: "monospace", fontSize: "0.82rem", fontWeight: "700", marginBottom: "7px" }}>{currentNode.combiningForm}</div>}
-                  <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.86rem", lineHeight: 1.55 }}>{currentNode?.definition}</div>
-                </div>
-                <div style={{ color: "rgba(252,250,247,0.28)", fontSize: "0.68rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "10px" }}>
-                  Inside {currentNode?.officialName?.split("(")[0].trim()} (click a part to zoom in)
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px" }}>
-                  {items.map((s: any) => (
-                    <StructureCard key={s.id} structure={s} accentColor={uiSystem.color} onClick={() => drillInto(s.id)} />
-                  ))}
-                </div>
-              </>
+              "Body Explorer"
             )}
           </div>
-        )}
+        </div>
 
-      </div>
+        {!activeSystemId && (
+          <div className="flex items-center bg-[var(--bg-card)] p-1 rounded-full border border-[rgba(0,0,0,0.05)] shadow-inner">
+            <button 
+              className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all ${gender === "male" ? "bg-[var(--bg-surface)] shadow-sm text-[var(--fg-primary)]" : "opacity-60 hover:opacity-100 text-[var(--fg-secondary)]"}`}
+              onClick={() => setGender("male")}
+            >
+              Male
+            </button>
+            <button 
+              className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all ${gender === "female" ? "bg-[var(--bg-surface)] shadow-sm text-[var(--fg-primary)]" : "opacity-60 hover:opacity-100 text-[var(--fg-secondary)]"}`}
+              onClick={() => setGender("female")}
+            >
+              Female
+            </button>
+          </div>
+        )}
+      </header>
+
+      <main className="flex-1 flex flex-col md:flex-row relative">
+        <div className={`flex-1 flex items-center justify-center p-4 transition-all duration-500 ${activeSystemId ? 'md:w-1/2 opacity-30 md:opacity-100 scale-95 md:scale-100' : 'w-full scale-100'} absolute inset-0 md:relative`}>
+          <div className="relative w-full max-w-lg h-full max-h-[80vh] flex items-center justify-center">
+            
+            <style>{`
+              @keyframes heartbeat {
+                0%, 100% { transform: scale(1); }
+                10%, 30% { transform: scale(1.05); }
+                20% { transform: scale(0.95); }
+              }
+              @keyframes breathing {
+                0%, 100% { transform: scaleY(1) scaleX(1); }
+                50% { transform: scaleY(1.03) scaleX(1.02); }
+              }
+              .pulse-heart { animation: heartbeat 1.2s infinite; transform-origin: 50% 35%; }
+              .breathe-lungs { animation: breathing 4s ease-in-out infinite; transform-origin: 50% 35%; }
+              .system-path { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+              .system-path:hover { filter: brightness(1.2) drop-shadow(0 0 8px rgba(255,255,255,0.3)); transform: scale(1.01); transform-origin: center; }
+              .system-inactive { opacity: 0.25; filter: grayscale(80%); pointer-events: none; }
+              .system-active { opacity: 1; filter: drop-shadow(0 0 16px currentColor); transform: scale(1.08); transform-origin: center; z-index: 10; pointer-events: none; }
+            `}</style>
+
+            <svg viewBox="0 0 400 800" className="w-full h-full drop-shadow-2xl overflow-visible">
+              <defs>
+                <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="var(--bg-surface)" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="var(--bg-base)" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+              <rect x="0" y="0" width="400" height="800" fill="url(#glow)" className="opacity-50" />
+
+              {/* Musculoskeletal */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "musculoskeletal" ? 'system-inactive' : ''} ${activeSystemId === "musculoskeletal" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("musculoskeletal")}
+                 onMouseEnter={() => setHoveredSystem("musculoskeletal")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["musculoskeletal"] }}
+              >
+                <circle cx="200" cy="80" r="45" fill="var(--fg-secondary)" stroke="var(--fg-primary)" strokeWidth="4" opacity="0.4" />
+                <path d={gender === "male" ? "M150,130 C130,150 130,300 160,350 C180,380 220,380 240,350 C270,300 270,150 250,130 Z" : "M160,130 C140,160 140,300 150,350 C170,390 230,390 250,350 C260,300 260,160 240,130 Z"} fill="var(--fg-secondary)" stroke="var(--fg-primary)" strokeWidth="4" opacity="0.4" />
+                <path d="M140,140 C110,160 90,250 80,320 C75,340 95,350 100,320 C110,260 130,160 140,140 Z" fill="var(--fg-secondary)" stroke="var(--fg-primary)" strokeWidth="4" opacity="0.4" />
+                <path d="M260,140 C290,160 310,250 320,320 C325,340 305,350 300,320 C290,260 270,160 260,140 Z" fill="var(--fg-secondary)" stroke="var(--fg-primary)" strokeWidth="4" opacity="0.4" />
+                <path d={gender === "male" ? "M165,350 C150,450 140,650 140,700 C140,720 170,720 170,700 C170,650 190,450 195,370 Z" : "M160,350 C145,450 135,650 140,700 C140,720 170,720 170,700 C170,650 190,450 195,370 Z"} fill="var(--fg-secondary)" stroke="var(--fg-primary)" strokeWidth="4" opacity="0.4" />
+                <path d={gender === "male" ? "M235,350 C250,450 260,650 260,700 C260,720 230,720 230,700 C230,650 210,450 205,370 Z" : "M240,350 C255,450 265,650 260,700 C260,720 230,720 230,700 C230,650 210,450 205,370 Z"} fill="var(--fg-secondary)" stroke="var(--fg-primary)" strokeWidth="4" opacity="0.4" />
+              </g>
+
+              {/* Integumentary */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "integumentary" ? 'system-inactive' : ''} ${activeSystemId === "integumentary" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("integumentary")}
+                 onMouseEnter={() => setHoveredSystem("integumentary")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["integumentary"] }}
+              >
+                <path d="M155,30 C180,10 220,10 245,30 C260,45 255,90 250,110 C270,120 300,140 310,180 C320,220 325,280 330,320 C332,340 310,345 305,320 C300,280 280,200 270,160 C275,220 270,300 255,350 C270,450 275,600 275,700 C275,730 240,730 235,700 C235,600 220,450 210,380 C200,450 180,600 180,700 C180,730 145,730 145,700 C145,600 150,450 165,350 C150,300 145,220 150,160 C140,200 120,280 115,320 C110,345 88,340 90,320 C95,280 100,220 110,180 C120,140 150,120 170,110 C165,90 160,45 155,30 Z" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+              </g>
+
+              {/* Nervous */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "nervous" ? 'system-inactive' : ''} ${activeSystemId === "nervous" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("nervous")}
+                 onMouseEnter={() => setHoveredSystem("nervous")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["nervous"] }}
+              >
+                <path d="M175,60 C175,45 225,45 225,60 C235,70 230,90 200,95 C170,90 165,70 175,60 Z" fill="currentColor" />
+                <path d="M200,95 L200,340" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+                <path d="M200,140 Q170,150 145,170 M200,140 Q230,150 255,170 M200,200 Q160,210 145,250 M200,200 Q240,210 255,250 M200,260 Q150,270 145,310 M200,260 Q250,270 255,310" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="M195,340 Q170,380 160,450 T150,550 T150,680 M205,340 Q230,380 240,450 T250,550 T250,680" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="5,5" />
+              </g>
+
+              {/* Respiratory */}
+              <g className={`system-path breathe-lungs ${activeSystemId && activeSystemId !== "respiratory" ? 'system-inactive' : ''} ${activeSystemId === "respiratory" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("respiratory")}
+                 onMouseEnter={() => setHoveredSystem("respiratory")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["respiratory"] }}
+              >
+                <path d="M196,110 L196,150 M204,110 L204,150" stroke="currentColor" strokeWidth="4" />
+                <path d="M196,150 Q180,160 170,170 M204,150 Q220,160 230,170" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path d="M165,155 C140,160 145,230 155,250 C170,260 185,240 185,210 C185,180 180,165 165,155 Z" fill="currentColor" opacity="0.9" />
+                <path d="M235,155 C260,160 255,230 245,250 C230,260 215,240 215,210 C215,180 220,165 235,155 Z" fill="currentColor" opacity="0.9" />
+              </g>
+
+              {/* Cardiovascular */}
+              <g className={`system-path pulse-heart ${activeSystemId && activeSystemId !== "cardiovascular" ? 'system-inactive' : ''} ${activeSystemId === "cardiovascular" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("cardiovascular")}
+                 onMouseEnter={() => setHoveredSystem("cardiovascular")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["cardiovascular"] }}
+              >
+                <path d="M200,185 C200,175 190,175 190,185 C190,195 200,205 200,205 C200,205 210,195 210,185 C210,175 200,175 200,185 Z" fill="currentColor" transform="scale(1.8) translate(-88, -80)" />
+                <path d="M200,175 Q210,150 230,140 M200,175 Q190,150 170,140 M200,205 L200,320 M200,320 Q180,340 175,400 M200,320 Q220,340 225,400" stroke="currentColor" strokeWidth="3" fill="none" />
+              </g>
+
+              {/* Digestive */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "digestive" ? 'system-inactive' : ''} ${activeSystemId === "digestive" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("digestive")}
+                 onMouseEnter={() => setHoveredSystem("digestive")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["digestive"] }}
+              >
+                <path d="M205,110 L205,210" stroke="currentColor" strokeWidth="5" />
+                <path d="M205,210 C180,210 175,230 190,240 C210,250 230,225 215,215 Z" fill="currentColor" />
+                <path d="M190,205 C220,200 240,215 235,235 C230,245 190,230 190,205 Z" fill="currentColor" opacity="0.9" style={{ color: '#b45309' }} />
+                <path d="M175,260 C165,260 165,280 180,285 C195,290 190,305 175,305 C160,305 160,280 155,270 C155,250 245,250 245,270 C245,290 230,310 215,310 C195,310 190,290 210,280 C230,270 230,260 215,260 Z" fill="currentColor" opacity="0.8" />
+                <path d="M185,270 Q195,265 200,275 T215,280 T200,295 T185,285" stroke="currentColor" strokeWidth="6" fill="none" strokeLinecap="round" opacity="0.8" />
+              </g>
+
+              {/* Urinary */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "urinary" ? 'system-inactive' : ''} ${activeSystemId === "urinary" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("urinary")}
+                 onMouseEnter={() => setHoveredSystem("urinary")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["urinary"] }}
+              >
+                <path d="M175,235 C170,225 185,225 185,240 C185,255 170,255 175,245 Z" fill="currentColor" />
+                <path d="M225,235 C230,225 215,225 215,240 C215,255 230,255 225,245 Z" fill="currentColor" />
+                <path d="M180,245 Q190,290 195,320 M220,245 Q210,290 205,320" stroke="currentColor" strokeWidth="2" fill="none" />
+                <circle cx="200" cy="325" r="10" fill="currentColor" />
+              </g>
+
+              {/* Endocrine */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "endocrine" ? 'system-inactive' : ''} ${activeSystemId === "endocrine" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("endocrine")}
+                 onMouseEnter={() => setHoveredSystem("endocrine")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["endocrine"] }}
+              >
+                <path d="M195,120 Q200,125 205,120 Q205,130 200,132 Q195,130 195,120 Z" fill="currentColor" />
+                <path d="M175,220 L185,225 L180,230 Z" fill="currentColor" />
+                <path d="M225,220 L215,225 L220,230 Z" fill="currentColor" />
+                <rect x="195" y="240" width="15" height="5" rx="2" fill="currentColor" />
+              </g>
+
+              {/* Lymphatic */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "lymphatic" ? 'system-inactive' : ''} ${activeSystemId === "lymphatic" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("lymphatic")}
+                 onMouseEnter={() => setHoveredSystem("lymphatic")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["lymphatic"] }}
+              >
+                <circle cx="180" cy="110" r="3" fill="currentColor" />
+                <circle cx="220" cy="110" r="3" fill="currentColor" />
+                <circle cx="140" cy="160" r="4" fill="currentColor" />
+                <circle cx="260" cy="160" r="4" fill="currentColor" />
+                <circle cx="170" cy="330" r="4" fill="currentColor" />
+                <circle cx="230" cy="330" r="4" fill="currentColor" />
+                <path d="M180,110 Q140,130 140,160 M220,110 Q260,130 260,160 M140,160 Q170,250 170,330 M260,160 Q230,250 230,330" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2,2" fill="none" />
+              </g>
+
+              {/* Reproductive */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "reproductive" ? 'system-inactive' : ''} ${activeSystemId === "reproductive" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("reproductive")}
+                 onMouseEnter={() => setHoveredSystem("reproductive")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["reproductive"] }}
+              >
+                {gender === "female" ? (
+                  <>
+                    <path d="M190,340 Q200,335 210,340 Q205,355 195,355 Z" fill="currentColor" />
+                    <circle cx="180" cy="335" r="5" fill="currentColor" />
+                    <circle cx="220" cy="335" r="5" fill="currentColor" />
+                    <path d="M185,335 Q190,340 195,340 M215,335 Q210,340 205,340" stroke="currentColor" strokeWidth="2" fill="none" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M195,345 L205,345 L200,365 Z" fill="currentColor" />
+                    <circle cx="195" cy="365" r="6" fill="currentColor" />
+                    <circle cx="205" cy="365" r="6" fill="currentColor" />
+                  </>
+                )}
+              </g>
+
+              {/* Special Senses */}
+              <g className={`system-path ${activeSystemId && activeSystemId !== "special-senses" ? 'system-inactive' : ''} ${activeSystemId === "special-senses" ? 'system-active' : ''}`}
+                 onClick={() => handleSystemClick("special-senses")}
+                 onMouseEnter={() => setHoveredSystem("special-senses")}
+                 onMouseLeave={() => setHoveredSystem(null)}
+                 style={{ color: SYSTEM_COLORS["special-senses"] }}
+              >
+                <circle cx="185" cy="70" r="5" fill="currentColor" />
+                <circle cx="215" cy="70" r="5" fill="currentColor" />
+                <circle cx="185" cy="70" r="2" fill="var(--bg-base)" />
+                <circle cx="215" cy="70" r="2" fill="var(--bg-base)" />
+                <path d="M155,75 C150,70 145,85 155,90 Z" fill="currentColor" />
+                <path d="M245,75 C250,70 255,85 245,90 Z" fill="currentColor" />
+                <path d="M200,80 L195,85 L205,85 Z" fill="currentColor" opacity="0.6" />
+              </g>
+
+            </svg>
+
+            {hoveredSystem && !activeSystemId && (
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-[var(--bg-surface)] text-[var(--fg-primary)] px-6 py-3 rounded-2xl shadow-xl font-bold text-lg pointer-events-none border-2 border-[rgba(255,255,255,0.1)] transition-all animate-in slide-in-from-bottom-2 zoom-in-95 z-30">
+                <span style={{ color: SYSTEM_COLORS[hoveredSystem] || 'inherit' }}>
+                  {DATA_SYSTEMS.find(s => s.id === hoveredSystem)?.casualName || DATA_SYSTEMS.find(s => s.id === hoveredSystem)?.officialName || hoveredSystem}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={`w-full md:w-1/2 h-full flex flex-col bg-[var(--bg-card)] border-l border-[var(--bg-surface)] shadow-2xl transition-all duration-300 ${activeSystemId ? 'translate-x-0' : 'translate-x-full md:translate-x-0 md:opacity-0 pointer-events-none absolute right-0'} z-20`}>
+          {activeSystemId && activeSystem && (
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide pb-20 md:pb-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 
+                    className="text-3xl font-black mb-1 tracking-tight"
+                    style={{ color: SYSTEM_COLORS[activeSystem.id] || 'inherit' }}
+                  >
+                    {activeSystem.casualName || activeSystem.officialName}
+                  </h2>
+                  <p className="text-[var(--fg-secondary)] font-medium text-lg">
+                    {activeSystem.officialName}
+                  </p>
+                </div>
+              </div>
+
+              {!isDetailView ? (
+                <div className="space-y-4">
+                  <div className="text-sm font-bold text-[var(--fg-muted)] uppercase tracking-wider mb-2">
+                    {drillPath.length === 0 ? "Major Structures" : `Parts of ${currentLevel?.casualName || currentLevel?.officialName}`}
+                  </div>
+                  
+                  <div className="grid gap-3">
+                    {listData.map((item: any) => (
+                      <div 
+                        key={item.id} 
+                        className="bg-[var(--bg-surface)] p-4 rounded-2xl border border-[rgba(255,255,255,0.05)] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-between group"
+                        onClick={() => handleStructureClick(item)}
+                      >
+                        <div>
+                          <div className="font-extrabold text-lg text-[var(--fg-primary)] group-hover:text-[var(--accent-blue)] transition-colors">
+                            {item.casualName || item.officialName}
+                          </div>
+                          <div className="text-sm text-[var(--fg-muted)] font-medium mt-1">
+                            {item.officialName}
+                          </div>
+                        </div>
+                        <div className="bg-[var(--bg-card)] p-2 rounded-full text-[var(--fg-muted)] group-hover:bg-[var(--accent-blue)] group-hover:text-white transition-colors">
+                          <ChevronRight className="w-5 h-5" />
+                        </div>
+                      </div>
+                    ))}
+                    {listData.length === 0 && (
+                      <div className="text-center py-8 text-[var(--fg-muted)] italic">
+                        No sub-structures defined.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="animate-in fade-in slide-in-from-right-4 space-y-6">
+                  <div className="bg-[var(--bg-surface)] p-6 rounded-3xl border border-[rgba(255,255,255,0.05)] shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-blue)] opacity-10 rounded-full blur-3xl"></div>
+                    
+                    <h3 className="text-2xl font-black text-[var(--fg-primary)] mb-2 relative z-10">
+                      {currentLevel.casualName || currentLevel.officialName}
+                    </h3>
+                    <div className="text-[var(--accent-blue)] font-bold text-lg mb-6 relative z-10">
+                      {currentLevel.officialName}
+                    </div>
+
+                    {currentLevel.definition && (
+                      <div className="bg-[var(--bg-base)] p-4 rounded-xl mb-6 relative z-10">
+                        <div className="flex items-center gap-2 mb-2 text-[var(--fg-secondary)] font-bold">
+                          <Info className="w-4 h-4" />
+                          <span>Definition</span>
+                        </div>
+                        <p className="text-[var(--fg-primary)] leading-relaxed font-medium">
+                          {currentLevel.definition}
+                        </p>
+                      </div>
+                    )}
+
+                    {currentLevel.combiningForm && (
+                      <div className="flex items-center justify-between bg-[var(--bg-base)] p-4 rounded-xl border-l-4 border-[var(--accent-violet)] relative z-10">
+                        <div>
+                          <div className="text-sm text-[var(--fg-muted)] font-bold mb-1">Combining Form</div>
+                          <div className="text-xl font-black text-[var(--fg-primary)] font-mono bg-[rgba(0,0,0,0.05)] dark:bg-[rgba(255,255,255,0.05)] px-2 py-1 rounded inline-block">
+                            {currentLevel.combiningForm}
+                          </div>
+                        </div>
+                        <div className="opacity-20">
+                          <Search className="w-10 h-10" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button 
+                    variant="outline" 
+                    className="w-full btn-cartoon bg-[var(--bg-surface)] text-[var(--fg-secondary)] py-6 text-lg hover:bg-[var(--bg-base)] hover:text-[var(--fg-primary)] border-2"
+                    onClick={() => {
+                      if (currentLevel.combiningForm) {
+                         setLocation(`/dictionary?q=${encodeURIComponent(currentLevel.combiningForm.replace(/-/g, ''))}`);
+                      } else {
+                         setLocation(`/dictionary?q=${encodeURIComponent(currentLevel.officialName)}`);
+                      }
+                    }}
+                  >
+                    <Search className="w-5 h-5 mr-2" />
+                    Look up in Dictionary
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+      </main>
     </div>
   );
 }

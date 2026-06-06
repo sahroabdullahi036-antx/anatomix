@@ -52,7 +52,7 @@ export default function TextbookDefender() {
   if (!current) return null;
 
   return (
-    <GameShell title="Textbook Defender" emoji="🛡️" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
+    <GameShell title="Textbook Defender" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}>
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "24px", textAlign: "center" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>
           TAP and DESTROY the 2 INCORRECT definitions  -  protect the true one!
