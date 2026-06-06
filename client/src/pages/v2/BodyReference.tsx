@@ -170,6 +170,13 @@ export default function BodyReference() {
   // has dimensions even if an outer layer (e.g. skin) is ever missing.
   const anchorLayer = LAYER_ORDER.find((l) => layerSrc(l));
 
+  // Zoom: tapping a system pans its region to the figure centre and scales up
+  // so it fills the view; drilling into structures zooms in progressively more.
+  const zoomScale = activeHotspot ? Math.min(5, 2.6 + drillPath.length * 0.9) : 1;
+  const figureTransform = activeHotspot
+    ? `scale(${zoomScale}) translate(${50 - activeHotspot.x}%, ${50 - activeHotspot.y}%)`
+    : "none";
+
   return (
     <div className="min-h-[100dvh] flex flex-col bg-[var(--bg-base)] text-[var(--fg-primary)] overflow-hidden">
       <header className="px-4 py-4 flex items-center justify-between bg-[var(--bg-surface)] border-b border-[var(--bg-card)] shadow-sm z-30 relative">
@@ -310,12 +317,16 @@ export default function BodyReference() {
             />
           </div>
 
-          <div className="relative h-full max-h-[82vh] flex items-center justify-center">
+          <div
+            className={`relative h-full max-h-[82vh] flex items-center justify-center transition-transform duration-500 ${
+              activeHotspot ? "md:-translate-x-1/4" : ""
+            }`}
+          >
             <div
               className="relative inline-block h-full"
               style={{
-                transform: activeHotspot ? "scale(1.7)" : "scale(1)",
-                transformOrigin: activeHotspot ? `${activeHotspot.x}% ${activeHotspot.y}%` : "center center",
+                transform: figureTransform,
+                transformOrigin: "50% 50%",
                 transition: "transform 0.5s ease",
                 filter: inverseFilter,
               }}
