@@ -660,3 +660,69 @@ id = "TkEtbbXhfJjC4PVojNEv2"
 uri = "file://attached_assets/generated_images/parts/pancreas_e.png"
 type = "image"
 title = "pancreas_e"
+
+[[generated]]
+id = "76WgYQXOoLLIqZtsuk1WH"
+uri = "file://attached_assets/generated_images/parts/spine.png"
+type = "image"
+title = "spine"
+
+[[generated]]
+id = "3xv0gBJp20zqucbs_jdyu"
+uri = "file://attached_assets/generated_images/parts/tongue.png"
+type = "image"
+title = "tongue"
+
+[[generated]]
+id = "FJ8zAT9lGRv3ORSQ56hVb"
+uri = "file://attached_assets/generated_images/parts/ribs.png"
+type = "image"
+title = "ribs"
+
+[[generated]]
+id = "BeTNVmbXi3TPGLR-6IT87"
+uri = "file://attached_assets/generated_images/parts/tympanic.png"
+type = "image"
+title = "tympanic"
+
+[[generated]]
+id = "CH8RO4LXaKLkXYd17_BKt"
+uri = "file://attached_assets/generated_images/parts/salivary.png"
+type = "image"
+title = "salivary"
+
+[[generated]]
+id = "LtoMsvlY5Jxb-SMWZKYJv"
+uri = "file://attached_assets/generated_images/parts/pelvis.png"
+type = "image"
+title = "pelvis"
+
+[[generated]]
+id = "DNxI7KzLcfLEYoZUaApww"
+uri = "file://attached_assets/generated_images/parts/ossicles.png"
+type = "image"
+title = "ossicles"
+
+[[generated]]
+id = "xtq8nbnBqhz-igBllvPWy"
+uri = "file://attached_assets/generated_images/parts/sigmoid.png"
+type = "image"
+title = "sigmoid"
+
+[[generated]]
+id = "MXLOvqASyd9M_17TOOule"
+uri = "file://attached_assets/generated_images/parts/tendons.png"
+type = "image"
+title = "tendons"
+
+[[generated]]
+id = "Ycf2cGUnZynlHCTAS0LRJ"
+uri = "file://attached_assets/generated_images/parts/cartilage.png"
+type = "image"
+title = "cartilage"
+
+[[generated]]
+id = "qB6xFVqz-PgSCLG-b1wec"
+uri = "file://attached_assets/generated_images/parts/kidneys.png"
+type = "image"
+title = "kidneys"
