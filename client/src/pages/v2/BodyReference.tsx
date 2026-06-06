@@ -331,7 +331,7 @@ export default function BodyReference() {
                     alt={`${gender} ${LAYER_META[lid].label} layer`}
                     className={
                       base
-                        ? "h-full max-h-[82vh] w-auto block select-none pointer-events-none drop-shadow-2xl"
+                        ? "relative h-full max-h-[82vh] w-auto block select-none pointer-events-none drop-shadow-2xl"
                         : "absolute inset-0 h-full w-full object-contain select-none pointer-events-none"
                     }
                     style={{
