@@ -13,7 +13,7 @@ const TILE = "#333f4e";
 const MP_TILE = "#4a6592";
 
 const MODULES = [
-  { path: "/body-reference",     title: "Body Explorer",    color: TILE,    tag: "" },
+  { path: "/body-reference",     title: "Anatomy Explorer", color: TILE,    tag: "" },
   { path: "/dictionary",         title: "Dictionary",       color: TILE,    tag: "" },
   { path: "/root-builder",       title: "Root Builder",     color: TILE,    tag: "" },
   { path: "/flashcards",         title: "Flashcards",       color: TILE,    tag: "" },

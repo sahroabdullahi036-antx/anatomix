@@ -30,7 +30,7 @@ import MemoryMatch from "./pages/v2/games/MemoryMatch";
 import ModeratorDashboard from "./pages/v2/ModeratorDashboard";
 import MultiplayerHub from "./pages/v2/multiplayer/MultiplayerHub";
 import GameRoom from "./pages/v2/multiplayer/GameRoom";
-import BodyReference from "./pages/v2/BodyReference";
+import SystemExplorer from "./pages/v2/SystemExplorer";
 import ChatHub from "./pages/v2/ChatHub";
 
 const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
@@ -59,8 +59,8 @@ function AppRoutes() {
       <Route path="/teacher" component={TeacherDashboard} />
       <Route path="/multiplayer" component={MultiplayerHub} />
       <Route path="/game-room/:code" component={GameRoom} />
-      <Route path="/body-reference" component={BodyReference} />
-      <Route path="/explorer" component={BodyReference} />
+      <Route path="/body-reference" component={SystemExplorer} />
+      <Route path="/explorer" component={SystemExplorer} />
       <Route path="/games/spelling-bee" component={SpellingBee} />
       <Route path="/games/hangman" component={HangmanGame} />
       <Route path="/games/memory-match" component={MemoryMatch} />
