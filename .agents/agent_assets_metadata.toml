@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "wEZ8bnkwvmdgqAgLCKsXf"
@@ -798,3 +797,9 @@ id = "vDZ5Q46dsQf6lvgN8wS-9"
 uri = "file://attached_assets/generated_images/layers/male_nervous.png"
 type = "image"
 title = "male_nervous"
+
+[[outputs]]
+id = "ZUeRKD24zsAubjF3cjcci"
+uri = "file://IMPLEMENTATION_SPEC.md"
+type = "text"
+title = "AnatomiX Build Spec"
