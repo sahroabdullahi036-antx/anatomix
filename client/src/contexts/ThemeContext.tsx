@@ -1,13 +1,26 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 export const PALETTES = {
-  slate:   { label: "Slate",   filter: "",                                              bg: "#252830", accent: "#4a6080" },
-  ocean:   { label: "Ocean",   filter: "hue-rotate(25deg) saturate(1.15)",              bg: "#1e2838", accent: "#3a6090" },
-  emerald: { label: "Emerald", filter: "hue-rotate(88deg) saturate(0.85)",              bg: "#1e2820", accent: "#3a7050" },
-  violet:  { label: "Violet",  filter: "hue-rotate(258deg) saturate(0.9)",              bg: "#251e30", accent: "#6050a0" },
-  rose:    { label: "Rose",    filter: "hue-rotate(100deg) saturate(1.12) brightness(0.98)", bg: "#28202a", accent: "#904070" },
-  crimson: { label: "Crimson", filter: "hue-rotate(330deg) saturate(0.88)",             bg: "#2a1e1e", accent: "#803040" },
-  desert:  { label: "Desert",  filter: "hue-rotate(42deg) saturate(0.72) brightness(0.96)", bg: "#282418", accent: "#806030" },
+  slate:    { label: "Slate",    filter: "",                                  bg: "#21262e", accent: "#525f72" },
+  sapphire: { label: "Sapphire", filter: "hue-rotate(0deg) saturate(1.5)",    bg: "#1a273a", accent: "#406191" },
+  indigo:   { label: "Indigo",   filter: "hue-rotate(32deg) saturate(1.1)",   bg: "#262337", accent: "#5f5989" },
+  azure:    { label: "Azure",    filter: "hue-rotate(342deg) saturate(1.25)", bg: "#172833", accent: "#39657f" },
+  sky:      { label: "Sky",      filter: "hue-rotate(330deg) saturate(1.2)",  bg: "#15292f", accent: "#356776" },
+  teal:     { label: "Teal",     filter: "hue-rotate(313deg) saturate(1.15)", bg: "#142a2a", accent: "#316a68" },
+  jade:     { label: "Jade",     filter: "hue-rotate(292deg) saturate(1.1)",  bg: "#142b23", accent: "#326b58" },
+  emerald:  { label: "Emerald",  filter: "hue-rotate(276deg) saturate(1.1)",  bg: "#162b1e", accent: "#366b4c" },
+  green:    { label: "Green",    filter: "hue-rotate(258deg) saturate(1.05)", bg: "#192a1a", accent: "#3f6a42" },
+  lime:     { label: "Lime",     filter: "hue-rotate(235deg) saturate(1)",    bg: "#1f2917", accent: "#4d663a" },
+  gold:     { label: "Gold",     filter: "hue-rotate(194deg) saturate(1.1)",  bg: "#2a2615", accent: "#695e34" },
+  amber:    { label: "Amber",    filter: "hue-rotate(183deg) saturate(1.15)", bg: "#2e2515", accent: "#725c35" },
+  orange:   { label: "Orange",   filter: "hue-rotate(167deg) saturate(1.2)",  bg: "#322317", accent: "#7e583b" },
+  scarlet:  { label: "Scarlet",  filter: "hue-rotate(146deg) saturate(1.2)",  bg: "#36211d", accent: "#885349" },
+  crimson:  { label: "Crimson",  filter: "hue-rotate(126deg) saturate(1.1)",  bg: "#372024", accent: "#895159" },
+  rose:     { label: "Rose",     filter: "hue-rotate(107deg) saturate(1.15)", bg: "#372029", accent: "#8a4f68" },
+  pink:     { label: "Pink",     filter: "hue-rotate(93deg) saturate(1.2)",   bg: "#36202e", accent: "#884f73" },
+  magenta:  { label: "Magenta",  filter: "hue-rotate(76deg) saturate(1.1)",   bg: "#322031", accent: "#7d517c" },
+  purple:   { label: "Purple",   filter: "hue-rotate(64deg) saturate(1.05)",  bg: "#2f2133", accent: "#755380" },
+  violet:   { label: "Violet",   filter: "hue-rotate(49deg) saturate(1)",     bg: "#2b2234", accent: "#6b5683" },
 } as const;
 
 export type PaletteName = keyof typeof PALETTES;
@@ -72,7 +85,7 @@ const PaletteContext = createContext<PaletteContextType>({
 export function PaletteProvider({ children }: { children: React.ReactNode }) {
   const [palette, setPaletteState] = useState<PaletteName>(() => {
     const stored = localStorage.getItem("anatomix_palette") as PaletteName | null;
-    return stored && stored in PALETTES ? stored : "slate";
+    return stored && Object.hasOwn(PALETTES, stored) ? stored : "slate";
   });
 
   const [colorMode, setColorModeState] = useState<ColorMode>(() => {

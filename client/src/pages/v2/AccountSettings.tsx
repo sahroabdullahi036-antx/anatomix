@@ -16,7 +16,7 @@ const inputStyle: React.CSSProperties = {
 
 export default function AccountSettings({ onClose }: Props) {
   const { user } = useUser();
-  const { palette, setPalette, colorMode, setColorMode, swatchFilter } = usePalette();
+  const { palette, setPalette, colorMode, setColorMode, swatchFilter, inverseFilter } = usePalette();
   const username = user?.username ?? "";
   const pwSet = hasPassword(username);
 
@@ -138,7 +138,7 @@ export default function AccountSettings({ onClose }: Props) {
                     boxShadow: active ? "0 0 0 1px rgba(252,250,247,0.3)" : "none",
                   }}
                 >
-                  <div style={{ filter: swatchFilter(name) }}>
+                  <div style={{ filter: [swatchFilter(name), inverseFilter].filter(f => f && f !== "none").join(" ") || "none" }}>
                     <div style={{ backgroundColor: "#252830", padding: "10px 6px 8px", display: "flex", flexDirection: "column", gap: "4px", alignItems: "center" }}>
                       <div style={{ width: "100%", height: "6px", borderRadius: "3px", backgroundColor: "#4a6080" }} />
                       <div style={{ width: "70%", height: "4px", borderRadius: "2px", backgroundColor: "rgba(252,250,247,0.25)" }} />
