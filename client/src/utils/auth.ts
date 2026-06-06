@@ -4,7 +4,7 @@ const pwKey = (username: string) =>
 const userKey = (username: string) =>
   `anatomix_user_${username.toLowerCase().replace(/\s+/g, '_')}`;
 
-async function hashPassword(password: string): Promise<string> {
+export async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode('anatomix:' + password);
   const hash = await crypto.subtle.digest('SHA-256', data);

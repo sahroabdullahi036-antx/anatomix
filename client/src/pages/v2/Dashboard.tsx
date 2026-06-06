@@ -109,7 +109,7 @@ export default function Dashboard() {
           <button onClick={() => setShowTour(true)} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Guide</button>
           <button onClick={() => navigate("/chat")} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Chat</button>
           <button onClick={() => setShowSettings(true)} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Account</button>
-          <button onClick={logout} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Switch User</button>
+          <button onClick={logout} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }} data-testid="button-logout">Log Out</button>
         </div>
       </header>
 

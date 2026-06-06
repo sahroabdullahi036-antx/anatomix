@@ -22,10 +22,20 @@ service cloud.firestore {
       allow read, write: if isAuthed();
     }
 
-    // Global config (roles, pins, chapter order)
+    // Global config (roles, pins, chapter order) — editable by any authed session,
+    // EXCEPT the owner credential which is locked down separately below.
     match /config/{document} {
       allow read: if isAuthed();
-      allow write: if isAuthed();
+      allow write: if isAuthed() && document != 'owner';
+    }
+
+    // Owner account credential — write-once. The first claim creates it; after that
+    // it can never be overwritten, reset, or deleted by any client. This prevents
+    // anyone from hijacking or resetting the "anatomixowner" account.
+    match /config/owner {
+      allow read: if isAuthed();
+      allow create: if isAuthed();
+      allow update, delete: if false;
     }
 
     // Term and chapter customizations

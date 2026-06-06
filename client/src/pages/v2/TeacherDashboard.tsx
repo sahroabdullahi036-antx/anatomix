@@ -30,7 +30,7 @@ function StatBar({ value, max, color }: { value: number; max: number; color: str
 
 export default function TeacherDashboard() {
   const [, navigate] = useLocation();
-  const { user } = useUser();
+  const { user, logout } = useUser();
   const { db, ready } = useFirebase();
   const [allStudents, setAllStudents] = useState<FirestoreUserProgress[]>([]);
   const [allClasses, setAllClasses] = useState<FirestoreClass[]>([]);
@@ -82,6 +82,7 @@ export default function TeacherDashboard() {
           <button onClick={() => navigate("/chat")} style={backBtn}>Chat</button>
           <button onClick={() => navigate("/multiplayer")} style={backBtn}>Host a Game</button>
           <button onClick={() => navigate("/flashcards")} style={backBtn}>Study</button>
+          <button onClick={logout} style={{ ...backBtn, backgroundColor: "rgba(200,80,80,0.18)", border: "1px solid rgba(200,90,90,0.4)" }} data-testid="button-logout">Log Out</button>
         </div>
       </div>
 

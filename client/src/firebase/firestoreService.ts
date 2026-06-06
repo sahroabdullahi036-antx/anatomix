@@ -192,6 +192,20 @@ export async function setUserPin(db: Firestore, username: string, pin: string, l
   await setDoc(doc(db, "config", "pins"), { [key]: { pin, locked } }, { merge: true });
 }
 
+// ── Owner account credential (server-enforced, cross-device) ────────────────
+export async function getOwnerPasswordHash(db: Firestore): Promise<string | null> {
+  const snap = await getDoc(doc(db, "config", "owner"));
+  if (snap.exists()) {
+    const data = snap.data() as { passwordHash?: string };
+    return data.passwordHash ?? null;
+  }
+  return null;
+}
+
+export async function setOwnerPasswordHash(db: Firestore, passwordHash: string): Promise<void> {
+  await setDoc(doc(db, "config", "owner"), { passwordHash }, { merge: true });
+}
+
 export async function clearUserPin(db: Firestore, username: string): Promise<void> {
   const ref = doc(db, "config", "pins");
   const snap = await getDoc(ref);

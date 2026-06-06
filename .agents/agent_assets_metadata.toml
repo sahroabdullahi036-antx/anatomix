@@ -78,3 +78,15 @@ id = "86Q3q9g_AZ9n1UgtaCqPY"
 uri = "file://attached_assets/generated_images/systems/_body.png"
 type = "image"
 title = "full body anatomy illustration"
+
+[[generated]]
+id = "aZ_7pyBBVsoW3DCaNhIw6"
+uri = "file://attached_assets/generated_images/systems/_body_male.png"
+type = "image"
+title = "schematic male organ reference"
+
+[[generated]]
+id = "Jpk1iDzHyjk3R9TeBntX0"
+uri = "file://attached_assets/generated_images/systems/_body_female.png"
+type = "image"
+title = "schematic female organ reference"

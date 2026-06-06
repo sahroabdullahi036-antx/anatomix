@@ -4,7 +4,8 @@ import { SYSTEMS as DATA_SYSTEMS } from "@/data/medicalData";
 import { ChevronRight, ArrowLeft, Search, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import bodyImg from "@assets/generated_images/systems/_body.png";
+import bodyMale from "@assets/generated_images/systems/_body_male.png";
+import bodyFemale from "@assets/generated_images/systems/_body_female.png";
 import imgDigestive from "@assets/generated_images/systems/digestive.png";
 import imgCardiovascular from "@assets/generated_images/systems/cardiovascular.png";
 import imgRespiratory from "@assets/generated_images/systems/respiratory.png";
@@ -48,21 +49,38 @@ const SYSTEM_IMAGES: Record<string, string> = {
   "special-senses": imgSpecialSenses,
 };
 
-// Hotspot positions as percentages over the body illustration (_body.png),
-// placed over the relevant region of the figure. Spaced so each is easy to tap.
-const HOTSPOTS: { id: string; x: number; y: number }[] = [
-  { id: "nervous", x: 50, y: 17 },
-  { id: "special-senses", x: 44, y: 25 },
-  { id: "endocrine", x: 52, y: 31 },
-  { id: "respiratory", x: 58, y: 39 },
-  { id: "cardiovascular", x: 46, y: 41 },
-  { id: "musculoskeletal", x: 26, y: 39 },
-  { id: "lymphatic", x: 16, y: 49 },
-  { id: "urinary", x: 40, y: 48 },
-  { id: "digestive", x: 53, y: 56 },
-  { id: "reproductive", x: 50, y: 64 },
-  { id: "integumentary", x: 84, y: 57 },
-  { id: "blood", x: 62, y: 73 },
+// Hotspot positions as percentages over each body illustration, calibrated to
+// the organ locations in the male and female figures respectively.
+type Hotspot = { id: string; x: number; y: number };
+
+const HOTSPOTS_MALE: Hotspot[] = [
+  { id: "nervous", x: 50, y: 9 },
+  { id: "special-senses", x: 46, y: 12 },
+  { id: "endocrine", x: 50, y: 20 },
+  { id: "respiratory", x: 43, y: 26 },
+  { id: "cardiovascular", x: 51, y: 28 },
+  { id: "musculoskeletal", x: 32, y: 27 },
+  { id: "lymphatic", x: 59, y: 36 },
+  { id: "urinary", x: 44, y: 35 },
+  { id: "digestive", x: 48, y: 44 },
+  { id: "reproductive", x: 50, y: 53 },
+  { id: "integumentary", x: 61, y: 60 },
+  { id: "blood", x: 30, y: 47 },
+];
+
+const HOTSPOTS_FEMALE: Hotspot[] = [
+  { id: "nervous", x: 50, y: 10 },
+  { id: "special-senses", x: 47, y: 13 },
+  { id: "endocrine", x: 50, y: 20 },
+  { id: "respiratory", x: 44, y: 27 },
+  { id: "cardiovascular", x: 51, y: 28 },
+  { id: "musculoskeletal", x: 33, y: 27 },
+  { id: "lymphatic", x: 58, y: 37 },
+  { id: "urinary", x: 44, y: 37 },
+  { id: "digestive", x: 48, y: 45 },
+  { id: "reproductive", x: 50, y: 55 },
+  { id: "integumentary", x: 60, y: 62 },
+  { id: "blood", x: 32, y: 48 },
 ];
 
 export default function BodyReference() {
@@ -71,13 +89,31 @@ export default function BodyReference() {
   const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
 
   const [drillPath, setDrillPath] = useState<any[]>([]);
+  const [gender, setGender] = useState<"male" | "female">(() => {
+    try { return localStorage.getItem("anatomix_body_gender") === "female" ? "female" : "male"; } catch { return "male"; }
+  });
+
+  const changeGender = (g: "male" | "female") => {
+    setGender(g);
+    try { localStorage.setItem("anatomix_body_gender", g); } catch {}
+  };
+
+  const bodyImg = gender === "male" ? bodyMale : bodyFemale;
+  const HOTSPOTS = gender === "male" ? HOTSPOTS_MALE : HOTSPOTS_FEMALE;
+  const activeHotspot = activeSystemId ? HOTSPOTS.find((h) => h.id === activeSystemId) ?? null : null;
 
   const activeSystem = useMemo(() => {
     return DATA_SYSTEMS.find((s) => s.id === activeSystemId);
   }, [activeSystemId]);
 
   const currentLevel = drillPath.length > 0 ? drillPath[drillPath.length - 1] : null;
-  const listData = currentLevel ? currentLevel.children || [] : activeSystem ? activeSystem.structures : [];
+  const rawList = currentLevel ? currentLevel.children || [] : activeSystem ? activeSystem.structures : [];
+  const listData =
+    activeSystem?.id === "reproductive" && !currentLevel
+      ? rawList.filter((s: any) =>
+          (gender === "male" ? ["testes", "prostate"] : ["ovaries", "uterus", "vagina"]).includes(s.id),
+        )
+      : rawList;
 
   const handleBack = () => {
     if (drillPath.length > 0) {
@@ -156,19 +192,35 @@ export default function BodyReference() {
           </div>
         </div>
 
-        {!activeSystemId && (
-          <div className="text-sm font-bold text-[var(--fg-muted)] hidden sm:block">
-            Tap a glowing spot on the body
+        <div className="flex items-center gap-3">
+          <div className="flex rounded-full p-1 bg-[var(--bg-card)] border border-[rgba(255,255,255,0.06)]" role="group" aria-label="Body figure">
+            {(["male", "female"] as const).map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => changeGender(g)}
+                aria-pressed={gender === g}
+                className="px-4 py-1.5 rounded-full text-sm font-extrabold transition-colors"
+                style={{
+                  background: gender === g ? "var(--accent-blue)" : "transparent",
+                  color: gender === g ? "#ffffff" : "var(--fg-muted)",
+                }}
+                data-testid={`button-gender-${g}`}
+              >
+                {g === "male" ? "Male" : "Female"}
+              </button>
+            ))}
           </div>
-        )}
+          {!activeSystemId && (
+            <div className="text-sm font-bold text-[var(--fg-muted)] hidden lg:block">
+              Tap a glowing spot
+            </div>
+          )}
+        </div>
       </header>
 
       <main className="flex-1 flex flex-col md:flex-row relative">
-        <div
-          className={`flex-1 flex items-center justify-center p-4 transition-all duration-500 ${
-            activeSystemId ? "md:w-1/2 opacity-30 md:opacity-100 scale-95 md:scale-100" : "w-full scale-100"
-          } absolute inset-0 md:relative`}
-        >
+        <div className="flex-1 w-full flex items-center justify-center p-4 absolute inset-0 md:relative overflow-hidden">
           <style>{`
             @keyframes hotspotPulse {
               0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 var(--hs-color); }
@@ -178,15 +230,22 @@ export default function BodyReference() {
           `}</style>
 
           <div className="relative h-full max-h-[82vh] flex items-center justify-center">
-            <div className="relative inline-block h-full">
+            <div
+              className="relative inline-block h-full"
+              style={{
+                transform: activeHotspot ? "scale(1.85)" : "scale(1)",
+                transformOrigin: activeHotspot ? `${activeHotspot.x}% ${activeHotspot.y}%` : "center center",
+                transition: "transform 0.5s ease",
+              }}
+            >
               <img
                 src={bodyImg}
-                alt="Cartoon human body with internal organs"
+                alt="Human body reference with internal organs"
                 className="h-full max-h-[82vh] w-auto object-contain drop-shadow-2xl select-none pointer-events-none"
                 draggable={false}
               />
 
-              {HOTSPOTS.map((hs) => {
+              {!activeSystemId && HOTSPOTS.map((hs) => {
                 const color = SYSTEM_COLORS[hs.id] || "var(--accent-blue)";
                 const isActive = activeSystemId === hs.id;
                 const isHovered = hoveredSystem === hs.id;
@@ -252,22 +311,22 @@ export default function BodyReference() {
         </div>
 
         <div
-          className={`w-full md:w-1/2 h-full flex flex-col bg-[var(--bg-card)] border-l border-[var(--bg-surface)] shadow-2xl transition-all duration-300 ${
-            activeSystemId
-              ? "translate-x-0"
-              : "translate-x-full md:translate-x-0 md:opacity-0 pointer-events-none absolute right-0"
+          className={`absolute top-0 right-0 bottom-0 w-full md:w-1/2 flex flex-col bg-[var(--bg-card)] border-l border-[var(--bg-surface)] shadow-2xl transition-transform duration-300 ${
+            activeSystemId ? "translate-x-0" : "translate-x-full pointer-events-none"
           } z-20`}
         >
           {activeSystemId && activeSystem && (
             <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide pb-20 md:pb-6">
-              <div className="flex items-center gap-4">
+              <div className="space-y-4">
                 {SYSTEM_IMAGES[activeSystem.id] && (
-                  <img
-                    src={SYSTEM_IMAGES[activeSystem.id]}
-                    alt={activeSystem.officialName}
-                    className="w-20 h-20 object-contain shrink-0 drop-shadow-md"
-                    draggable={false}
-                  />
+                  <div className="w-full rounded-3xl bg-[var(--bg-surface)] border border-[rgba(255,255,255,0.05)] p-4 flex items-center justify-center">
+                    <img
+                      src={SYSTEM_IMAGES[activeSystem.id]}
+                      alt={activeSystem.officialName}
+                      className="h-40 w-auto object-contain drop-shadow-md"
+                      draggable={false}
+                    />
+                  </div>
                 )}
                 <div>
                   <h2 className="text-3xl font-black mb-1 tracking-tight" style={{ color: SYSTEM_COLORS[activeSystem.id] || "inherit" }}>

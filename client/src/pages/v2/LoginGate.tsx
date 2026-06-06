@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { accountExists, hasPassword, verifyPassword, setPassword as savePassword } from "@/utils/auth";
-import { subscribeToUserPins, UserPinEntry } from "@/firebase/firestoreService";
+import { accountExists, hasPassword, verifyPassword, setPassword as savePassword, hashPassword } from "@/utils/auth";
+import { subscribeToUserPins, getOwnerPasswordHash, setOwnerPasswordHash, UserPinEntry } from "@/firebase/firestoreService";
 
 type Step = "username" | "password" | "pin" | "new-account";
 type LoginMode = "login" | "signup";
@@ -65,10 +65,25 @@ export default function LoginGate() {
     }
   };
 
-  const handleUsernameSubmit = (e: React.FormEvent) => {
+  const startHostLogin = async () => {
+    if (!db) { setError("Cannot reach the server. Please check your connection and try again."); return; }
+    setLoading(true); setError("");
+    try {
+      const ownerHash = await getOwnerPasswordHash(db);
+      setLoading(false);
+      setStep(ownerHash ? "password" : "new-account");
+    } catch {
+      setLoading(false);
+      setError("Cannot verify the owner account right now. Please try again.");
+    }
+  };
+
+  const handleUsernameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = username.trim();
     if (!trimmed) return;
+
+    if (IS_HOST(trimmed)) { await startHostLogin(); return; }
 
     const pinEntry = getPinEntry(trimmed);
     if (pinEntry?.pin) {
@@ -107,9 +122,24 @@ export default function LoginGate() {
     e.preventDefault();
     if (!password) return;
     setLoading(true); setError("");
-    const ok = await verifyPassword(username.trim(), password);
+    const trimmed = username.trim();
+    if (IS_HOST(trimmed)) {
+      if (!db) { setLoading(false); setError("Cannot reach the server."); return; }
+      try {
+        const ownerHash = await getOwnerPasswordHash(db);
+        const entered = await hashPassword(password);
+        setLoading(false);
+        if (ownerHash && entered === ownerHash) { login(trimmed); }
+        else { setError("Incorrect password."); setPassword(""); }
+      } catch {
+        setLoading(false);
+        setError("Cannot verify right now. Please try again.");
+      }
+      return;
+    }
+    const ok = await verifyPassword(trimmed, password);
     setLoading(false);
-    if (ok) { login(username.trim()); }
+    if (ok) { login(trimmed); }
     else { setError("Incorrect password."); setPassword(""); }
   };
 
@@ -117,6 +147,24 @@ export default function LoginGate() {
     e.preventDefault();
     const trimmed = username.trim();
     if (!trimmed) return;
+    if (IS_HOST(trimmed)) {
+      if (!newPassword) { setError("A password is required to secure the owner account."); return; }
+      if (newPassword.length < 4) { setError("Password must be at least 4 characters."); return; }
+      if (newPassword !== newConfirm) { setError("Passwords do not match."); return; }
+      if (!db) { setError("Cannot reach the server."); return; }
+      setLoading(true); setError("");
+      try {
+        const existing = await getOwnerPasswordHash(db);
+        if (existing) { setLoading(false); setError("The owner account is already set up. Please sign in."); setStep("password"); return; }
+        await setOwnerPasswordHash(db, await hashPassword(newPassword));
+        setLoading(false);
+        login(trimmed);
+      } catch {
+        setLoading(false);
+        setError("Could not save the owner password. Please try again.");
+      }
+      return;
+    }
     if (hasPassword(trimmed)) {
       setError("This account already has a password. Please sign in instead.");
       setStep("password");
@@ -134,6 +182,7 @@ export default function LoginGate() {
   const handleRecentUser = (u: string) => {
     setUsername(u);
     setLoginMode("login");
+    if (IS_HOST(u)) { startHostLogin(); return; }
     const pinEntry = getPinEntry(u);
     if (pinEntry?.pin) { setStep("pin"); setError(""); return; }
     if (hasPassword(u)) { setStep("password"); setError(""); }
