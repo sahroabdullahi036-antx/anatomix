@@ -1,6 +1,6 @@
 /**
  * Strip slashes, hyphens, commas, spaces and lowercase for comparison.
- * e.g. "hem/o, hemat/o" → "hemohemat o" is NOT what we want —
+ * e.g. "hem/o, hemat/o" → "hemohemat o" is NOT what we want -
  * we split on commas first, then normalize each token individually.
  */
 const normToken = (s: string): string =>

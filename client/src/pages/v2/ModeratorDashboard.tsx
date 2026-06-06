@@ -653,7 +653,7 @@ export default function ModeratorDashboard() {
                 </select>
               </div>
 
-              {field3("meaning", "Meaning (1–2 words, exact)")}
+              {field3("meaning", "Meaning (1-2 words, exact)")}
               {field3("casualMeaning", "Casual Meaning")}
               {field3("example", "Example words")}
               {field3("definition", "Full Definition", true)}

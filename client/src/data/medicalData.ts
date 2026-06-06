@@ -192,10 +192,10 @@ export const SYSTEMS: BodySystem[] = [
     structures: [
       { id: 'erythrocytes', officialName: 'Erythrocytes (Red Blood Cells)', casualName: 'The Oxygen Carriers', combiningForm: 'erythr/o, erythrocyt/o', definition: 'Biconcave disk-shaped cells lacking nuclei; contain hemoglobin to transport oxygen from lungs to tissues' },
       { id: 'leukocytes', officialName: 'Leukocytes (White Blood Cells)', casualName: 'The Infection Fighters', combiningForm: 'leuk/o, leukocyt/o', definition: 'Nucleated blood cells that defend the body against infection; five types: neutrophils, lymphocytes, monocytes, eosinophils, and basophils', children: [
-        { id: 'neutrophils', officialName: 'Neutrophils', casualName: 'The First Responders', combiningForm: 'neutr/o', definition: 'Most abundant WBC (60–70%); first to arrive at infection sites; destroy bacteria by phagocytosis' },
-        { id: 'lymphocytes', officialName: 'Lymphocytes', casualName: 'The Memory Cells', combiningForm: 'lymphocyt/o', definition: 'Second most common WBC (20–30%); include B cells (produce antibodies) and T cells (cell-mediated immunity); provide long-term immune memory' },
-        { id: 'monocytes', officialName: 'Monocytes', casualName: 'The Big Eaters', combiningForm: 'monocyt/o', definition: 'Largest WBC (3–8%); mature into macrophages that engulf pathogens, dead cells, and debris by phagocytosis' },
-        { id: 'eosinophils', officialName: 'Eosinophils', casualName: 'The Allergy Fighters', combiningForm: 'eosin/o', definition: 'WBC accounting for 1–4% of circulating cells; elevated in allergic reactions and parasitic infections' },
+        { id: 'neutrophils', officialName: 'Neutrophils', casualName: 'The First Responders', combiningForm: 'neutr/o', definition: 'Most abundant WBC (60-70%); first to arrive at infection sites; destroy bacteria by phagocytosis' },
+        { id: 'lymphocytes', officialName: 'Lymphocytes', casualName: 'The Memory Cells', combiningForm: 'lymphocyt/o', definition: 'Second most common WBC (20-30%); include B cells (produce antibodies) and T cells (cell-mediated immunity); provide long-term immune memory' },
+        { id: 'monocytes', officialName: 'Monocytes', casualName: 'The Big Eaters', combiningForm: 'monocyt/o', definition: 'Largest WBC (3-8%); mature into macrophages that engulf pathogens, dead cells, and debris by phagocytosis' },
+        { id: 'eosinophils', officialName: 'Eosinophils', casualName: 'The Allergy Fighters', combiningForm: 'eosin/o', definition: 'WBC accounting for 1-4% of circulating cells; elevated in allergic reactions and parasitic infections' },
         { id: 'basophils', officialName: 'Basophils', casualName: 'The Histamine Releasers', combiningForm: 'bas/o', definition: 'Rarest WBC (<1%); release histamine and heparin; involved in inflammatory and allergic responses' },
       ]},
       { id: 'platelets', officialName: 'Thrombocytes (Platelets)', casualName: 'The Clot Makers', combiningForm: 'thrombocyt/o', definition: 'Tiny cell fragments produced by megakaryocytes; essential for blood clotting (hemostasis); activated by vessel injury' },
@@ -310,7 +310,7 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 's42', term: '-uria', type: 'suffix', meaning: 'urine condition', casualMeaning: 'something in or about the urine', system: 'Urinary', example: 'polyuria (excessive urination), hematuria (blood in urine)', definition: 'Suffix meaning urine condition' },
   { id: 's43', term: '-sclerosis', type: 'suffix', meaning: 'hardening', casualMeaning: 'getting hard and stiff', system: 'Cardiovascular', example: 'arteriosclerosis (hardening of arteries)', definition: 'Suffix meaning hardening of tissue' },
 
-  // COMBINING FORMS (ROOTS) – Cardiovascular
+  // COMBINING FORMS (ROOTS) - Cardiovascular
   { id: 'r1', term: 'cardi/o', type: 'root', meaning: 'heart', casualMeaning: 'the heart', system: 'Cardiovascular', example: 'cardiology, cardiomegaly, carditis', definition: 'Combining form meaning heart', validSuffixes: ['-logy', '-megaly', '-itis', '-ectomy', '-gram', '-pathy', '-myopathy'] },
   { id: 'r2', term: 'arteri/o', type: 'root', meaning: 'artery', casualMeaning: 'an artery (high-pressure vessel)', system: 'Cardiovascular', example: 'arteriosclerosis, arteriotomy', definition: 'Combining form meaning artery' },
   { id: 'r3', term: 'ven/o, phleb/o', type: 'root', meaning: 'vein', casualMeaning: 'a vein (return vessel)', system: 'Cardiovascular', example: 'phlebotomy (cutting into a vein), venous', definition: 'Combining forms meaning vein' },
@@ -322,7 +322,7 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'r9', term: 'hem/o, hemat/o', type: 'root', meaning: 'blood', casualMeaning: 'blood itself', system: 'Blood', example: 'hemoglobin, hematology, hemostasis', definition: 'Combining forms meaning blood' },
   { id: 'r10', term: 'sphygm/o', type: 'root', meaning: 'pulse', casualMeaning: 'the pulse beat', system: 'Cardiovascular', example: 'sphygmomanometer (blood pressure cuff)', definition: 'Combining form meaning pulse' },
 
-  // COMBINING FORMS – Respiratory
+  // COMBINING FORMS - Respiratory
   { id: 'r11', term: 'pulmon/o', type: 'root', meaning: 'lung', casualMeaning: 'the lung', system: 'Respiratory', example: 'pulmonary, pulmonologist', definition: 'Combining form meaning lung' },
   { id: 'r12', term: 'pneum/o, pneumon/o', type: 'root', meaning: 'lung, air', casualMeaning: 'air or the lungs', system: 'Respiratory', example: 'pneumonia, pneumothorax, pneumonectomy', definition: 'Combining form meaning lung or air' },
   { id: 'r13', term: 'bronch/o', type: 'root', meaning: 'bronchus', casualMeaning: 'the big breathing branches', system: 'Respiratory', example: 'bronchitis, bronchoscopy, bronchodilator', definition: 'Combining form meaning bronchus' },
@@ -336,20 +336,19 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'r21', term: 'nas/o, rhin/o', type: 'root', meaning: 'nose', casualMeaning: 'the nose', system: 'Respiratory', example: 'nasal, rhinoplasty, rhinitis', definition: 'Combining forms meaning nose' },
   { id: 'r22', term: 'ox/o', type: 'root', meaning: 'oxygen', casualMeaning: 'oxygen in the blood', system: 'Respiratory', example: 'hypoxia, oximetry', definition: 'Combining form meaning oxygen' },
 
-  // COMBINING FORMS – Digestive
+  // COMBINING FORMS - Digestive
   { id: 'r23', term: 'gastr/o', type: 'root', meaning: 'stomach', casualMeaning: 'the stomach', system: 'Digestive', example: 'gastritis, gastroscopy, gastrectomy', definition: 'Combining form meaning stomach', validSuffixes: ['-itis', '-scopy', '-ectomy', '-tomy', '-algia', '-enteritis', '-plasty'] },
   { id: 'r24', term: 'esophag/o', type: 'root', meaning: 'esophagus', casualMeaning: 'the food pipe', system: 'Digestive', example: 'esophagitis, esophagoscopy', definition: 'Combining form meaning esophagus' },
   { id: 'r25', term: 'enter/o', type: 'root', meaning: 'small intestine', casualMeaning: 'the small intestine', system: 'Digestive', example: 'gastroenteritis, enterocolitis', definition: 'Combining form meaning small intestine' },
   { id: 'r26', term: 'col/o, colon/o', type: 'root', meaning: 'colon', casualMeaning: 'the large intestine', system: 'Digestive', example: 'colitis, colonoscopy, colectomy', definition: 'Combining forms meaning colon' },
   { id: 'r27', term: 'hepat/o', type: 'root', meaning: 'liver', casualMeaning: 'the liver', system: 'Digestive', example: 'hepatitis, hepatomegaly, hepatectomy', definition: 'Combining form meaning liver' },
   { id: 'r28', term: 'cholecyst/o', type: 'root', meaning: 'gallbladder', casualMeaning: 'the gallbladder', system: 'Digestive', example: 'cholecystitis, cholecystectomy', definition: 'Combining form meaning gallbladder' },
-  { id: 'r29', term: 'pancreat/o', type: 'root', meaning: 'pancreas', casualMeaning: 'the pancreas', system: 'Digestive', example: 'pancreatitis, pancreatectomy', definition: 'Combining form meaning pancreas' },
   { id: 'r30', term: 'chol/e', type: 'root', meaning: 'bile', casualMeaning: 'bile (digestive fluid from liver)', system: 'Digestive', example: 'cholelithiasis (gallstones), cholangitis (inflammation of bile ducts), cholestasis (stoppage of bile flow)', definition: 'Combining form meaning bile or gall' },
   { id: 'r31', term: 'rect/o', type: 'root', meaning: 'rectum', casualMeaning: 'the rectum', system: 'Digestive', example: 'rectal, rectocele, rectosigmoidoscopy', definition: 'Combining form meaning rectum', homonymWarning: 'Do not confuse rect/o (rectum) with proct/o (rectum and anus); proctoscopy uses proct/o, not rect/o' },
   { id: 'r32', term: 'or/o, stomat/o', type: 'root', meaning: 'mouth', casualMeaning: 'the mouth', system: 'Digestive', example: 'oral, stomatitis, oropharynx', definition: 'Combining forms meaning mouth' },
   { id: 'r33', term: 'gloss/o, lingu/o', type: 'root', meaning: 'tongue', casualMeaning: 'the tongue', system: 'Digestive', example: 'glossitis, lingual, glossectomy', definition: 'Combining forms meaning tongue' },
 
-  // COMBINING FORMS – Nervous
+  // COMBINING FORMS - Nervous
   { id: 'r34', term: 'neur/o', type: 'root', meaning: 'nerve', casualMeaning: 'a nerve fiber', system: 'Nervous', example: 'neurology, neuritis, neuropathy', definition: 'Combining form meaning nerve' },
   { id: 'r35', term: 'encephal/o', type: 'root', meaning: 'brain', casualMeaning: 'the brain', system: 'Nervous', example: 'encephalitis, electroencephalogram (EEG)', definition: 'Combining form meaning brain' },
   { id: 'r36', term: 'cerebr/o', type: 'root', meaning: 'cerebrum', casualMeaning: 'the thinking brain', system: 'Nervous', example: 'cerebral, cerebrospinal fluid, cerebrovascular', definition: 'Combining form meaning cerebrum' },
@@ -357,7 +356,7 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'r38', term: 'mening/o', type: 'root', meaning: 'meninges', casualMeaning: 'the membranes wrapping the brain', system: 'Nervous', example: 'meningitis, meningioma', definition: 'Combining form meaning meninges' },
   { id: 'r39', term: 'cerebell/o', type: 'root', meaning: 'cerebellum', casualMeaning: 'the balance part of the brain', system: 'Nervous', example: 'cerebellar, cerebellitis', definition: 'Combining form meaning cerebellum' },
 
-  // COMBINING FORMS – Musculoskeletal
+  // COMBINING FORMS - Musculoskeletal
   { id: 'r40', term: 'oste/o', type: 'root', meaning: 'bone', casualMeaning: 'a bone', system: 'Musculoskeletal', example: 'osteoporosis, osteomyelitis, ostectomy', definition: 'Combining form meaning bone' },
   { id: 'r41', term: 'arthr/o', type: 'root', meaning: 'joint', casualMeaning: 'a joint', system: 'Musculoskeletal', example: 'arthritis, arthroscopy, arthroplasty', definition: 'Combining form meaning joint' },
   { id: 'r42', term: 'my/o, muscul/o', type: 'root', meaning: 'muscle', casualMeaning: 'muscle tissue', system: 'Musculoskeletal', example: 'myalgia, myocardium, muscular', definition: 'Combining forms meaning muscle' },
@@ -367,7 +366,7 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'r46', term: 'vertebr/o, spondyl/o', type: 'root', meaning: 'vertebra', casualMeaning: 'a spine bone', system: 'Musculoskeletal', example: 'vertebral, spondylitis, spondylosis', definition: 'Combining forms meaning vertebra', homonymWarning: 'vertebr/o and spondyl/o both mean vertebra but are often used in different clinical contexts: spondyl/o in inflammatory conditions (spondylitis), vertebr/o in structural terms' },
   { id: 'r47', term: 'cost/o', type: 'root', meaning: 'rib', casualMeaning: 'a rib bone', system: 'Musculoskeletal', example: 'intercostal (between ribs), costochondral', definition: 'Combining form meaning rib' },
 
-  // COMBINING FORMS – Urinary
+  // COMBINING FORMS - Urinary
   { id: 'r48', term: 'nephr/o, ren/o', type: 'root', meaning: 'kidney', casualMeaning: 'the kidney', system: 'Urinary', example: 'nephritis, nephrectomy, renal', definition: 'Combining forms meaning kidney' },
   { id: 'r49', term: 'cyst/o', type: 'root', meaning: 'urinary bladder', casualMeaning: 'the bladder OR a cyst-like sac', system: 'Urinary', example: 'cystitis, cystoscopy, cystectomy', definition: 'Combining form meaning urinary bladder', homonymWarning: 'cyst/o means urinary bladder in urologic terms (cystitis, cystoscopy) but means sac or cyst when used in other contexts (cholecyst/o = bile sac/gallbladder)', alternativeSystems: ['Digestive'] },
   { id: 'r50', term: 'pyel/o', type: 'root', meaning: 'renal pelvis', casualMeaning: 'the cup inside the kidney collecting urine', system: 'Urinary', example: 'pyelonephritis, pyelogram', definition: 'Combining form meaning renal pelvis' },
@@ -375,25 +374,25 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'r52', term: 'urethr/o', type: 'root', meaning: 'urethra', casualMeaning: 'the exit tube for urine', system: 'Urinary', example: 'urethritis, urethroplasty', definition: 'Combining form meaning urethra' },
   { id: 'r53', term: 'ur/o', type: 'root', meaning: 'urine', casualMeaning: 'urine or the urinary system', system: 'Urinary', example: 'urology, urinalysis', definition: 'Combining form meaning urine' },
 
-  // COMBINING FORMS – Endocrine
+  // COMBINING FORMS - Endocrine
   { id: 'r54', term: 'thyr/o, thyroid/o', type: 'root', meaning: 'thyroid gland', casualMeaning: 'the thyroid gland', system: 'Endocrine', example: 'thyroiditis, thyroidectomy, hyperthyroidism', definition: 'Combining forms meaning thyroid gland' },
   { id: 'r55', term: 'adren/o', type: 'root', meaning: 'adrenal gland', casualMeaning: 'the stress glands on top of the kidneys', system: 'Endocrine', example: 'adrenalectomy, adrenaline, adrenocortical', definition: 'Combining form meaning adrenal gland' },
   { id: 'r56', term: 'pancreat/o', type: 'root', meaning: 'pancreas', casualMeaning: 'the pancreas (both digestive and endocrine roles)', system: 'Endocrine', example: 'pancreatitis, pancreatectomy', definition: 'Combining form meaning pancreas', homonymWarning: 'pancreat/o refers to both the exocrine pancreas (Digestive: makes enzymes) and endocrine pancreas (Endocrine: makes insulin). Context determines which function is being discussed', alternativeSystems: ['Digestive'] },
   { id: 'r57', term: 'gluc/o, glyc/o', type: 'root', meaning: 'glucose, sugar', casualMeaning: 'blood sugar / glucose', system: 'Endocrine', example: 'hyperglycemia, glycosuria, glucagon', definition: 'Combining forms meaning glucose or sugar' },
 
-  // COMBINING FORMS – Integumentary
+  // COMBINING FORMS - Integumentary
   { id: 'r58', term: 'derm/o, dermat/o', type: 'root', meaning: 'skin', casualMeaning: 'the skin', system: 'Integumentary', example: 'dermatitis, dermatology, dermatome', definition: 'Combining forms meaning skin' },
   { id: 'r59', term: 'cutane/o', type: 'root', meaning: 'skin', casualMeaning: 'skin (especially layered)', system: 'Integumentary', example: 'subcutaneous, transcutaneous', definition: 'Combining form meaning skin' },
   { id: 'r60', term: 'onych/o', type: 'root', meaning: 'nail', casualMeaning: 'a fingernail or toenail', system: 'Integumentary', example: 'onychomycosis (fungal nail infection), onychectomy', definition: 'Combining form meaning nail' },
   { id: 'r61', term: 'trich/o', type: 'root', meaning: 'hair', casualMeaning: 'hair strands', system: 'Integumentary', example: 'trichomycosis (hair fungus), trichotillomania', definition: 'Combining form meaning hair' },
 
-  // COMBINING FORMS – Lymphatic
+  // COMBINING FORMS - Lymphatic
   { id: 'r62', term: 'lymph/o', type: 'root', meaning: 'lymph', casualMeaning: 'the lymph fluid / immune drainage', system: 'Lymphatic', example: 'lymphoma, lymphocyte, lymphedema', definition: 'Combining form meaning lymph' },
   { id: 'r63', term: 'lymphaden/o', type: 'root', meaning: 'lymph node', casualMeaning: 'a lymph node or gland', system: 'Lymphatic', example: 'lymphadenopathy, lymphadenectomy', definition: 'Combining form meaning lymph node' },
   { id: 'r64', term: 'splen/o', type: 'root', meaning: 'spleen', casualMeaning: 'the spleen', system: 'Lymphatic', example: 'splenomegaly, splenectomy, splenitis', definition: 'Combining form meaning spleen' },
   { id: 'r65', term: 'thym/o', type: 'root', meaning: 'thymus gland', casualMeaning: 'the thymus gland', system: 'Lymphatic', example: 'thymoma, thymectomy', definition: 'Combining form meaning thymus gland', homonymWarning: 'thym/o refers to the thymus gland; do not confuse with thyr/o which refers to the thyroid gland' },
 
-  // COMBINING FORMS – Reproductive
+  // COMBINING FORMS - Reproductive
   { id: 'r66', term: 'hyster/o, uter/o, metr/o', type: 'root', meaning: 'uterus', casualMeaning: 'the uterus or womb', system: 'Reproductive', example: 'hysterectomy (removal of uterus), uterine, endometrium, metritis (inflammation of uterus)', definition: 'Combining forms meaning uterus', homonymWarning: 'metr/o means uterus in reproductive contexts (metritis, endometrium) but also means measure in other contexts (spirometry, optometry). Always check the context.' },
   { id: 'r67', term: 'oophor/o', type: 'root', meaning: 'ovary', casualMeaning: 'an ovary', system: 'Reproductive', example: 'oophorectomy, oophoritis', definition: 'Combining form meaning ovary' },
   { id: 'r68', term: 'mamm/o, mast/o', type: 'root', meaning: 'breast', casualMeaning: 'breast tissue', system: 'Reproductive', example: 'mammography, mastectomy, mastitis', definition: 'Combining forms meaning breast' },
@@ -401,13 +400,13 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'r70', term: 'prostat/o', type: 'root', meaning: 'prostate gland', casualMeaning: 'the prostate gland', system: 'Reproductive', example: 'prostatitis, prostatectomy', definition: 'Combining form meaning prostate gland' },
   { id: 'r71', term: 'colp/o, vagin/o', type: 'root', meaning: 'vagina', casualMeaning: 'the vagina', system: 'Reproductive', example: 'colposcopy, vaginitis', definition: 'Combining forms meaning vagina' },
 
-  // COMBINING FORMS – Blood
+  // COMBINING FORMS - Blood
   { id: 'r72', term: 'erythr/o', type: 'root', meaning: 'red, red blood cell', casualMeaning: 'red blood cells', system: 'Blood', example: 'erythrocyte, erythropoiesis, erythropenia', definition: 'Combining form meaning red or red blood cell' },
   { id: 'r73', term: 'leuk/o', type: 'root', meaning: 'white, white blood cell', casualMeaning: 'white blood cells', system: 'Blood', example: 'leukocyte, leukemia, leukopenia', definition: 'Combining form meaning white or white blood cell' },
   { id: 'r74', term: 'thrombocyt/o', type: 'root', meaning: 'platelet', casualMeaning: 'platelets that help blood clot', system: 'Blood', example: 'thrombocytopenia, thrombocytosis', definition: 'Combining form meaning platelet' },
   { id: 'r75', term: 'hemoglobin/o', type: 'root', meaning: 'hemoglobin', casualMeaning: 'the oxygen-carrying protein in red blood cells', system: 'Blood', example: 'hemoglobinopathy, hemoglobinuria', definition: 'Combining form meaning hemoglobin' },
 
-  // COMBINING FORMS – Special Senses (Eye)
+  // COMBINING FORMS - Special Senses (Eye)
   { id: 'r76', term: 'ocul/o, ophthalm/o', type: 'root', meaning: 'eye', casualMeaning: 'the eye', system: 'Special Senses', example: 'ocular, ophthalmology, ophthalmoscope', definition: 'Combining forms meaning eye' },
   { id: 'r77', term: 'blephar/o', type: 'root', meaning: 'eyelid', casualMeaning: 'the eyelid', system: 'Special Senses', example: 'blepharitis (inflammation of eyelid), blepharoptosis (drooping eyelid)', definition: 'Combining form meaning eyelid' },
   { id: 'r78', term: 'kerat/o', type: 'root', meaning: 'cornea', casualMeaning: 'the cornea of the eye', system: 'Special Senses', example: 'keratitis (cornea inflammation), keratoplasty (cornea repair)', definition: 'Combining form meaning cornea', homonymWarning: 'kerat/o means cornea in ophthalmology (keratitis) but means hard/horny tissue in dermatology (keratosis = skin hardening). Check the context.' },
@@ -415,24 +414,24 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'r80', term: 'retin/o', type: 'root', meaning: 'retina', casualMeaning: 'the retina', system: 'Special Senses', example: 'retinopathy (disease of retina), retinal detachment', definition: 'Combining form meaning retina' },
   { id: 'r81', term: 'conjunctiv/o', type: 'root', meaning: 'conjunctiva', casualMeaning: 'the conjunctiva', system: 'Special Senses', example: 'conjunctivitis (pink eye)', definition: 'Combining form meaning conjunctiva' },
 
-  // COMBINING FORMS – Special Senses (Ear)
+  // COMBINING FORMS - Special Senses (Ear)
   { id: 'r82', term: 'aur/o, ot/o', type: 'root', meaning: 'ear', casualMeaning: 'the ear', system: 'Special Senses', example: 'aural, otitis (ear inflammation), otoscope, otolaryngology', definition: 'Combining forms meaning ear' },
   { id: 'r83', term: 'tympan/o, myring/o', type: 'root', meaning: 'eardrum', casualMeaning: 'the eardrum', system: 'Special Senses', example: 'tympanoplasty, myringotomy (surgical incision of eardrum)', definition: 'Combining forms meaning tympanic membrane (eardrum)' },
   { id: 'r84', term: 'cochle/o', type: 'root', meaning: 'cochlea', casualMeaning: 'the cochlea', system: 'Special Senses', example: 'cochlear implant, cochleitis', definition: 'Combining form meaning cochlea' },
 
-  // COMBINING FORMS – Special Senses (Nose/Smell)
+  // COMBINING FORMS - Special Senses (Nose/Smell)
   { id: 'r85', term: 'olfact/o', type: 'root', meaning: 'smell', casualMeaning: 'the sense of smell', system: 'Special Senses', example: 'olfactory nerve, olfaction', definition: 'Combining form meaning smell or the sense of smell' },
 
-  // COMBINING FORMS – Blood (additional)
-  { id: 'r86', term: 'neutr/o', type: 'root', meaning: 'neutral', casualMeaning: 'neither acidic nor basic (stains with neutral dyes)', system: 'Blood', example: 'neutrophil (neutral-staining white blood cell), neutropenia', definition: 'Combining form meaning neutral; used to denote neutrophils — WBCs that take up neutral dyes' },
+  // COMBINING FORMS - Blood (additional)
+  { id: 'r86', term: 'neutr/o', type: 'root', meaning: 'neutral', casualMeaning: 'neither acidic nor basic (stains with neutral dyes)', system: 'Blood', example: 'neutrophil (neutral-staining white blood cell), neutropenia', definition: 'Combining form meaning neutral; used to denote neutrophils - WBCs that take up neutral dyes' },
   { id: 'r87', term: 'eosin/o', type: 'root', meaning: 'rosy, dawn-colored', casualMeaning: 'stains rosy-red with eosin dye', system: 'Blood', example: 'eosinophil (cell that stains with eosin dye), eosinophilia', definition: 'Combining form meaning rosy or dawn-colored; denotes eosinophils, which stain bright red with eosin dye' },
   { id: 'r88', term: 'bas/o', type: 'root', meaning: 'base', casualMeaning: 'stains with basic (blue) dyes', system: 'Blood', example: 'basophil (cell that stains with basic dyes), basophilia', definition: 'Combining form meaning base; denotes basophils, which stain dark blue with basic dyes' },
   { id: 'r89', term: 'coagul/o', type: 'root', meaning: 'coagulation, clotting', casualMeaning: 'blood clotting', system: 'Blood', example: 'coagulation, coagulopathy (disease of clotting)', definition: 'Combining form meaning coagulation or blood clotting' },
   { id: 'r90', term: 'fibrin/o', type: 'root', meaning: 'fibrin', casualMeaning: 'the clotting fiber in blood', system: 'Blood', example: 'fibrinogen (clotting protein precursor), fibrinolysis (breaking down clots)', definition: 'Combining form meaning fibrin, the protein that forms the mesh of a blood clot' },
   { id: 'r91', term: 'plasm/o', type: 'root', meaning: 'plasma', casualMeaning: 'the liquid part of blood', system: 'Blood', example: 'plasmapheresis (removal and replacement of plasma)', definition: 'Combining form meaning plasma, the liquid portion of blood' },
-  { id: 'r92', term: 'ser/o', type: 'root', meaning: 'serum', casualMeaning: 'the clear fluid left after blood clots', system: 'Blood', example: 'serology (study of serum), seropositive', definition: 'Combining form meaning serum — plasma without its clotting factors; used in lab testing and immunology' },
+  { id: 'r92', term: 'ser/o', type: 'root', meaning: 'serum', casualMeaning: 'the clear fluid left after blood clots', system: 'Blood', example: 'serology (study of serum), seropositive', definition: 'Combining form meaning serum - plasma without its clotting factors; used in lab testing and immunology' },
 
-  // CLINICAL TERMS – Cardiovascular
+  // CLINICAL TERMS - Cardiovascular
   { id: 'c1', term: 'Myocardial Infarction', type: 'condition', meaning: 'Death of heart muscle tissue due to blocked blood supply', casualMeaning: 'a heart attack', system: 'Cardiovascular', example: 'Acute MI with ST elevation (STEMI)', definition: 'Death of myocardial cells (heart muscle) resulting from prolonged ischemia (inadequate blood supply), usually caused by occlusion of a coronary artery', wordParts: [{part:'myo', meaning:'muscle', type:'root'},{part:'cardi', meaning:'heart', type:'root'},{part:'-al', meaning:'pertaining to', type:'suffix'},{part:'infarct', meaning:'area of dead tissue', type:'root'},{part:'-ion', meaning:'process', type:'suffix'}] },
   { id: 'c2', term: 'Atherosclerosis', type: 'condition', meaning: 'Hardening/narrowing of arteries due to fatty plaque buildup', casualMeaning: 'clogged arteries from fat and cholesterol buildup', system: 'Cardiovascular', example: 'Coronary artery atherosclerosis leading to angina', definition: 'Accumulation of fatty deposits (plaque, called atheromas) within and under the inner lining of arterial walls, causing stiffness and narrowing', wordParts: [{part:'ather/o', meaning:'fatty paste/porridge', type:'root'},{part:'scler/o', meaning:'hard', type:'root'},{part:'-osis', meaning:'abnormal condition', type:'suffix'}] },
   { id: 'c3', term: 'Arteriosclerosis', type: 'condition', meaning: 'General hardening of arteries with age', casualMeaning: 'stiff arteries (from aging)', system: 'Cardiovascular', example: 'Age-related arteriosclerosis', definition: 'Hardening and thickening of arterial walls; a broader term than atherosclerosis; includes any process that hardens arteries', wordParts: [{part:'arteri/o', meaning:'artery', type:'root'},{part:'scler/o', meaning:'hard', type:'root'},{part:'-osis', meaning:'abnormal condition', type:'suffix'}] },
@@ -442,11 +441,11 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'c7', term: 'Bradycardia', type: 'condition', meaning: 'Heart rate below 60 beats per minute', casualMeaning: 'a dangerously slow heart rate', system: 'Cardiovascular', example: 'Sinus bradycardia at 45 bpm', definition: 'Slowness of the heartbeat, with a rate under 60 beats per minute', wordParts: [{part:'brady-', meaning:'slow', type:'prefix'},{part:'cardi/o', meaning:'heart', type:'root'},{part:'-ia', meaning:'condition', type:'suffix'}] },
   { id: 'c8', term: 'Tachycardia', type: 'condition', meaning: 'Heart rate above 100 beats per minute', casualMeaning: 'a racing heart rate', system: 'Cardiovascular', example: 'Supraventricular tachycardia (SVT)', definition: 'Rapidity of action of the heart, with a rate over 100 beats per minute', wordParts: [{part:'tachy-', meaning:'fast/rapid', type:'prefix'},{part:'cardi/o', meaning:'heart', type:'root'},{part:'-ia', meaning:'condition', type:'suffix'}] },
   { id: 'c9', term: 'Thrombosis', type: 'condition', meaning: 'Formation of a blood clot inside a vessel', casualMeaning: 'a dangerous blood clot forming inside', system: 'Cardiovascular', example: 'Deep vein thrombosis (DVT)', definition: 'Formation of a thrombus (blood clot) inside a blood vessel', wordParts: [{part:'thromb/o', meaning:'blood clot', type:'root'},{part:'-osis', meaning:'abnormal condition', type:'suffix'}] },
-  { id: 'c10', term: 'Embolism', type: 'condition', meaning: 'Blockage by a traveling clot (embolus)', casualMeaning: 'a clot that broke loose and is blocking something', system: 'Cardiovascular', example: 'Pulmonary embolism (PE) – clot in lungs', definition: 'Sudden obstruction of a blood vessel by an embolus (a blood clot or other material carried in the bloodstream)' },
+  { id: 'c10', term: 'Embolism', type: 'condition', meaning: 'Blockage by a traveling clot (embolus)', casualMeaning: 'a clot that broke loose and is blocking something', system: 'Cardiovascular', example: 'Pulmonary embolism (PE) - clot in lungs', definition: 'Sudden obstruction of a blood vessel by an embolus (a blood clot or other material carried in the bloodstream)' },
   { id: 'c11', term: 'Congestive Heart Failure (CHF)', type: 'condition', meaning: 'Heart cannot pump enough blood to meet body demands', casualMeaning: 'a weakened heart that can\'t keep up with the body', system: 'Cardiovascular', example: 'Left-sided CHF causing pulmonary edema', definition: 'Inability of the heart to pump sufficient blood to meet the needs of the body; results in backup of fluid in lungs (left-sided) or body (right-sided)' },
   { id: 'c12', term: 'Aneurysm', type: 'condition', meaning: 'Balloon-like bulge in a weakened arterial wall', casualMeaning: 'a dangerous bulge in an artery wall', system: 'Cardiovascular', example: 'Abdominal aortic aneurysm (AAA)', definition: 'Localized dilation (widening) of a blood vessel resulting from weakness in the vessel wall' },
 
-  // CLINICAL TERMS – Respiratory
+  // CLINICAL TERMS - Respiratory
   { id: 'c13', term: 'Dyspnea', type: 'condition', meaning: 'Subjective sensation of difficult or labored breathing', casualMeaning: 'shortness of breath', system: 'Respiratory', example: 'Exertional dyspnea, nocturnal dyspnea', definition: 'Subjective symptom of shortness of breath or difficulty breathing; may indicate pulmonary or cardiac disease', wordParts: [{part:'dys-', meaning:'bad/difficult', type:'prefix'},{part:'-pnea', meaning:'breathing', type:'suffix'}] },
   { id: 'c14', term: 'Apnea', type: 'condition', meaning: 'Temporary absence of breathing', casualMeaning: 'breathing stops temporarily', system: 'Respiratory', example: 'Obstructive sleep apnea', definition: 'Temporary absence of breathing; may occur during sleep (sleep apnea) or as apneic episodes', wordParts: [{part:'a-', meaning:'without', type:'prefix'},{part:'-pnea', meaning:'breathing', type:'suffix'}] },
   { id: 'c15', term: 'Pneumonia', type: 'condition', meaning: 'Infection causing inflammation and fluid in alveoli', casualMeaning: 'lung infection with fluid in the air sacs', system: 'Respiratory', example: 'Community-acquired pneumonia, bacterial pneumonia', definition: 'Inflammation of the lung parenchyma (including alveoli and surrounding tissue) due to infection by bacteria, viruses, or fungi', wordParts: [{part:'pneumon/o', meaning:'lung', type:'root'},{part:'-ia', meaning:'condition', type:'suffix'}] },
@@ -456,7 +455,7 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'c19', term: 'Pleuritis (Pleurisy)', type: 'condition', meaning: 'Inflammation of the pleural membranes', casualMeaning: 'inflamed lung wrappers causing stabbing chest pain', system: 'Respiratory', example: 'Viral pleurisy', definition: 'Inflammation of the pleura, characterized by sharp chest pain that worsens with breathing or coughing' },
   { id: 'c20', term: 'Bronchitis', type: 'condition', meaning: 'Inflammation of the bronchial tubes', casualMeaning: 'inflamed breathing branches', system: 'Respiratory', example: 'Acute bronchitis, chronic bronchitis (COPD)', definition: 'Inflammation of the mucous membranes of the bronchial tubes; acute (usually viral) or chronic (usually from smoking)', wordParts: [{part:'bronch/o', meaning:'bronchus', type:'root'},{part:'-itis', meaning:'inflammation', type:'suffix'}] },
 
-  // CLINICAL TERMS – Digestive
+  // CLINICAL TERMS - Digestive
   { id: 'c21', term: 'Dysphagia', type: 'condition', meaning: 'Difficulty or pain when swallowing', casualMeaning: 'trouble swallowing food', system: 'Digestive', example: 'Oropharyngeal dysphagia from stroke', definition: 'Difficulty in swallowing; may be caused by neurological disorders, mechanical obstruction, or esophageal disease', wordParts: [{part:'dys-', meaning:'difficult', type:'prefix'},{part:'-phagia', meaning:'swallowing/eating', type:'suffix'}] },
   { id: 'c22', term: 'Gastroesophageal Reflux Disease (GERD)', type: 'condition', meaning: 'Chronic backflow of acid from stomach to esophagus', casualMeaning: 'acid reflux / chronic heartburn', system: 'Digestive', example: 'GERD causing esophagitis', definition: 'Condition in which gastric contents reflux (flow back) into the esophagus, causing heartburn and potentially esophageal damage' },
   { id: 'c23', term: 'Cirrhosis', type: 'condition', meaning: 'Liver cell death replaced by fibrous scar tissue', casualMeaning: 'severe liver scarring', system: 'Digestive', example: 'Alcoholic cirrhosis, cirrhosis from hepatitis C', definition: 'Chronic liver disease characterized by replacement of normal liver cells with fibrous scar tissue; causes liver failure', wordParts: [{part:'cirrh/o', meaning:'yellow/tawny', type:'root'},{part:'-osis', meaning:'abnormal condition', type:'suffix'}] },
@@ -465,7 +464,7 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'c26', term: 'Cholecystitis', type: 'condition', meaning: 'Inflammation of the gallbladder', casualMeaning: 'inflamed gallbladder, often from gallstones', system: 'Digestive', example: 'Acute cholecystitis from cholelithiasis', definition: 'Inflammation of the gallbladder, usually caused by gallstones (cholelithiasis) blocking the cystic duct', wordParts: [{part:'cholecyst/o', meaning:'gallbladder', type:'root'},{part:'-itis', meaning:'inflammation', type:'suffix'}] },
   { id: 'c27', term: 'Cholelithiasis', type: 'condition', meaning: 'Presence of gallstones in the gallbladder', casualMeaning: 'gallstones', system: 'Digestive', example: 'Asymptomatic cholelithiasis discovered on ultrasound', definition: 'Presence or formation of stones (calculi) in the gallbladder', wordParts: [{part:'chol/e', meaning:'bile', type:'root'},{part:'lith/o', meaning:'stone', type:'root'},{part:'-iasis', meaning:'condition', type:'suffix'}] },
 
-  // CLINICAL TERMS – Nervous
+  // CLINICAL TERMS - Nervous
   { id: 'c28', term: 'Meningitis', type: 'condition', meaning: 'Inflammation of the meninges (brain membranes)', casualMeaning: 'inflamed membranes wrapping the brain', system: 'Nervous', example: 'Bacterial meningitis (medical emergency)', definition: 'Inflammation of the meninges (the three membranes covering the brain and spinal cord); caused by bacteria, viruses, or fungi', wordParts: [{part:'mening/o', meaning:'meninges', type:'root'},{part:'-itis', meaning:'inflammation', type:'suffix'}] },
   { id: 'c29', term: 'Cerebrovascular Accident (CVA)', type: 'condition', meaning: 'Sudden disruption of blood supply to the brain (stroke)', casualMeaning: 'a stroke', system: 'Nervous', example: 'Ischemic CVA from carotid artery occlusion', definition: 'Sudden loss of brain function due to ischemia (blocked artery) or hemorrhage (ruptured artery) in the brain; also called stroke' },
   { id: 'c30', term: 'Aphasia', type: 'condition', meaning: 'Loss or impairment of language function from brain damage', casualMeaning: 'inability to speak or understand language after brain injury', system: 'Nervous', example: 'Broca\'s aphasia (expressive), Wernicke\'s aphasia (receptive)', definition: 'Defect or loss of the power of expression by speech, writing, or signs, or of comprehending spoken or written language, due to injury or disease of the brain', wordParts: [{part:'a-', meaning:'without', type:'prefix'},{part:'-phasia', meaning:'speech', type:'suffix'}] },
@@ -473,24 +472,24 @@ export const ALL_TERMS: MedicalTerm[] = [
   { id: 'c32', term: 'Paraplegia', type: 'condition', meaning: 'Paralysis of the lower body', casualMeaning: 'both legs paralyzed from spinal injury', system: 'Nervous', example: 'Paraplegia from spinal cord injury at T4', definition: 'Paralysis of the lower extremities and lower trunk, usually caused by spinal cord damage', wordParts: [{part:'para-', meaning:'beside/abnormal', type:'prefix'},{part:'-plegia', meaning:'paralysis', type:'suffix'}] },
   { id: 'c33', term: 'Encephalitis', type: 'condition', meaning: 'Inflammation of the brain', casualMeaning: 'inflamed brain tissue', system: 'Nervous', example: 'Viral encephalitis (e.g., West Nile, herpes)', definition: 'Inflammation of the brain; usually caused by viral infection; symptoms include headache, fever, confusion, and seizures', wordParts: [{part:'encephal/o', meaning:'brain', type:'root'},{part:'-itis', meaning:'inflammation', type:'suffix'}] },
 
-  // CLINICAL TERMS – Musculoskeletal
+  // CLINICAL TERMS - Musculoskeletal
   { id: 'c34', term: 'Osteoporosis', type: 'condition', meaning: 'Decreased bone density causing fragility', casualMeaning: 'weak, brittle, porous bones', system: 'Musculoskeletal', example: 'Postmenopausal osteoporosis, fragility fractures', definition: 'Reduction in bone mass (density) leading to increased fracture risk; common in postmenopausal women', wordParts: [{part:'oste/o', meaning:'bone', type:'root'},{part:'por/o', meaning:'pore/passage', type:'root'},{part:'-osis', meaning:'abnormal condition', type:'suffix'}] },
   { id: 'c35', term: 'Arthritis', type: 'condition', meaning: 'Inflammation of one or more joints', casualMeaning: 'inflamed, painful joints', system: 'Musculoskeletal', example: 'Rheumatoid arthritis, osteoarthritis', definition: 'Inflammation of a joint, characterized by pain, swelling, and limited motion; many forms including rheumatoid (autoimmune) and osteoarthritis (wear and tear)', wordParts: [{part:'arthr/o', meaning:'joint', type:'root'},{part:'-itis', meaning:'inflammation', type:'suffix'}] },
   { id: 'c36', term: 'Osteomyelitis', type: 'condition', meaning: 'Infection/inflammation of bone and bone marrow', casualMeaning: 'bone infection', system: 'Musculoskeletal', example: 'Hematogenous osteomyelitis in children', definition: 'Inflammation of bone and marrow (usually caused by bacterial infection); may be acute or chronic', wordParts: [{part:'oste/o', meaning:'bone', type:'root'},{part:'myel/o', meaning:'marrow', type:'root'},{part:'-itis', meaning:'inflammation', type:'suffix'}] },
 
-  // CLINICAL TERMS – Urinary
+  // CLINICAL TERMS - Urinary
   { id: 'c37', term: 'Nephrolithiasis', type: 'condition', meaning: 'Presence of stones in the kidney', casualMeaning: 'kidney stones', system: 'Urinary', example: 'Calcium oxalate nephrolithiasis', definition: 'Presence of calculi (stones) in the kidney; stones form when urine becomes supersaturated with mineral salts', wordParts: [{part:'nephr/o', meaning:'kidney', type:'root'},{part:'lith/o', meaning:'stone', type:'root'},{part:'-iasis', meaning:'condition', type:'suffix'}] },
   { id: 'c38', term: 'Pyelonephritis', type: 'condition', meaning: 'Bacterial infection of kidney and renal pelvis', casualMeaning: 'kidney infection (serious UTI)', system: 'Urinary', example: 'Ascending pyelonephritis from E. coli', definition: 'Bacterial infection of the renal pelvis and kidney tissue; more serious than cystitis (bladder infection)', wordParts: [{part:'pyel/o', meaning:'renal pelvis', type:'root'},{part:'nephr/o', meaning:'kidney', type:'root'},{part:'-itis', meaning:'inflammation', type:'suffix'}] },
   { id: 'c39', term: 'Hematuria', type: 'condition', meaning: 'Presence of blood in urine', casualMeaning: 'blood in the urine', system: 'Urinary', example: 'Gross hematuria from kidney stone', definition: 'Presence of blood in the urine; may be gross (visible) or microscopic (detected only by urinalysis)', wordParts: [{part:'hemat/o', meaning:'blood', type:'root'},{part:'-uria', meaning:'urine condition', type:'suffix'}] },
   { id: 'c40', term: 'Cystitis', type: 'condition', meaning: 'Inflammation/infection of the urinary bladder', casualMeaning: 'bladder infection (UTI)', system: 'Urinary', example: 'Bacterial cystitis (most common UTI)', definition: 'Inflammation of the urinary bladder, usually caused by bacterial infection; common in women', wordParts: [{part:'cyst/o', meaning:'bladder', type:'root'},{part:'-itis', meaning:'inflammation', type:'suffix'}] },
   { id: 'c41', term: 'Oliguria', type: 'condition', meaning: 'Decreased urine output (<400 mL/day)', casualMeaning: 'producing too little urine', system: 'Urinary', example: 'Oliguria in acute kidney injury', definition: 'Diminished amount of urine output; a sign of kidney dysfunction or severe dehydration', wordParts: [{part:'olig/o', meaning:'few/scanty', type:'prefix'},{part:'-uria', meaning:'urine condition', type:'suffix'}] },
 
-  // CLINICAL TERMS – Endocrine
+  // CLINICAL TERMS - Endocrine
   { id: 'c42', term: 'Diabetes Mellitus', type: 'condition', meaning: 'Chronic disorder of glucose metabolism due to insulin deficiency or resistance', casualMeaning: 'high blood sugar disease', system: 'Endocrine', example: 'Type 1 DM (insulin deficiency), Type 2 DM (insulin resistance)', definition: 'Chronic metabolic disorder in which the body cannot properly use glucose; characterized by hyperglycemia (high blood sugar)' },
   { id: 'c43', term: 'Hypothyroidism', type: 'condition', meaning: 'Underactive thyroid gland producing insufficient thyroid hormone', casualMeaning: 'sluggish thyroid / slow metabolism', system: 'Endocrine', example: 'Hashimoto\'s thyroiditis causing hypothyroidism', definition: 'Deficient activity of the thyroid gland; results in decreased metabolic rate, fatigue, weight gain, and cold intolerance', wordParts: [{part:'hypo-', meaning:'below/deficient', type:'prefix'},{part:'thyroid/o', meaning:'thyroid gland', type:'root'},{part:'-ism', meaning:'condition/state', type:'suffix'}] },
   { id: 'c44', term: 'Hyperthyroidism', type: 'condition', meaning: 'Overactive thyroid producing excess thyroid hormone', casualMeaning: 'overactive thyroid / fast metabolism', system: 'Endocrine', example: 'Graves\' disease (most common hyperthyroidism)', definition: 'Excessive functional activity of the thyroid gland; results in increased metabolic rate, weight loss, sweating, and tremor', wordParts: [{part:'hyper-', meaning:'above/excessive', type:'prefix'},{part:'thyroid/o', meaning:'thyroid gland', type:'root'},{part:'-ism', meaning:'condition/state', type:'suffix'}] },
 
-  // CLINICAL TERMS – Blood
+  // CLINICAL TERMS - Blood
   { id: 'c45', term: 'Anemia', type: 'condition', meaning: 'Deficiency of red blood cells or hemoglobin', casualMeaning: 'not enough red blood cells', system: 'Blood', example: 'Iron deficiency anemia, sickle cell anemia', definition: 'Reduction below normal in the number or size of red blood cells or the amount of hemoglobin in the blood; results in reduced oxygen-carrying capacity', wordParts: [{part:'an-', meaning:'without', type:'prefix'},{part:'-emia', meaning:'blood condition', type:'suffix'}] },
   { id: 'c46', term: 'Leukemia', type: 'condition', meaning: 'Malignant disease of bone marrow with uncontrolled white blood cell production', casualMeaning: 'blood cancer (too many bad white blood cells)', system: 'Blood', example: 'Acute lymphocytic leukemia (ALL), chronic myelogenous leukemia (CML)', definition: 'Malignant disease of blood-forming organs, marked by abnormal proliferation of leukocytes (white blood cells) in the bone marrow and blood', wordParts: [{part:'leuk/o', meaning:'white', type:'root'},{part:'-emia', meaning:'blood condition', type:'suffix'}] },
   { id: 'c47', term: 'Thrombocytopenia', type: 'condition', meaning: 'Abnormally low platelet count', casualMeaning: 'dangerously few platelets (bleeding risk)', system: 'Blood', example: 'Immune thrombocytopenic purpura (ITP)', definition: 'Decrease in the number of platelets (thrombocytes) in the blood; predisposes to bleeding and hemorrhage', wordParts: [{part:'thrombocyt/o', meaning:'platelet', type:'root'},{part:'-penia', meaning:'deficiency', type:'suffix'}] },
@@ -537,7 +536,11 @@ dedupeTerms();
 export const HOMONYM_TERMS = ALL_TERMS.filter(t => t.homonymWarning);
 
 export const getTermsBySystem = (systemId: string) =>
-  ALL_TERMS.filter(t => t.system.toLowerCase() === systemId.toLowerCase() || t.system === 'General');
+  ALL_TERMS.filter(t =>
+    t.system.toLowerCase() === systemId.toLowerCase() ||
+    t.system === 'General' ||
+    (t.alternativeSystems ?? []).some(s => s.toLowerCase() === systemId.toLowerCase())
+  );
 
 export const getTermsByType = (type: MedicalTerm['type']) =>
   ALL_TERMS.filter(t => t.type === type);
