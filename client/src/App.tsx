@@ -19,13 +19,7 @@ import PracticeTest from "./pages/v2/PracticeTest";
 import DailyChallenge from "./pages/v2/DailyChallenge";
 import ChapterSummary from "./pages/v2/ChapterSummary";
 import MultipleChoice from "./pages/v2/games/MultipleChoice";
-import TypingQuiz from "./pages/v2/games/TypingQuiz";
 import LinguisticAutopsy from "./pages/v2/games/LinguisticAutopsy";
-import ChartTriage from "./pages/v2/games/ChartTriage";
-import TextbookTrap from "./pages/v2/games/TextbookTrap";
-import RootRace from "./pages/v2/games/RootRace";
-import RootSwap from "./pages/v2/games/RootSwap";
-import StructuralHole from "./pages/v2/games/StructuralHole";
 import TextbookDefender from "./pages/v2/games/TextbookDefender";
 import CombiningFormLinker from "./pages/v2/games/CombiningFormLinker";
 import ChartAuditor from "./pages/v2/games/ChartAuditor";
@@ -78,13 +72,7 @@ function AppRoutes() {
       <Route path="/daily-challenge" component={DailyChallenge} />
       <Route path="/chapter-summary/:num" component={ChapterSummary} />
       <Route path="/games/multiple-choice" component={MultipleChoice} />
-      <Route path="/games/typing-quiz" component={TypingQuiz} />
       <Route path="/games/linguistic-autopsy" component={LinguisticAutopsy} />
-      <Route path="/games/chart-triage" component={ChartTriage} />
-      <Route path="/games/textbook-trap" component={TextbookTrap} />
-      <Route path="/games/root-race" component={RootRace} />
-      <Route path="/games/root-swap" component={RootSwap} />
-      <Route path="/games/structural-hole" component={StructuralHole} />
       <Route path="/games/textbook-defender" component={TextbookDefender} />
       <Route path="/games/combining-linker" component={CombiningFormLinker} />
       <Route path="/games/chart-auditor" component={ChartAuditor} />
