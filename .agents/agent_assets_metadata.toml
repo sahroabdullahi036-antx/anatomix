@@ -5,73 +5,73 @@ outputs = []
 id = "wEZ8bnkwvmdgqAgLCKsXf"
 uri = "file://attached_assets/generated_images/systems/digestive.png"
 type = "image"
-title = "digestive system illustration"
+title = "digestive system"
 
 [[generated]]
 id = "Q22Qe3fTxfwo3e_RD_5GT"
 uri = "file://attached_assets/generated_images/systems/cardiovascular.png"
 type = "image"
-title = "cardiovascular system illustration"
+title = "cardiovascular system"
 
 [[generated]]
 id = "c2oyKpfvXa7x5YHUsmnDV"
 uri = "file://attached_assets/generated_images/systems/respiratory.png"
 type = "image"
-title = "respiratory system illustration"
+title = "respiratory system"
 
 [[generated]]
 id = "amV5tLivktd2I7bOrzKiU"
 uri = "file://attached_assets/generated_images/systems/nervous.png"
 type = "image"
-title = "nervous system illustration"
+title = "nervous system"
 
 [[generated]]
 id = "tyFDS6cG8FnlDZoSwLQv9"
 uri = "file://attached_assets/generated_images/systems/musculoskeletal.png"
 type = "image"
-title = "musculoskeletal system illustration"
+title = "musculoskeletal system"
 
 [[generated]]
 id = "KDhM7gFPzg5KgeeuWXp7K"
 uri = "file://attached_assets/generated_images/systems/urinary.png"
 type = "image"
-title = "urinary system illustration"
+title = "urinary system"
 
 [[generated]]
 id = "KTo14HVVYR8dd5qlwhFhO"
 uri = "file://attached_assets/generated_images/systems/endocrine.png"
 type = "image"
-title = "endocrine system illustration"
+title = "endocrine system"
 
 [[generated]]
 id = "qLw9GlEpsTNbzdBPY9YE3"
 uri = "file://attached_assets/generated_images/systems/integumentary.png"
 type = "image"
-title = "integumentary system illustration"
+title = "integumentary system"
 
 [[generated]]
 id = "tUJpmZWeERjHVUuQpPW1t"
 uri = "file://attached_assets/generated_images/systems/lymphatic.png"
 type = "image"
-title = "lymphatic system illustration"
+title = "lymphatic system"
 
 [[generated]]
 id = "PN7XH8er1mr__eHkSrMYH"
 uri = "file://attached_assets/generated_images/systems/reproductive.png"
 type = "image"
-title = "reproductive system illustration"
+title = "reproductive system"
 
 [[generated]]
 id = "JZI0FnJUF_lajAuCx4F1q"
 uri = "file://attached_assets/generated_images/systems/blood.png"
 type = "image"
-title = "blood system illustration"
+title = "blood system"
 
 [[generated]]
 id = "SZc8txdI_9EZQR6-Y8GCB"
 uri = "file://attached_assets/generated_images/systems/special-senses.png"
 type = "image"
-title = "special-senses system illustration"
+title = "special-senses system"
 
 [[generated]]
 id = "86Q3q9g_AZ9n1UgtaCqPY"
@@ -90,3 +90,573 @@ id = "Jpk1iDzHyjk3R9TeBntX0"
 uri = "file://attached_assets/generated_images/systems/_body_female.png"
 type = "image"
 title = "schematic female organ reference"
+
+[[generated]]
+id = "-xe8ipsrQ_BlFhHm9X1C7"
+uri = "file://attached_assets/generated_images/parts/gallbladder.png"
+type = "image"
+title = "gallbladder"
+
+[[generated]]
+id = "vAWhVe-1-CGaTwF98kxNh"
+uri = "file://attached_assets/generated_images/parts/pancreas_d.png"
+type = "image"
+title = "pancreas_d"
+
+[[generated]]
+id = "l8MCqgsZN3XbR40gdpLRe"
+uri = "file://attached_assets/generated_images/parts/heart.png"
+type = "image"
+title = "heart"
+
+[[generated]]
+id = "XH2XfzjwTmovJft6cHYvo"
+uri = "file://attached_assets/generated_images/parts/atria.png"
+type = "image"
+title = "atria"
+
+[[generated]]
+id = "8NHVJrqHFOIre_9Hi8nMP"
+uri = "file://attached_assets/generated_images/parts/ventricles.png"
+type = "image"
+title = "ventricles"
+
+[[generated]]
+id = "NVddxrJfdJeBiObzMMdL9"
+uri = "file://attached_assets/generated_images/parts/myocardium.png"
+type = "image"
+title = "myocardium"
+
+[[generated]]
+id = "0wKcQQYTwVGAeU48x2gsw"
+uri = "file://attached_assets/generated_images/parts/pericardium.png"
+type = "image"
+title = "pericardium"
+
+[[generated]]
+id = "I2U6VGGee6IAcmLkZPZNK"
+uri = "file://attached_assets/generated_images/parts/arteries.png"
+type = "image"
+title = "arteries"
+
+[[generated]]
+id = "SbeMiZlM77dEbMvBPqpuv"
+uri = "file://attached_assets/generated_images/parts/aorta.png"
+type = "image"
+title = "aorta"
+
+[[generated]]
+id = "lsopVsFFL75s0Lt6ozMlU"
+uri = "file://attached_assets/generated_images/parts/coronary.png"
+type = "image"
+title = "coronary"
+
+[[generated]]
+id = "8KAcCsn6acaQ6QB9zKAaB"
+uri = "file://attached_assets/generated_images/parts/smallintestine.png"
+type = "image"
+title = "smallintestine"
+
+[[generated]]
+id = "_ynBi9cnkC0IXIUq-Dcci"
+uri = "file://attached_assets/generated_images/parts/duodenum.png"
+type = "image"
+title = "duodenum"
+
+[[generated]]
+id = "OvHFOfHfLbYj4YTTRY4tR"
+uri = "file://attached_assets/generated_images/parts/jejunum.png"
+type = "image"
+title = "jejunum"
+
+[[generated]]
+id = "0pbcBhZxGnCizndfUZLLP"
+uri = "file://attached_assets/generated_images/parts/ileum.png"
+type = "image"
+title = "ileum"
+
+[[generated]]
+id = "eesSjt57IU8eIIcHxgdL9"
+uri = "file://attached_assets/generated_images/parts/largeintestine.png"
+type = "image"
+title = "largeintestine"
+
+[[generated]]
+id = "bHXWU0fCRjhokQsNGaerV"
+uri = "file://attached_assets/generated_images/parts/cecum.png"
+type = "image"
+title = "cecum"
+
+[[generated]]
+id = "AOHzJAZUFF7yP6SIZnCYO"
+uri = "file://attached_assets/generated_images/parts/mouth.png"
+type = "image"
+title = "mouth"
+
+[[generated]]
+id = "ACOQchrjEoODCXY3AcZvY"
+uri = "file://attached_assets/generated_images/parts/appendix.png"
+type = "image"
+title = "appendix"
+
+[[generated]]
+id = "oyA1hi3BlhGDQK_p5ZVps"
+uri = "file://attached_assets/generated_images/parts/teeth.png"
+type = "image"
+title = "teeth"
+
+[[generated]]
+id = "rPtgahLc6ZDK-ZZ_i4fhO"
+uri = "file://attached_assets/generated_images/parts/rectum.png"
+type = "image"
+title = "rectum"
+
+[[generated]]
+id = "IQDAsVKoo8nskSzBI4h5Y"
+uri = "file://attached_assets/generated_images/parts/alveoli.png"
+type = "image"
+title = "alveoli"
+
+[[generated]]
+id = "kQhxPIN3-FbQPdh_KPQeM"
+uri = "file://attached_assets/generated_images/parts/bones.png"
+type = "image"
+title = "bones"
+
+[[generated]]
+id = "9-l7SNLSPJz3pa5pa53vg"
+uri = "file://attached_assets/generated_images/parts/testes.png"
+type = "image"
+title = "testes"
+
+[[generated]]
+id = "5tVjkrvTCXurNTXmzfTWS"
+uri = "file://attached_assets/generated_images/parts/liver.png"
+type = "image"
+title = "liver"
+
+[[generated]]
+id = "Ipsn2LckW1i3g29BeDJr1"
+uri = "file://attached_assets/generated_images/parts/veins.png"
+type = "image"
+title = "veins"
+
+[[generated]]
+id = "vzeESqQrKqqLbDiDuScvm"
+uri = "file://attached_assets/generated_images/parts/pleura.png"
+type = "image"
+title = "pleura"
+
+[[generated]]
+id = "4vOlLrLStSWF8DgpDB6ik"
+uri = "file://attached_assets/generated_images/parts/skull.png"
+type = "image"
+title = "skull"
+
+[[generated]]
+id = "lxacCXEd77HcsIq3gWAbL"
+uri = "file://attached_assets/generated_images/parts/ovaries.png"
+type = "image"
+title = "ovaries"
+
+[[generated]]
+id = "6Rpc5kByk21Gucv3h64Ue"
+uri = "file://attached_assets/generated_images/parts/epidermis.png"
+type = "image"
+title = "epidermis"
+
+[[generated]]
+id = "CbCmO_m3ExjqY7mgecEHX"
+uri = "file://attached_assets/generated_images/parts/pharynx_d.png"
+type = "image"
+title = "pharynx_d"
+
+[[generated]]
+id = "kVYbjrX44y2B8_wwyDZwg"
+uri = "file://attached_assets/generated_images/parts/capillaries.png"
+type = "image"
+title = "capillaries"
+
+[[generated]]
+id = "7GCLmMI6SSX23WFcj5CuL"
+uri = "file://attached_assets/generated_images/parts/diaphragm.png"
+type = "image"
+title = "diaphragm"
+
+[[generated]]
+id = "OdJ1XfVUS-ZgbJoq4uxau"
+uri = "file://attached_assets/generated_images/parts/eosinophils.png"
+type = "image"
+title = "eosinophils"
+
+[[generated]]
+id = "CJ8MxXSaPP0FdL2T7hL3b"
+uri = "file://attached_assets/generated_images/parts/conjunctiva.png"
+type = "image"
+title = "conjunctiva"
+
+[[generated]]
+id = "qG1pxWrjiTzuzIQLkZDTQ"
+uri = "file://attached_assets/generated_images/parts/uterus.png"
+type = "image"
+title = "uterus"
+
+[[generated]]
+id = "nlklwLCZWee6Oq-DpjsDM"
+uri = "file://attached_assets/generated_images/parts/dermis.png"
+type = "image"
+title = "dermis"
+
+[[generated]]
+id = "0k-t5Dl3nII2-FsYWjDMs"
+uri = "file://attached_assets/generated_images/parts/esophagus.png"
+type = "image"
+title = "esophagus"
+
+[[generated]]
+id = "tzPvJeoRavdQ_AtCrHCAq"
+uri = "file://attached_assets/generated_images/parts/nose.png"
+type = "image"
+title = "nose"
+
+[[generated]]
+id = "ia1g1dcDn6d4kq9W2M0vD"
+uri = "file://attached_assets/generated_images/parts/brain.png"
+type = "image"
+title = "brain"
+
+[[generated]]
+id = "8WtlCdwPmRX6D2er96VSM"
+uri = "file://attached_assets/generated_images/parts/basophils.png"
+type = "image"
+title = "basophils"
+
+[[generated]]
+id = "cgPt_9OXBDHxay6hwukCy"
+uri = "file://attached_assets/generated_images/parts/eyelid.png"
+type = "image"
+title = "eyelid"
+
+[[generated]]
+id = "5UABhYTyBLCuvAbnqjSsl"
+uri = "file://attached_assets/generated_images/parts/vagina.png"
+type = "image"
+title = "vagina"
+
+[[generated]]
+id = "jjhWfAAPed-kPLdRMfHhF"
+uri = "file://attached_assets/generated_images/parts/hypodermis.png"
+type = "image"
+title = "hypodermis"
+
+[[generated]]
+id = "wsX-i5sZjiBF1QqZO2gtS"
+uri = "file://attached_assets/generated_images/parts/sinuses.png"
+type = "image"
+title = "sinuses"
+
+[[generated]]
+id = "Yj5kmCZecZSvBM5txNL32"
+uri = "file://attached_assets/generated_images/parts/stomach.png"
+type = "image"
+title = "stomach"
+
+[[generated]]
+id = "Oi7hZJ2MDBJFatOsLi557"
+uri = "file://attached_assets/generated_images/parts/cerebrum.png"
+type = "image"
+title = "cerebrum"
+
+[[generated]]
+id = "zrhuMNIKbLMTuRzOJKulD"
+uri = "file://attached_assets/generated_images/parts/platelets.png"
+type = "image"
+title = "platelets"
+
+[[generated]]
+id = "K1Arvm2Rbqc7VMt0KF79B"
+uri = "file://attached_assets/generated_images/parts/ear.png"
+type = "image"
+title = "ear"
+
+[[generated]]
+id = "f_NnYY8W0MeLdJoiDK2z8"
+uri = "file://attached_assets/generated_images/parts/prostate.png"
+type = "image"
+title = "prostate"
+
+[[generated]]
+id = "SBiKovGHkgBxr1HxoBvw9"
+uri = "file://attached_assets/generated_images/parts/hair.png"
+type = "image"
+title = "hair"
+
+[[generated]]
+id = "ImLJN6VZNdbAolIyuwcGu"
+uri = "file://attached_assets/generated_images/parts/pharynx_r.png"
+type = "image"
+title = "pharynx_r"
+
+[[generated]]
+id = "GaYgGf8ny8GUDPaaD2pGJ"
+uri = "file://attached_assets/generated_images/parts/pylorus.png"
+type = "image"
+title = "pylorus"
+
+[[generated]]
+id = "vjG2o6h2hwKWT8bs9wX1B"
+uri = "file://attached_assets/generated_images/parts/cerebellum.png"
+type = "image"
+title = "cerebellum"
+
+[[generated]]
+id = "2yECZgd_ChCiLrIyNHKyt"
+uri = "file://attached_assets/generated_images/parts/nephron.png"
+type = "image"
+title = "nephron"
+
+[[generated]]
+id = "1ozfjcvh2jz9AOcDVKJr7"
+uri = "file://attached_assets/generated_images/parts/plasma.png"
+type = "image"
+title = "plasma"
+
+[[generated]]
+id = "I_6rAaJCCX-Dv5vlDAeFX"
+uri = "file://attached_assets/generated_images/parts/joints.png"
+type = "image"
+title = "joints"
+
+[[generated]]
+id = "I6OtsRGICnFRbOZM7J3qD"
+uri = "file://attached_assets/generated_images/parts/erythrocytes.png"
+type = "image"
+title = "erythrocytes"
+
+[[generated]]
+id = "5-FCo_pXDsEFV2weUvU8S"
+uri = "file://attached_assets/generated_images/parts/nails.png"
+type = "image"
+title = "nails"
+
+[[generated]]
+id = "wLYLmjTPQAmKlu7xdpBzo"
+uri = "file://attached_assets/generated_images/parts/larynx.png"
+type = "image"
+title = "larynx"
+
+[[generated]]
+id = "cU6PlMh9h6xrII-qiv_eD"
+uri = "file://attached_assets/generated_images/parts/brainstem.png"
+type = "image"
+title = "brainstem"
+
+[[generated]]
+id = "FEfI1yMURP8A5gqHOCMiD"
+uri = "file://attached_assets/generated_images/parts/renalpelvis.png"
+type = "image"
+title = "renalpelvis"
+
+[[generated]]
+id = "v7qgjziNt_tMEU-S44teO"
+uri = "file://attached_assets/generated_images/parts/bonemarrow.png"
+type = "image"
+title = "bonemarrow"
+
+[[generated]]
+id = "RZ-b92CUDVEexq4T890Fb"
+uri = "file://attached_assets/generated_images/parts/muscles.png"
+type = "image"
+title = "muscles"
+
+[[generated]]
+id = "EwAQQmuHUr29_BY0MyNLz"
+uri = "file://attached_assets/generated_images/parts/leukocytes.png"
+type = "image"
+title = "leukocytes"
+
+[[generated]]
+id = "nl1BiS0K6A7Qelfr9BBXl"
+uri = "file://attached_assets/generated_images/parts/sweatglands.png"
+type = "image"
+title = "sweatglands"
+
+[[generated]]
+id = "FHfiTwKFvG5V_xx3atP9S"
+uri = "file://attached_assets/generated_images/parts/trachea.png"
+type = "image"
+title = "trachea"
+
+[[generated]]
+id = "PdKLKUbVYqy1We79MUhDP"
+uri = "file://attached_assets/generated_images/parts/spinalcord.png"
+type = "image"
+title = "spinalcord"
+
+[[generated]]
+id = "kdk37iVhsqMnIzTdZkICS"
+uri = "file://attached_assets/generated_images/parts/ureters.png"
+type = "image"
+title = "ureters"
+
+[[generated]]
+id = "tbt4nds5aRlUOUuToBdVe"
+uri = "file://attached_assets/generated_images/parts/eye.png"
+type = "image"
+title = "eye"
+
+[[generated]]
+id = "ez8IyhQm39FYiQqeq9uIS"
+uri = "file://attached_assets/generated_images/parts/cochlea.png"
+type = "image"
+title = "cochlea"
+
+[[generated]]
+id = "Fb5T9bBDu5yu06s4CDXx0"
+uri = "file://attached_assets/generated_images/parts/neutrophils.png"
+type = "image"
+title = "neutrophils"
+
+[[generated]]
+id = "USRaaP0NJd6crTHP5xNQ2"
+uri = "file://attached_assets/generated_images/parts/lymphnodes.png"
+type = "image"
+title = "lymphnodes"
+
+[[generated]]
+id = "fjNKU80CQRfyv3sh_UiLJ"
+uri = "file://attached_assets/generated_images/parts/bronchi.png"
+type = "image"
+title = "bronchi"
+
+[[generated]]
+id = "7JZwgEODtDlqUnawd-x9H"
+uri = "file://attached_assets/generated_images/parts/nerves.png"
+type = "image"
+title = "nerves"
+
+[[generated]]
+id = "5hj_FWaj-2uwfWXIhpWBd"
+uri = "file://attached_assets/generated_images/parts/bladder.png"
+type = "image"
+title = "bladder"
+
+[[generated]]
+id = "FA4bv3uBlhJHAphKK1Zlu"
+uri = "file://attached_assets/generated_images/parts/cornea.png"
+type = "image"
+title = "cornea"
+
+[[generated]]
+id = "QYDgxfaJPoLHiAcpt3tmD"
+uri = "file://attached_assets/generated_images/parts/semicircular.png"
+type = "image"
+title = "semicircular"
+
+[[generated]]
+id = "OXoc2P4OzBoL98q9XXQgg"
+uri = "file://attached_assets/generated_images/parts/lymphocytes.png"
+type = "image"
+title = "lymphocytes"
+
+[[generated]]
+id = "7X6MPi8BseUtY7WsHbgN1"
+uri = "file://attached_assets/generated_images/parts/spleen.png"
+type = "image"
+title = "spleen"
+
+[[generated]]
+id = "imbjIiSGTVuiU5OiJQcIs"
+uri = "file://attached_assets/generated_images/parts/bronchioles.png"
+type = "image"
+title = "bronchioles"
+
+[[generated]]
+id = "rUssv8rY7TVuyPVPrn7Es"
+uri = "file://attached_assets/generated_images/parts/meninges.png"
+type = "image"
+title = "meninges"
+
+[[generated]]
+id = "6VRJZM9J9swLtOpwD3wD9"
+uri = "file://attached_assets/generated_images/parts/urethra.png"
+type = "image"
+title = "urethra"
+
+[[generated]]
+id = "goxqal53ktMKI-vjE_bR3"
+uri = "file://attached_assets/generated_images/parts/iris_eye.png"
+type = "image"
+title = "iris_eye"
+
+[[generated]]
+id = "0PTvxreAu5J3wk3nMWZpj"
+uri = "file://attached_assets/generated_images/parts/olfactory.png"
+type = "image"
+title = "olfactory"
+
+[[generated]]
+id = "pYlSWE-xXHbNt6OxeK7xq"
+uri = "file://attached_assets/generated_images/parts/monocytes.png"
+type = "image"
+title = "monocytes"
+
+[[generated]]
+id = "32TIhEl7Rihy1ZsuFtFsj"
+uri = "file://attached_assets/generated_images/parts/thymus.png"
+type = "image"
+title = "thymus"
+
+[[generated]]
+id = "ljeukTnKViMPYJ4XRt3wh"
+uri = "file://attached_assets/generated_images/parts/lungs.png"
+type = "image"
+title = "lungs"
+
+[[generated]]
+id = "Wv1uRdk79-f-DnTyel1VQ"
+uri = "file://attached_assets/generated_images/parts/pituitary.png"
+type = "image"
+title = "pituitary"
+
+[[generated]]
+id = "nac1ZOVMLVWEtcnAE91sK"
+uri = "file://attached_assets/generated_images/parts/lens.png"
+type = "image"
+title = "lens"
+
+[[generated]]
+id = "CEz515JTz7k3Me_IH_n6O"
+uri = "file://attached_assets/generated_images/parts/tonsils.png"
+type = "image"
+title = "tonsils"
+
+[[generated]]
+id = "ruYeenSvgZ2kkOrtMYv4J"
+uri = "file://attached_assets/generated_images/parts/thyroid.png"
+type = "image"
+title = "thyroid"
+
+[[generated]]
+id = "qGDCYHnmiTyIwEzqRBoXK"
+uri = "file://attached_assets/generated_images/parts/retina.png"
+type = "image"
+title = "retina"
+
+[[generated]]
+id = "G3CxdiUtZ-SaEbtcHtK6b"
+uri = "file://attached_assets/generated_images/parts/parathyroid.png"
+type = "image"
+title = "parathyroid"
+
+[[generated]]
+id = "gwdac3Z1qKQ2qThKz75jL"
+uri = "file://attached_assets/generated_images/parts/adrenal.png"
+type = "image"
+title = "adrenal"
+
+[[generated]]
+id = "TkEtbbXhfJjC4PVojNEv2"
+uri = "file://attached_assets/generated_images/parts/pancreas_e.png"
+type = "image"
+title = "pancreas_e"

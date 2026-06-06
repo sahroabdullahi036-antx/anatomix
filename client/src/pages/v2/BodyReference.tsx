@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { SYSTEMS as DATA_SYSTEMS } from "@/data/medicalData";
 import { ChevronRight, ArrowLeft, Search, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePalette } from "@/contexts/ThemeContext";
 
 import bodyMale from "@assets/generated_images/systems/_body_male.png";
 import bodyFemale from "@assets/generated_images/systems/_body_female.png";
@@ -19,20 +20,38 @@ import imgReproductive from "@assets/generated_images/systems/reproductive.png";
 import imgBlood from "@assets/generated_images/systems/blood.png";
 import imgSpecialSenses from "@assets/generated_images/systems/special-senses.png";
 
+// Fixed per-system colors. These are intentionally hard-coded hex (not theme
+// vars) and rendered with an inverse palette filter so the system colors stay
+// identical no matter which palette / light mode the user picks.
 const SYSTEM_COLORS: Record<string, string> = {
-  "cardiovascular": "var(--accent-coral)",
-  "respiratory": "var(--accent-blue)",
-  "digestive": "var(--accent-amber)",
-  "nervous": "var(--accent-violet)",
-  "musculoskeletal": "var(--fg-secondary)",
-  "urinary": "var(--accent-teal)",
-  "endocrine": "var(--accent-rose)",
-  "integumentary": "var(--fg-muted)",
-  "lymphatic": "#20c997",
-  "reproductive": "#e83e8c",
-  "blood": "#c0392b",
-  "special-senses": "#fd7e14",
+  "cardiovascular": "#e5484d",
+  "respiratory": "#3b82c4",
+  "digestive": "#d08a3a",
+  "nervous": "#8b5cf6",
+  "musculoskeletal": "#b8a888",
+  "urinary": "#2bb3a3",
+  "endocrine": "#d6649b",
+  "integumentary": "#d9a07a",
+  "lymphatic": "#3fb27f",
+  "reproductive": "#c2407a",
+  "blood": "#b3261e",
+  "special-senses": "#ef7a23",
 };
+
+// Per-part detailed images, auto-loaded from the parts folder as they are
+// generated. Keyed by structure id (filename without extension). Missing images
+// gracefully fall back to the parent system image at render time.
+const PART_IMAGE_MODULES = import.meta.glob(
+  "../../../../attached_assets/generated_images/parts/*.png",
+  { eager: true, query: "?url", import: "default" },
+) as Record<string, string>;
+
+const PART_IMAGES: Record<string, string> = Object.fromEntries(
+  Object.entries(PART_IMAGE_MODULES).map(([p, url]) => [
+    p.split("/").pop()!.replace(/\.png$/, ""),
+    url,
+  ]),
+);
 
 const SYSTEM_IMAGES: Record<string, string> = {
   "digestive": imgDigestive,
@@ -85,6 +104,7 @@ const HOTSPOTS_FEMALE: Hotspot[] = [
 
 export default function BodyReference() {
   const [, setLocation] = useLocation();
+  const { inverseFilter } = usePalette();
   const [hoveredSystem, setHoveredSystem] = useState<string | null>(null);
   const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
 
@@ -114,6 +134,13 @@ export default function BodyReference() {
           (gender === "male" ? ["testes", "prostate"] : ["ovaries", "uterus", "vagina"]).includes(s.id),
         )
       : rawList;
+
+  const systemImage = activeSystem ? SYSTEM_IMAGES[activeSystem.id] : undefined;
+  const headerImage = currentLevel ? PART_IMAGES[currentLevel.id] || systemImage : systemImage;
+  const headerOfficial = currentLevel ? currentLevel.officialName : activeSystem?.officialName;
+  const headerCasual = currentLevel
+    ? currentLevel.casualName || currentLevel.officialName
+    : activeSystem?.casualName || activeSystem?.officialName;
 
   const handleBack = () => {
     if (drillPath.length > 0) {
@@ -168,6 +195,7 @@ export default function BodyReference() {
                   className="hidden md:inline"
                   style={{
                     color: SYSTEM_COLORS[activeSystem.id] || "var(--fg-primary)",
+                    filter: inverseFilter,
                     cursor: drillPath.length > 0 ? "pointer" : "default",
                   }}
                   onClick={() => setDrillPath([])}
@@ -236,6 +264,7 @@ export default function BodyReference() {
                 transform: activeHotspot ? "scale(1.85)" : "scale(1)",
                 transformOrigin: activeHotspot ? `${activeHotspot.x}% ${activeHotspot.y}%` : "center center",
                 transition: "transform 0.5s ease",
+                filter: inverseFilter,
               }}
             >
               <img
@@ -318,21 +347,25 @@ export default function BodyReference() {
           {activeSystemId && activeSystem && (
             <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide pb-20 md:pb-6">
               <div className="space-y-4">
-                {SYSTEM_IMAGES[activeSystem.id] && (
+                {headerImage && (
                   <div className="w-full rounded-3xl bg-[var(--bg-surface)] border border-[rgba(255,255,255,0.05)] p-4 flex items-center justify-center">
                     <img
-                      src={SYSTEM_IMAGES[activeSystem.id]}
-                      alt={activeSystem.officialName}
-                      className="h-40 w-auto object-contain drop-shadow-md"
+                      src={headerImage}
+                      alt={headerOfficial || ""}
+                      className="h-44 w-auto object-contain drop-shadow-md"
+                      style={{ filter: inverseFilter }}
                       draggable={false}
                     />
                   </div>
                 )}
                 <div>
-                  <h2 className="text-3xl font-black mb-1 tracking-tight" style={{ color: SYSTEM_COLORS[activeSystem.id] || "inherit" }}>
-                    {activeSystem.casualName || activeSystem.officialName}
+                  <h2
+                    className="text-3xl font-black mb-1 tracking-tight"
+                    style={{ color: SYSTEM_COLORS[activeSystem.id] || "inherit", filter: inverseFilter }}
+                  >
+                    {headerCasual}
                   </h2>
-                  <p className="text-[var(--fg-secondary)] font-medium text-lg">{activeSystem.officialName}</p>
+                  <p className="text-[var(--fg-secondary)] font-medium text-lg">{headerOfficial}</p>
                 </div>
               </div>
 
@@ -349,11 +382,29 @@ export default function BodyReference() {
                         className="bg-[var(--bg-surface)] p-4 rounded-2xl border border-[rgba(255,255,255,0.05)] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-between group"
                         onClick={() => handleStructureClick(item)}
                       >
-                        <div>
-                          <div className="font-extrabold text-lg text-[var(--fg-primary)] group-hover:text-[var(--accent-blue)] transition-colors">
-                            {item.casualName || item.officialName}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-12 h-12 rounded-xl bg-[var(--bg-card)] flex items-center justify-center overflow-hidden shrink-0">
+                            {PART_IMAGES[item.id] ? (
+                              <img
+                                src={PART_IMAGES[item.id]}
+                                alt={item.officialName}
+                                className="w-full h-full object-contain"
+                                style={{ filter: inverseFilter }}
+                                draggable={false}
+                              />
+                            ) : (
+                              <span
+                                className="w-3 h-3 rounded-full"
+                                style={{ background: SYSTEM_COLORS[activeSystem.id], filter: inverseFilter }}
+                              />
+                            )}
                           </div>
-                          <div className="text-sm text-[var(--fg-muted)] font-medium mt-1">{item.officialName}</div>
+                          <div className="min-w-0">
+                            <div className="font-extrabold text-lg text-[var(--fg-primary)] group-hover:text-[var(--accent-blue)] transition-colors truncate">
+                              {item.casualName || item.officialName}
+                            </div>
+                            <div className="text-sm text-[var(--fg-muted)] font-medium mt-1 truncate">{item.officialName}</div>
+                          </div>
                         </div>
                         <div className="bg-[var(--bg-card)] p-2 rounded-full text-[var(--fg-muted)] group-hover:bg-[var(--accent-blue)] group-hover:text-white transition-colors">
                           <ChevronRight className="w-5 h-5" />

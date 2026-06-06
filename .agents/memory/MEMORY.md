@@ -3,4 +3,5 @@
 - [Chapter order](chapter-order.md) — moderator-only reorder saved to Firestore config/chapterOrder; applyChapterOrder() reorders CHAPTERS in place
 - [Term dedup rule](term-dedup.md) — dedupeTerms() runs after sortTerms() at startup; custom ct_* terms win over base terms on same key
 - [Firestore auth timing](firestore-auth-timing.md) — gate all Firestore reads on `ready` (anon auth); reads before auth fail silently and fall back to defaults
+- [Palette true-color](palette-true-color.md) — apply inverseFilter to any fixed-hex/anatomy element so the global App palette filter doesn't shift its color (Body Explorer)
 - [Owner account security](owner-account-security.md) — anatomixowner secured via write-once `config/owner` hash; rules must be deployed to Firebase to take effect

@@ -23,12 +23,39 @@ function buildFilter(palette: PaletteName, mode: ColorMode): string {
   return paletteFilter || "none";
 }
 
+// Produces a CSS filter that exactly cancels `filter` when applied to a child of
+// the element carrying `filter`. Used to keep anatomy colors true regardless of
+// the global palette/light-mode filter applied at the app root.
+function invertFilter(filter: string): string {
+  if (!filter || filter === "none") return "none";
+  const tokens = filter.match(/[\w-]+\([^)]*\)/g) || [];
+  const inverted = tokens.map((t) => {
+    const m = t.match(/^([\w-]+)\(([^)]*)\)$/);
+    if (!m) return t;
+    const fn = m[1];
+    const arg = m[2].trim();
+    if (fn === "hue-rotate") return `hue-rotate(${-(parseFloat(arg) || 0)}deg)`;
+    if (fn === "saturate") {
+      const s = parseFloat(arg) || 1;
+      return `saturate(${s === 0 ? 0 : 1 / s})`;
+    }
+    if (fn === "brightness") {
+      const b = parseFloat(arg) || 1;
+      return `brightness(${b === 0 ? 0 : 1 / b})`;
+    }
+    if (fn === "invert") return `invert(${arg})`;
+    return t;
+  });
+  return inverted.reverse().join(" ");
+}
+
 interface PaletteContextType {
   palette: PaletteName;
   setPalette: (p: PaletteName) => void;
   colorMode: ColorMode;
   setColorMode: (m: ColorMode) => void;
   filter: string;
+  inverseFilter: string;
   swatchFilter: (p: PaletteName) => string;
 }
 
@@ -38,6 +65,7 @@ const PaletteContext = createContext<PaletteContextType>({
   colorMode: "dark",
   setColorMode: () => {},
   filter: "none",
+  inverseFilter: "none",
   swatchFilter: () => "none",
 });
 
@@ -69,6 +97,7 @@ export function PaletteProvider({ children }: { children: React.ReactNode }) {
       palette, setPalette,
       colorMode, setColorMode,
       filter: buildFilter(palette, colorMode),
+      inverseFilter: invertFilter(buildFilter(palette, colorMode)),
       swatchFilter,
     }}>
       {children}
