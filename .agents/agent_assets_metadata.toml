@@ -1,0 +1,80 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "wEZ8bnkwvmdgqAgLCKsXf"
+uri = "file://attached_assets/generated_images/systems/digestive.png"
+type = "image"
+title = "digestive system illustration"
+
+[[generated]]
+id = "Q22Qe3fTxfwo3e_RD_5GT"
+uri = "file://attached_assets/generated_images/systems/cardiovascular.png"
+type = "image"
+title = "cardiovascular system illustration"
+
+[[generated]]
+id = "c2oyKpfvXa7x5YHUsmnDV"
+uri = "file://attached_assets/generated_images/systems/respiratory.png"
+type = "image"
+title = "respiratory system illustration"
+
+[[generated]]
+id = "amV5tLivktd2I7bOrzKiU"
+uri = "file://attached_assets/generated_images/systems/nervous.png"
+type = "image"
+title = "nervous system illustration"
+
+[[generated]]
+id = "tyFDS6cG8FnlDZoSwLQv9"
+uri = "file://attached_assets/generated_images/systems/musculoskeletal.png"
+type = "image"
+title = "musculoskeletal system illustration"
+
+[[generated]]
+id = "KDhM7gFPzg5KgeeuWXp7K"
+uri = "file://attached_assets/generated_images/systems/urinary.png"
+type = "image"
+title = "urinary system illustration"
+
+[[generated]]
+id = "KTo14HVVYR8dd5qlwhFhO"
+uri = "file://attached_assets/generated_images/systems/endocrine.png"
+type = "image"
+title = "endocrine system illustration"
+
+[[generated]]
+id = "qLw9GlEpsTNbzdBPY9YE3"
+uri = "file://attached_assets/generated_images/systems/integumentary.png"
+type = "image"
+title = "integumentary system illustration"
+
+[[generated]]
+id = "tUJpmZWeERjHVUuQpPW1t"
+uri = "file://attached_assets/generated_images/systems/lymphatic.png"
+type = "image"
+title = "lymphatic system illustration"
+
+[[generated]]
+id = "PN7XH8er1mr__eHkSrMYH"
+uri = "file://attached_assets/generated_images/systems/reproductive.png"
+type = "image"
+title = "reproductive system illustration"
+
+[[generated]]
+id = "JZI0FnJUF_lajAuCx4F1q"
+uri = "file://attached_assets/generated_images/systems/blood.png"
+type = "image"
+title = "blood system illustration"
+
+[[generated]]
+id = "SZc8txdI_9EZQR6-Y8GCB"
+uri = "file://attached_assets/generated_images/systems/special-senses.png"
+type = "image"
+title = "special-senses system illustration"
+
+[[generated]]
+id = "86Q3q9g_AZ9n1UgtaCqPY"
+uri = "file://attached_assets/generated_images/systems/_body.png"
+type = "image"
+title = "full body anatomy illustration"

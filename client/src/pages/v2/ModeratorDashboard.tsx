@@ -4,6 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
 import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, saveChapterOrder, getChapterOrder, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
 import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal, addCustomTerms, removeCustomTerm, applyChapterOrder } from "@/data/medicalData";
+import { lookupLocalTerm } from "@/data/termLookup";
 import OnboardingTour, { Step } from "./OnboardingTour";
 
 const MOD_TOUR_STEPS: Step[] = [
@@ -23,7 +24,7 @@ const MOD_TOUR_STEPS: Step[] = [
   },
 ];
 
-const TERM_SYSTEMS = ["General","Cardiovascular","Digestive","Respiratory","Nervous","Musculoskeletal","Urinary","Endocrine","Integumentary","Blood","Reproductive","Lymphatic"];
+const TERM_SYSTEMS = ["General","Cardiovascular","Digestive","Respiratory","Nervous","Musculoskeletal","Urinary","Endocrine","Integumentary","Blood","Reproductive","Lymphatic","Special Senses"];
 const TERM_TYPES: MedicalTerm["type"][] = ["prefix","suffix","root","condition","procedure","word"];
 
 type EditForm = { term: string; type: MedicalTerm["type"]; meaning: string; casualMeaning: string; system: string; example: string; definition: string; homonymWarning: string; };
@@ -129,25 +130,18 @@ export default function ModeratorDashboard() {
   const handleAiLookup = async () => {
     if (!newTermForm?.term.trim()) return;
     setAiLookupLoading(true);
-    try {
-      const res = await fetch("/api/lookup-term", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ term: newTermForm.term.trim() })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setNewTermForm(f => f && ({
-          ...f,
-          meaning: data.meaning ?? f.meaning,
-          type: TERM_TYPES.includes(data.type) ? data.type : f.type,
-          casualMeaning: data.casualMeaning ?? f.casualMeaning,
-          system: TERM_SYSTEMS.includes(data.system) ? data.system : f.system,
-          example: data.example ?? f.example,
-          definition: data.definition ?? f.definition,
-        }));
-      }
-    } catch {}
+    const data = lookupLocalTerm(newTermForm.term.trim());
+    if (data.matched !== "none") {
+      setNewTermForm(f => f && ({
+        ...f,
+        meaning: data.meaning || f.meaning,
+        type: TERM_TYPES.includes(data.type) ? data.type : f.type,
+        casualMeaning: data.casualMeaning || f.casualMeaning,
+        system: TERM_SYSTEMS.includes(data.system) ? data.system : f.system,
+        example: data.example || f.example,
+        definition: data.definition || f.definition,
+      }));
+    }
     setAiLookupLoading(false);
   };
 

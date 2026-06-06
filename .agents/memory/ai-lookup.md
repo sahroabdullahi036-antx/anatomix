@@ -1,13 +1,12 @@
 ---
-name: AI term lookup
-description: How the Chabner AI autofill works and where it's wired
+name: Term lookup engine
+description: How the moderator term-autofill works (free offline engine) and where it's wired
 ---
-Endpoint: POST /api/lookup-term
-- Dev: vite.config.ts `vitePluginLookupTerm()` middleware
-- Prod: server/index.ts express route
-- Uses VITE_FIREBASE_API_KEY with generativelanguage.googleapis.com Gemini 2.0 Flash
-- Prompt instructs returning raw JSON (no fences): meaning, type, casualMeaning, system, example, definition
-- Called from ModeratorDashboard.tsx handleAiLookup() — "✦ Chabner" button in New Term modal
+Engine: `client/src/data/termLookup.ts` exports `lookupLocalTerm(term)`.
+- Pure client-side morphological decomposition (roots/prefixes/suffixes). No network, no API key, no billing.
+- Return shape: { meaning, type, casualMeaning, system, example, definition, matched: 'exact'|'composed'|'none' }.
+- `tokenizeRoots` requires FULL-coverage tokenization and >=2 parts, so garbage input (e.g. zzcardi, antiinflammatory) returns matched:'none' instead of false positives. Includes vowel-dropped root stems (e.g. fixes pericarditis).
+- Called from `ModeratorDashboard.tsx` (handleAiLookup) in the New Term modal.
 
-**Why:** Static Vite SPA needs a server-side proxy to keep the API key secret and call Google's API.
-**How to apply:** Any new AI feature should extend the same /api/lookup-term endpoint or add a parallel route in both vite.config.ts and server/index.ts.
+**Why:** Hard requirement — EVERYTHING must be free, no paid API keys / no billing. The previous Gemini-via-Firebase `/api/lookup-term` proxy (vite middleware + express route) was fully removed, `@google/genai` uninstalled, and server/index.ts + vite.config.ts cleaned to a plain static SPA setup.
+**How to apply:** Do NOT reintroduce paid external AI. Extend the offline engine's root/prefix/suffix tables instead.
