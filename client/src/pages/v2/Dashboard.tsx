@@ -9,17 +9,19 @@ import OnboardingTour from "./OnboardingTour";
 const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
 const tourKey = (u: string) => `anatomix_toured_${toKey(u)}`;
 
+const TILE = "#333f4e";
+const MP_TILE = "#4a6592";
+
 const MODULES = [
-  { path: "/body-reference",     title: "Body Explorer",    color: "#374a5e", tag: "" },
-  { path: "/dictionary",         title: "Dictionary",       color: "#3b4e64", tag: "" },
-  { path: "/root-builder",       title: "Root Builder",     color: "#364860", tag: "" },
-  { path: "/flashcards",         title: "Flashcards",       color: "#3d5068", tag: "" },
-  { path: "/games",              title: "Games",            color: "#394c62", tag: "" },
-  { path: "/practice-test",      title: "Practice Test",    color: "#3a4d60", tag: "" },
-  { path: "/daily-challenge",    title: "Daily Challenge",  color: "#364a5e", tag: "" },
-  { path: "/boss-round",         title: "Boss Round",       color: "#5a3040", tag: "hard" },
-  { path: "/games/spelling-bee", title: "Spelling Bee",     color: "#3a4f5e", tag: "" },
-  { path: "/multiplayer",        title: "Multiplayer",      color: "#3d4e6a", tag: "live" },
+  { path: "/body-reference",     title: "Body Explorer",    color: TILE,    tag: "" },
+  { path: "/dictionary",         title: "Dictionary",       color: TILE,    tag: "" },
+  { path: "/root-builder",       title: "Root Builder",     color: TILE,    tag: "" },
+  { path: "/flashcards",         title: "Flashcards",       color: TILE,    tag: "" },
+  { path: "/games",              title: "Games",            color: TILE,    tag: "" },
+  { path: "/practice-test",      title: "Practice Test",    color: TILE,    tag: "" },
+  { path: "/daily-challenge",    title: "Daily Challenge",  color: TILE,    tag: "" },
+  { path: "/games/spelling-bee", title: "Spelling Bee",     color: TILE,    tag: "" },
+  { path: "/multiplayer",        title: "Multiplayer",      color: MP_TILE, tag: "live" },
 ];
 
 function seededIdx(seed: number, len: number) {

@@ -22,7 +22,6 @@ const GAMES = [
   { path: "/games/combining-linker",   num: 10, title: "Combining Form Linker",      desc: "Domino chain: each card must share a root or suffix", tag: "" },
   { path: "/games/chart-auditor",      num: 11, title: "Chart Auditor",              desc: "Find and replace incorrect terms in clinical text",   tag: "" },
   { path: "/games/ischemic-countdown", num: 12, title: "Ischemic Countdown",         desc: "Survival mode: right gains time, wrong speeds it up", tag: "" },
-  { path: "/boss-round",               num: 13, title: "Boss Round",                 desc: "15 hardest clinical and procedure terms back-to-back", tag: "hard" },
   { path: "/games/spelling-bee",       num: 14, title: "Spelling Bee",               desc: "Type the exact spelling from the definition alone",   tag: "" },
   { path: "/games/hangman",            num: 15, title: "Hangman",                    desc: "Guess the medical term letter by letter, 6 lives",    tag: "" },
   { path: "/games/memory-match",       num: 16, title: "Memory Match",               desc: "Flip card pairs linking terms to definitions",        tag: "" },

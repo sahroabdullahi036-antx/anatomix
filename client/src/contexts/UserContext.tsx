@@ -51,7 +51,6 @@ export const ACHIEVEMENTS: Record<string, { label: string; description: string }
   terms_500:      { label: "Lexicon Master",     description: "Cleared 500 terms" },
   chapter_cleared:{ label: "Chapter Complete",   description: "Reached 80% in a chapter" },
   all_chapters:   { label: "Full Curriculum",    description: "Reached 80% in all 13 chapters" },
-  boss_beaten:    { label: "Boss Defeated",      description: "Completed the Boss Round" },
   perfect_test:   { label: "Perfect Score",      description: "Scored 100% on a Practice Test" },
   perfect_spelling:{ label: "Spelling Champion", description: "Scored 10/10 on Spelling Bee" },
   no_critical:    { label: "Clean Slate",        description: "Cleared all Critical Review terms" },

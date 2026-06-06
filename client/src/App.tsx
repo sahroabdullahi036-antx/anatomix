@@ -30,7 +30,6 @@ import TextbookDefender from "./pages/v2/games/TextbookDefender";
 import CombiningFormLinker from "./pages/v2/games/CombiningFormLinker";
 import ChartAuditor from "./pages/v2/games/ChartAuditor";
 import IschemicCountdown from "./pages/v2/games/IschemicCountdown";
-import BossRound from "./pages/v2/games/BossRound";
 import SpellingBee from "./pages/v2/games/SpellingBee";
 import HangmanGame from "./pages/v2/games/HangmanGame";
 import MemoryMatch from "./pages/v2/games/MemoryMatch";
@@ -68,7 +67,6 @@ function AppRoutes() {
       <Route path="/game-room/:code" component={GameRoom} />
       <Route path="/body-reference" component={BodyReference} />
       <Route path="/explorer" component={BodyReference} />
-      <Route path="/boss-round" component={BossRound} />
       <Route path="/games/spelling-bee" component={SpellingBee} />
       <Route path="/games/hangman" component={HangmanGame} />
       <Route path="/games/memory-match" component={MemoryMatch} />
