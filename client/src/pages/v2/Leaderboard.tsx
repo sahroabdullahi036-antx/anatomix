@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
 import { subscribeToUsers, FirestoreUserProgress } from "@/firebase/firestoreService";
-import Avatar, { loadAvatar } from "@/components/Avatar";
+import ProfilePic from "@/components/ProfilePic";
 
 const BG = "#252830";
 const CARD = "rgba(255,255,255,0.05)";
@@ -23,13 +23,12 @@ function PodiumBlock({ rank, user, isMe }: { rank: 1 | 2 | 3; user: FirestoreUse
   const colors = { 1: "#d4a843", 2: "#8fa8c0", 3: "#b07858" };
   const h = heights[rank];
   const c = colors[rank];
-  const config = user ? loadAvatar(user.username) : undefined;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "90px" }}>
       {user && (
-        <div style={{ animation: "avatar-bob 2s ease-in-out infinite", animationDelay: `${(rank - 1) * 0.4}s` }}>
-          {config && <Avatar config={config} size={56} />}
+        <div style={{ animation: "avatar-bob 2s ease-in-out infinite", animationDelay: `${(rank - 1) * 0.4}s`, marginBottom: "8px" }}>
+          <ProfilePic src={user.profilePic} name={user.username} size={56} />
         </div>
       )}
       {!user && <div style={{ width: "56px", height: "93px" }} />}
@@ -116,7 +115,6 @@ export default function Leaderboard() {
           )}
           {ranked.map((u, i) => {
             const isMe = u.username.toLowerCase() === myUsername;
-            const config = loadAvatar(u.username);
             return (
               <div
                 key={u.username}
@@ -132,7 +130,7 @@ export default function Leaderboard() {
                 <span style={{ color: i < 3 ? ["#d4a843","#8fa8c0","#b07858"][i] : MUTED, fontWeight: "800", fontSize: "0.88rem", minWidth: "24px", textAlign: "center" }}>
                   {i + 1}
                 </span>
-                <Avatar config={config} size={36} />
+                <ProfilePic src={u.profilePic} name={u.username} size={36} />
                 <span style={{ color: isMe ? TEXT : "rgba(252,250,247,0.85)", fontWeight: isMe ? "700" : "500", fontSize: "0.9rem", flex: 1 }}>
                   {u.username}{isMe ? " (you)" : ""}
                 </span>

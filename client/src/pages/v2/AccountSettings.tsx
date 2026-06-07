@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
+import { useFirebase } from "@/contexts/FirebaseContext";
 import { hasPassword, verifyPassword, setPassword, removePassword } from "@/utils/auth";
 import { usePalette, PALETTES, PaletteName, ColorMode } from "@/contexts/ThemeContext";
-import AvatarCloset from "./AvatarCloset";
-import Avatar, { loadAvatar } from "@/components/Avatar";
+import { setProfilePic } from "@/firebase/firestoreService";
+import { fileToThumbnail, loadLocalPfp, saveLocalPfp, removeLocalPfp } from "@/utils/profilePic";
+import ProfilePic from "@/components/ProfilePic";
 
 interface Props {
   onClose: () => void;
@@ -18,6 +20,7 @@ const inputStyle: React.CSSProperties = {
 
 export default function AccountSettings({ onClose }: Props) {
   const { user } = useUser();
+  const { db } = useFirebase();
   const { palette, setPalette, colorMode, setColorMode, swatchFilter, inverseFilter } = usePalette();
   const username = user?.username ?? "";
   const pwSet = hasPassword(username);
@@ -29,10 +32,38 @@ export default function AccountSettings({ onClose }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showCloset, setShowCloset] = useState(false);
   const [micEnabled, setMicEnabled] = useState(() => localStorage.getItem("anatomix_mic_enabled") === "true");
 
-  const avatarConfig = loadAvatar(username);
+  const [pfp, setPfp] = useState<string | null>(() => loadLocalPfp(username));
+  const [pfpBusy, setPfpBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handlePfpUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setPfpBusy(true);
+    try {
+      const thumb = await fileToThumbnail(file);
+      if (thumb.length > 200_000) {
+        setError("That image is too large to save. Try a simpler photo.");
+        return;
+      }
+      setPfp(thumb);
+      saveLocalPfp(username, thumb);
+      if (db) await setProfilePic(db, username, thumb);
+    } catch {
+      setError("Could not process that image. Try another photo.");
+    } finally {
+      setPfpBusy(false);
+    }
+  };
+
+  const handlePfpRemove = async () => {
+    setPfp(null);
+    removeLocalPfp(username);
+    if (db) { try { await setProfilePic(db, username, ""); } catch {} }
+  };
 
   const clear = () => { setCurrent(""); setNext(""); setConfirm(""); setError(""); setSuccess(""); };
 
@@ -91,19 +122,27 @@ export default function AccountSettings({ onClose }: Props) {
           <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(252,250,247,0.45)", cursor: "pointer", fontSize: "1.2rem", fontFamily: "inherit", padding: "4px 8px" }}>x</button>
         </div>
 
-        {/* Avatar preview + closet button */}
+        {/* Profile picture */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "12px", padding: "14px 16px", marginBottom: "20px" }}>
           <div style={{ flexShrink: 0 }}>
-            <Avatar config={avatarConfig} size={56} />
+            <ProfilePic src={pfp} name={username} size={56} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.9rem" }}>{username}</div>
             <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", marginBottom: "8px" }}>
               {pwSet ? "Password protected" : "No password set"}
             </div>
-            <button onClick={() => setShowCloset(true)} style={{ padding: "7px 14px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.8rem" }}>
-              My Profile Look
-            </button>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handlePfpUpload} style={{ display: "none" }} data-testid="input-profile-pic" />
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button onClick={() => fileRef.current?.click()} disabled={pfpBusy} data-testid="button-upload-pic" style={{ padding: "7px 14px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: pfpBusy ? "default" : "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.8rem", opacity: pfpBusy ? 0.6 : 1 }}>
+                {pfpBusy ? "Uploading..." : pfp ? "Change Photo" : "Upload Photo"}
+              </button>
+              {pfp && (
+                <button onClick={handlePfpRemove} data-testid="button-remove-pic" style={{ padding: "7px 14px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.7)", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.8rem" }}>
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -256,7 +295,6 @@ export default function AccountSettings({ onClose }: Props) {
         </div>
       </div>
     </div>
-    {showCloset && <AvatarCloset onClose={() => setShowCloset(false)} />}
   </>
   );
 }

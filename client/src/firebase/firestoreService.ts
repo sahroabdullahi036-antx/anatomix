@@ -17,6 +17,11 @@ export interface FirestoreUserProgress {
   earnedAchievements: string[];
   lastSeen: number;
   classIds: string[];
+  profilePic?: string;
+}
+
+export async function setProfilePic(db: Firestore, username: string, dataUrl: string): Promise<void> {
+  await setDoc(doc(db, "users", userKey(username)), { profilePic: dataUrl }, { merge: true });
 }
 
 export interface RoomPlayer {
