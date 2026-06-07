@@ -14,11 +14,16 @@
 
 ## WHAT THE USER IS LOOKING FOR
 
-The user wants ideas that make AnatomiX more enjoyable so that more students play more
-and therefore study more. They are also interested in a way for the moderator to send
-announcements to students in specific groups, for example about upcoming tests or which
-week or chapter the class is on. The user wants a running list of recommendations they
-can pick from, and wants more options proposed over time.
+The user wants AnatomiX to help adult learners retain medical terminology efficiently.
+The target audience includes people with demanding schedules: parents, working adults,
+students in accelerated programs. The goal is for a student to complete the full
+curriculum in under two months without burning out. Features should feel professional
+and purposeful, not childish or game-like. The design is already dark and clean and
+should stay that way.
+
+The user also wants a moderator announcement system where the moderator can broadcast
+a message that blocks the screen until the student responds, and the moderator can see
+exactly who acknowledged, who ignored, and who has not seen it yet.
 
 Already handled separately by the main agent (not part of this approval list): the
 anatomy page has been switched back to a button based explorer.
@@ -27,9 +32,9 @@ anatomy page has been switched back to a button based explorer.
 
 ## HARD PREFERENCES (every recommendation must respect these)
 
-1. Style: cartoon soft game look, rounded, playful but clean. Match the existing dark
-   UI in `client/src/pages/v2`. Design constants: bg #252830, text #fcfaf7, primary
-   buttons #4a6080. Use inline styles, not Tailwind classes, in v2 pages.
+1. Style: clean, professional, purposeful. Match the existing dark UI in
+   `client/src/pages/v2`. Design constants: bg #252830, text #fcfaf7, primary buttons
+   #4a6080. Use inline styles, not Tailwind classes, in v2 pages.
 2. Never use white or off-white as a background or surface fill. Backgrounds stay on the
    existing dark surfaces. Text may use the existing light token (#fcfaf7).
 3. No emojis anywhere in the UI or in copy.
@@ -50,6 +55,8 @@ anatomy page has been switched back to a button based explorer.
     clearedTermIds, studyStreak, lastStudyDate, dailyChallengeDate, dailyChallengeTermIds,
     earnedAchievements, studiedCount, classIds, lastPath. Extend carefully and persist
     changes via the existing Firestore sync path (onSyncNeeded / useFirebaseSync).
+11. Tone: professional and direct. No game metaphors, no "coins", no "power-ups", no
+    "levels" unless clearly framed as study progress. This is a study platform for adults.
 
 ---
 
@@ -58,169 +65,200 @@ anatomy page has been switched back to a button based explorer.
 Each item lists the idea, why it helps, and a short note on how it could work. Detail is
 for evaluation only. Do not build until the user approves the specific item.
 
-### R1. Moderator announcement system
-Idea: the moderator broadcasts a short message to one group, several groups, or
-everyone. Targeted students see a dismissible banner on their dashboard, tagged as
-general, test, or reminder.
-Why: directly answers the user's request and creates a reason to open the app daily.
-How: a new `announcements` Firestore collection, a panel in the moderator dashboard to
-write and target messages, and a banner on the student dashboard filtered by the
-student's `classIds`, with per student dismissal stored in localStorage.
+### R1. Moderator announcement system (REVISED)
+Idea: the moderator writes a message, tags it as general, test alert, or chapter
+reminder, and targets it at one class, several classes, or everyone. When a student
+opens the app, a full-screen modal overlay appears immediately and cannot be dismissed
+without clicking one of two buttons: "Got it" (understood) or "Noted" (acknowledged but
+not acting on it). The modal stays across page navigations until they respond, so it
+catches them even if they were already in a game. The moderator dashboard shows a live
+response table per announcement: how many students have seen it, how many clicked "Got
+it", how many clicked "Noted", and a list of names in each group with a third column for
+students who have not opened the app yet.
+Why: direct communication with accountability. The moderator knows the message was
+actually received, not just sent.
+How: a new `announcements` Firestore collection. Each document holds message, type,
+targetClassIds (empty array means all), createdAt, and a `responses` sub-collection
+where each doc is `{ username, response: "acknowledged"|"noted", seenAt }`. On student
+login or app focus, check for any unanswered announcement matching their classIds. The
+modal blocks interaction until responded. The response sub-collection drives the live
+table in the moderator dashboard.
 
-### R2. Daily streak display and streak freeze
-Idea: make the existing study streak visible and add one freeze so a single missed day
-does not reset it.
-Why: visible streaks plus loss protection are one of the strongest return drivers.
-How: surface `studyStreak` on the dashboard, extend the user model with a small freeze
-count, and adjust the streak calculation so one missed day with a freeze available keeps
-the streak.
+### R2. Study streak with grace period
+Idea: show the current study streak on the dashboard with a one-day grace period so a
+single missed day does not reset it, and a clear "streak at risk" warning on the day
+of the grace period.
+Why: streak loss is the single biggest reason adult learners abandon study apps. A
+visible grace period warning the day before loss also nudges them to open the app.
+How: surface `studyStreak` and `lastStudyDate` on the dashboard. If today minus
+lastStudyDate is exactly 2 days, show the streak in a warning state but do not reset it
+yet. If it is 3 or more days, reset. Store a `streakFreezeUsed` boolean on UserData
+so the grace only applies once per gap.
 
-### R3. XP and levels
-Idea: every meaningful action grants XP, and XP maps to a level with a soft level up
-moment.
-Why: progress that always moves forward feels better than raw scores and keeps players
-engaged across sessions.
-How: add an `xp` field, derive level from XP with a simple curve, award XP on clearing
-terms, finishing games, completing the daily challenge, and earning achievements, and
-show a level badge with a progress bar.
+### R3. Study progress estimate
+Idea: on the dashboard, show a simple calculation: terms cleared out of total, and at
+the student's recent pace, an estimated weeks-to-completion number.
+Why: adults with deadlines need to know if they are on track. A concrete number is more
+useful than a percentage bar.
+How: compute average terms cleared per day over the last 7 days from the clearedTermIds
+timestamps stored in Firestore. Divide remaining terms by daily rate. Display as "At
+your current pace, you will finish in about X weeks." Update once per session.
 
-### R4. Daily quests
-Idea: three small daily goals that reset each day and grant XP, for example clear ten
-terms, play two games, beat one best score.
-Why: gives a clear, light daily to do list that nudges study sessions.
-How: store the quest day and progress on the user, define three fixed quests in code,
-increment progress on the existing events, and reward XP once per quest per day.
+### R4. 10-minute session mode
+Idea: a "Quick Study" button on the dashboard that launches a focused 10-minute session:
+the app picks the highest-priority terms (due SRS cards, then critical review, then
+unseen chapter terms) and drills them in flashcard mode with a visible countdown.
+Why: the biggest barrier for busy adults is starting. Removing the need to decide what
+to study and setting a short fixed time makes it easy to sit down for one round before
+work, during a break, or after the kids go to bed.
+How: a route or modal that seeds from the existing `srsDeck` and `criticalReview` data,
+then fills remaining slots from unseen terms. A 10-minute timer runs in the corner. At
+the end, a brief summary card shows what was covered.
 
-### R5. Class leaderboard, weekly
-Idea: a per class ranking by terms cleared this week that resets weekly so newcomers can
-still compete.
-Why: friendly competition inside a class motivates without permanently discouraging
-late starters.
-How: add a weekly term counter keyed by ISO week to the user, then rank classmates for
-the current week using the existing class and user data.
+### R5. Class progress board (teacher view)
+Idea: the teacher dashboard shows a ranked list of students in each class by terms
+cleared this week, with a quick visual indicator of who has not studied in more than
+three days.
+Why: teachers need to know who is falling behind without having to ask. A simple at-a-
+glance table lets them reach out to struggling students early.
+How: read each student's Firestore progress document. Compute weekly terms cleared from
+a new `weeklyTermCount` field (keyed by ISO week) that increments alongside
+clearedTermIds. Flag students whose lastStudyDate is more than 3 days ago in a muted
+color.
 
-### R6. Class shared goal bar
-Idea: a single shared progress bar per class, for example cleared a target number of
-terms this week as a class.
-Why: a shared goal builds group momentum and pairs naturally with announcements.
-How: sum classmates' weekly term counts against a per class goal that the moderator can
-set.
+### R6. Smart chapter recommendation
+Idea: after each session, the app tells the student which chapter to focus on next based
+on their weakest chapter proficiency score.
+Why: students often default to chapters they already know, ignoring the gaps. A direct
+recommendation removes the decision and focuses time where it matters.
+How: compute chapter proficiency from `clearedTermIds` vs each chapter's `termIds`. Find
+the chapter with the lowest score that is not already above 80%. Display it as a
+"Suggested next: Chapter X" card with a one-tap launch button into that chapter's study
+mode.
 
-### R7. Game power-ups
-Idea: optional in game helpers such as fifty fifty, hint, and freeze the timer, spent
-from a small balance.
-Why: adds depth and replay value to the existing games without new game engines.
-How: store a small power-up balance on the user, add a button row in the relevant games,
-and apply each effect locally.
+### R7. Pronunciation guide (audio)
+Idea: every term in the dictionary and flashcard views has a "hear it" button that uses
+the browser's free Web Speech API to read the term aloud at a measured pace.
+Why: medical terminology is hard to retain partly because students cannot hear it in
+their head. Hearing the pronunciation once locks in recall significantly better than
+reading alone, especially for commuters or people who study while doing other tasks.
+How: call `window.speechSynthesis.speak()` with the term text and a slow rate (0.8).
+No external API or cost. A small speaker icon button next to each term.
 
-### R8. Sound effects and micro-animations
-Idea: short correct, wrong, and level up sounds plus light CSS animations, with a mute
-toggle.
-Why: tactile feedback makes the games feel alive and rewarding.
-How: generate tones locally with the Web Audio API, add a persisted mute toggle, and add
-short CSS pulses and shakes that respect reduced motion.
+### R8. Root pattern drill
+Idea: a dedicated "Build a Word" session that shows a medical word and asks the student
+to identify the prefix, root, and suffix separately before revealing the meaning.
+Why: adults retain vocabulary better when they understand the structure than when they
+memorize whole words. Once a student knows that "cardio" always means heart, they can
+decode dozens of terms they have never seen.
+How: use the existing `termLookup.ts` offline engine to decompose the term. Present the
+parts as three blank slots. The student fills each. This is a distinct study mode, not a
+new page, and can live under `/games/root-drill`.
 
-### R9. Resume strip on the dashboard
-Idea: a compact strip near the top of the student dashboard showing the current streak,
-today's daily challenge status, and a one-tap button to jump back to the last page or
-game the student was on.
-Why: removes friction to re-entering a session and makes the dashboard feel alive.
-How: `lastPath` already exists on UserData. Render it as a pill button that routes to
-the saved path. Streak and daily challenge status come from existing UserData fields
-(`studyStreak`, `dailyChallengeDate`).
+### R9. Session resume and last position
+Idea: the dashboard shows a one-line card pointing back to wherever the student last was
+(last chapter, last flashcard deck, or last game), with a single "Continue" button.
+Why: reducing the number of taps to re-enter a session dramatically increases the chance
+a busy student actually studies during a short window.
+How: `lastPath` already exists on UserData and is already saved. Render it as a card
+near the top of the dashboard. Show the chapter or section name, not the raw URL.
 
-### R10. Blitz mode with combo multiplier
-Idea: a timed sub-mode available inside existing games where a run of consecutive correct
-answers builds a combo that multiplies the score, broken by any wrong answer.
-Why: adds adrenaline and replay value to games students already know without building a
-new game engine.
-How: add an optional `blitz` query param or toggle on the GameSelector entry for
-compatible games (MultipleChoice, SpellingBee, IschemicCountdown). Track a `combo`
-counter and `multiplier` locally, display a combo counter UI element, and record the
-blitz score separately under a new `gameScores` key like `mc_blitz`.
+### R10. Chapter gauntlet (assessment mode)
+Idea: a structured end-of-chapter assessment that cycles through multiple question
+formats (multiple choice, fill-in, term matching) for one chapter and gives a final
+percentage score with a breakdown by question type.
+Why: a realistic test-style run builds retrieval practice, which is one of the most
+evidence-backed methods for long-term retention. Students also need a way to know
+whether they are actually ready before a real exam.
+How: a new route `/assessment/:chapterNum` that sequences questions from MultipleChoice,
+a short fill-in round, and a matching round, then shows a results breakdown. Score is
+written to `gameScores` under `assessment_chN`.
 
-### R11. Chapter gauntlet
-Idea: a run that pulls one question from each game type in sequence for a single
-chapter, scoring a combined total.
-Why: tests the chapter from every angle in one sitting and gives a meaningful "chapter
-cleared" moment beyond the progress bar.
-How: a new route `/games/gauntlet/:chapterNum` that sequences mini-rounds from
-MultipleChoice, SpellingBee, and one other game, totals the score, and writes to a
-`gauntlet_chN` key in `gameScores`. A launch button on ChapterSummary pages.
+### R11. Weekly study recap on the dashboard
+Idea: at the start of each week, the student sees a brief recap card showing last week's
+total terms studied, days studied, and correct rate, with a plain "This week's goal"
+reminder below.
+Why: reflection on past performance helps adults calibrate their effort for the next
+week. It also serves as a re-engagement hook for anyone who had a slow week.
+How: store a weekly snapshot in localStorage keyed by ISO week number. Render the recap
+card on Monday and Tuesday only, then dismiss it. No Firestore write needed.
 
-### R12. Class vs class weekly challenge
-Idea: each class competes against one other class (or all others) on total terms cleared
-in a week, with the winning class shown a banner at the start of the next week.
-Why: interclass competition gives students a team identity and a reason to help
-classmates study.
-How: build on R5 (class leaderboard). Sum each class's weekly term counts in Firestore
-and display a ranked class list visible to students inside the class view. The moderator
-sets whether inter-class comparison is enabled.
+### R12. Missed terms focused review
+Idea: a "Weak Spots" section on the dashboard that shows the terms the student gets
+wrong most often across all activities, with a direct entry into a focused flashcard
+session covering only those terms.
+Why: students rarely know which specific terms they actually struggle with across all
+study modes. A compiled weak-spots list turns scattered errors into a targeted 5-minute
+session.
+How: `criticalReview` already stores errorCount per term. Sort by errorCount descending,
+show the top 10, and launch a flashcard session seeded with those termIds. No new data
+model.
 
-### R13. Per-student weekly recap
-Idea: every Monday the student dashboard shows a small card with last week's terms
-cleared, games played, streak days, and top game score, then fades away after dismissal.
-Why: personal history makes progress feel real and gives a natural re-engagement hook at
-the start of each week.
-How: store a snapshot of key counters on Sunday night (client-side, keyed by ISO week in
-localStorage), render the recap card when the stored week is the previous week, and
-dismiss on a button tap.
+### R13. Personal best and progress comparison per game
+Idea: on each game's results screen, show the student's previous best score and whether
+this run improved it. On the game selector, show the current best next to each game
+tile.
+Why: having a personal benchmark creates a concrete target and increases voluntary
+replays, which increases exposure to terms.
+How: `gameScores` already stores the best per key. Display it on GameSelector tiles and
+in game result screens. No new data or Firestore calls.
 
-### R14. Term of the day
-Idea: each day the dashboard highlights one term with its full breakdown (prefix, root,
-suffix meanings), a short definition, and a quick single-question challenge the student
-can tap through in seconds.
-Why: a tiny daily ritual keeps the app in habit without requiring a full session.
-How: select the term deterministically by day index mod the chapter's term list (same
-pattern as Clinical Spotlight in anatomix-arch.md). Store whether the student answered
-today's term in `dailyChallengeDate`-style localStorage key so it does not repeat within
-the day.
+### R14. Study plan builder (moderator sets it, students see it)
+Idea: the moderator sets a week-by-week curriculum plan in the moderator dashboard:
+which chapter each week of the course. Students see a simple timeline on their
+dashboard showing the current week's chapter target and whether they are on track.
+Why: adult learners in a class context need external structure. A visible curriculum
+calendar removes the guesswork of "what should I be studying right now."
+How: a new Firestore document `config/studyPlan` with an array of `{ week, chapterNum
+}` entries. The moderator fills it in. The student dashboard computes the current week's
+target from the plan and shows a status card.
 
-### R15. Missed terms smart review queue
-Idea: a dedicated "Weak Spots" session on the dashboard that surfaces the terms the
-student gets wrong most often across all games, ordered by error count.
-Why: students often do not know which terms they actually struggle with across game
-types. A focused list turns scattered errors into a targeted study plan.
-How: `criticalReview` already records errorCount per term. Render the top 10 by
-errorCount as a mini flashcard session. No new data model needed, just a new entry point
-on the dashboard.
+### R15. Offline-capable term cards
+Idea: any term the student marks as "save for offline" gets written to localStorage so
+the flashcard is available when there is no internet connection.
+Why: many adult learners study during commutes or in areas with unreliable connection.
+Even a small offline deck removes the "I cannot study right now" excuse.
+How: a save button on each term card in the dictionary and flashcard views. Saved terms
+are written to localStorage under a fixed key. A fallback view reads from localStorage
+when Firestore is unavailable.
 
-### R16. Personal best tracker per game
-Idea: on the GameSelector tile and inside each game's results screen, prominently display
-the student's all-time best score and how the current run compared.
-Why: knowing a personal best before starting creates a target and increases motivation to
-replay.
-How: `gameScores` already stores the best score per key. Add a "Your best" line to each
-GameSelector tile and a "beat your best" vs "new record" result banner at game end. Zero
-extra Firestore work.
+### R16. Smart notification dot for unseen announcements
+Idea: a persistent indicator on the student dashboard that shows how many unread
+moderator announcements are waiting. Clicking it opens the announcement modal directly.
+Why: students who have not opened the app will see the modal on next login, but students
+who are already in the app need a way to notice a new announcement without the modal
+interrupting a game in progress.
+How: subscribe to the `announcements` collection filtered to the student's classIds and
+check for documents with no matching response for their username. Show a count badge.
 
-### R17. Study timer with session summary
-Idea: an optional countdown (25 min default, adjustable) the student can start from the
-dashboard. When it ends, a summary card shows terms studied, correct rate, and which
-chapter was active.
-Why: timed sessions help students manage study time and create a natural stopping point
-that feels satisfying rather than abrupt.
-How: purely client-side. A floating timer button on the dashboard that starts a
-Web Worker or setInterval countdown, minimizes to a corner pill during games, and shows
-a summary modal on expiry. No persistence needed beyond the current session.
+### R17. Contextual mnemonic hints
+Idea: for terms that have a mnemonic stored in the database, show a collapsible "Memory
+hint" section below the definition in flashcard and dictionary views.
+Why: mnemonics are one of the most effective memorization tools for adult learners, but
+only if they are seen at the right moment. Surfacing them inline during study removes
+the need to look them up.
+How: the medicalData terms already have a `mnemonic` field. Render it as a collapsible
+section that is collapsed by default so it does not give away the answer immediately.
 
-### R18. Chapter mastery card
-Idea: when a chapter hits 100% cleared, a one-time styled card appears with the chapter
-name, date achieved, and a label like "Mastered". The card stays visible on
-ChapterSummary and can be dismissed.
-Why: a clear finish line and a visible trophy for each chapter make long-term progress
-feel rewarding.
-How: track mastered chapters in a `masteredChapters: string[]` field on UserData,
-written when clearedTermIds covers all termIds in that chapter. Render a highlighted
-card at the top of ChapterSummary for mastered chapters.
+### R18. Chapter mastery milestone
+Idea: when a chapter hits 100% cleared, a one-time milestone card appears on the chapter
+summary page marking it as complete with the date it was achieved.
+Why: a clear finish line per chapter gives adult learners a concrete sense of
+accomplishment and forward momentum. It also helps when planning which chapters still
+need attention.
+How: add `masteredChapters: Record<string, string>` (chapterNum to ISO date string) to
+UserData. Write the entry when clearedTermIds covers all termIds for a chapter. Display
+the mastery date on ChapterSummary for completed chapters.
 
 ---
 
 ## NEXT BOT INSTRUCTIONS
 
 1. Read the hard preferences above and keep every proposal inside them.
-2. Add more recommendations in the same format as R1 through R18.
-3. Present the list to the user and let them pick.
-4. Only implement an item after the user explicitly approves that item.
-5. After any approved build, run `npx tsc --noEmit` and confirm it passes, then restart
+2. The audience is adult learners under time pressure. Every feature should help them
+   learn more efficiently or remove friction, not add entertainment.
+3. Add more recommendations in the same format as R1 through R18.
+4. Present the list to the user and let them pick.
+5. Only implement an item after the user explicitly approves that item.
+6. After any approved build, run `npx tsc --noEmit` and confirm it passes, then restart
    the `Start application` workflow and confirm no errors.
