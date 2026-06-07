@@ -1,0 +1,81 @@
+Act as an expert Full-Stack Software Engineer and UI/UX Architecture Engineer. Build a complete, responsive vocabulary platform using a highly efficient single-file components layout (or raw monolithic index.html, style.css, script.js linking) to completely minimize parsing code depth and credit costs on my end. 
+
+All interactive loops, particle physics arrays, synthesizers, and user permissions arrays must utilize free browser web APIs and lightweight local data structures.
+
+Strict White-Label & Clutter Constraints: Do NOT mention textbook names, authors, or fixed deadlines anywhere on the UI. The user interface must be completely clean, minimal, and entirely free of clutter. The student homepage workspace must feature ONLY three massive, clear paths: [Hands-Free Vocabulary Hub], [Visual Flashcards Queue], and [Account Settings]. Remove all redundant, duplicate gameplay variations. Keep ONLY the highest-yield cognitive learning games.
+
+Cross-Platform Responsive Rule: The entire application markup and layout flexbox/grid structures must be universally compatible and dynamically adaptive across all viewing screen targets including iPhone/iOS Safari, Android Chrome, iPad/Tablets, macOS, and desktop PCs.
+
+Implement the exact technical role structures, layout styles, and optimized feature blocks outlined below:
+
+=========================================
+1. CLUTTER-FREE VISUAL STYLES & INTERACTIVE CODE PHYSICS
+=========================================
+- Style Guide: Heavy, clean 2D vector layouts with smooth rounded corners, bold outlines (2px solid dark stroke), and soft pastel color palettes. Zero realistic textures, gradients, or visual clutter.
+- Interaction Triggers & Animations:
+  * "Button Active Scale": Every clickable element, choice tile, or navigation menu link must scale down by 8% on active mouse-down/touch-start, snap-back sharply on mouse-up, and execute a subtle 3% continuous float scale on mouse-over.
+  * "Card Error Shake": Upon an incorrect user submission, the active card must trigger a rapid horizontal head-shake animation (shifting left and right by 12px for a 250ms duration) using CSS transform keyframes, replacing harsh color-block error messages with smooth tactile physics.
+  * "Success Particle Eruption": Clicking any correct option or submitting a successful answer must instantly instantiate a particle physics burst, spawning a localized array of five mini 2D vector pastel stars that emit outward radially from the exact cursor coordinate and interpolate opacity to 0 over 400ms.
+
+=========================================
+2. GLOBAL ROLE CONTROLS (STUDENT LOCKOUT RULES)
+=========================================
+- Complete Student Audio Lockout: Students have NO access to custom audio volume mixer configurations, 3-level sound sliders, background audio presets, or talking speed controls on their dashboard profile settings interface. Their profile settings card is limited strictly to toggling Microphone [On | Off].
+- Master Moderator Audio Controller Panel (RESTRICTED TO MODERATORS ONLY):
+  * Only accounts flagged with user_role: "moderator" can see and toggle the global audio settings profiles for the classroom.
+  * The Moderator controls the global sound properties across student interfaces using a 3-level mixer dashboard:
+    - AI Voice Audio Toggles: [ Global Audio ON | Global Audio OFF ]
+    - AI Bot Volume Levels: [ Level 1 (0.33) | Level 2 (0.66) | Level 3 (1.0) ]
+    - Click Interaction Sound Levels: [ Level 1 | Level 2 | Level 3 ] (Generates physical oscillator pop sounds via Web Audio API)
+    - Concentration Background Music Levels: [ Level 1 | Level 2 | Level 3 ] (Generates mathematical infinite ambient low-frequency focus drone code loops)
+    - Background Soundscape Presets: [ None | Metronome Pacing | Ambient Room Hum ]
+
+=========================================
+3. THE UNISEX CUSTOMIZER & ACCOUNT "CLOSET"
+=========================================
+- Silhouette: Unisex, soft-cylindrical body profiles with explicit 1:2 head-to-torso proportions. Completely gender-neutral shapes with no broad athletic masculine shoulders or narrow curved feminine waistlines. Straight side-drop torsos, tiny cylindrical necks, and short, thick noodle limbs ending in simple rounded shapes.
+- Inclusive Asset Arrays (Chunky Selection Toggles inside the Closet):
+  * Expressions: Perfect solid round dots for eyes, happy curved upward arcs, starry winks, and flat horizontal reading bars. Eyebrows are solid rounded vector blocks that change tilt angles. Mouths are clean single-weight stroke lines that morph dynamically based on status (wide grin, neutral line, wavy line).
+  * Feature & Body Marks Array: Toggle vectors for structural facial details including high-density cheek freckles, localized nose bridges, asymmetrical facial moles, skin beauty marks, and cheek dimples.
+  * Universally Diverse Hair Textures & Headwear: Fluffy natural curls, straight bobs, space buns, messy ponytails, high-volume afros, textured twists, crisp fades, temple buzz cuts, neat dreadlocks, protective box braids, cornrows, waves, and clean rounded hijabs/headscarves that tuck smoothly into outfits.
+  * Clothes & Shoes: Classic V-Neck Tops, Buttoned Jackets, Utility Vests with oversized pockets, Printed Graphic Tunics, Cozy Cardigan Sweaters, Long Dust Coats, thick-soled rounded clogs, and chunky cloud sneakers.
+  * Accessories: Headsets, rounded cloth caps, frames/glasses, and clip-on identity reels.
+- Advanced Color Customization & Palette Isolation:
+  * Provide a grid of pre-loaded pastel circular tiles alongside a Live Hex Code Text Input Field with an eye-dropper/color-well.
+  * COLOR PALETTE ISOLATION RULE: Changing the platform UI dashboard color settings must NOT alter or overwrite the user's custom avatar colors.
+- Account "Closet" Access Drawer:
+  * Located inside Account Settings. Clicking "Open Closet" slides open a clean, full-screen minimalist interface layer drawer overlay where users can change their hair styles, face elements, skin features/marks, clothes, accessories, and choose custom hex colors.
+
+=========================================
+4. HIGH-YIELD SIMPLIFIED COGNITIVE LEARNING MODES
+=========================================
+Remove all duplicate game modes. Keep exactly two streamlined learning formats:
+- Mode 1: Centralized Hands-Free Hub (Synced Audio Flashcard Engine):
+  * A dedicated voice section fully synchronized with active card progress queues and spelling verification arrays so that verbal clears instantly update card states across the workspace.
+  * 3-Step Auditory Echo Loop: App speaks the phonetic target with an Anchor-Consonant Pop Boost (artificially crisp ending clusters like st, ct and labial starts like p, b) -> 2-second rhythmic metronome countdown pause -> Student repeats term aloud via microphone.
+  * Phonetic Target Auditory Contrasting ("The Ear Trainer")]: If a student drops a final cluster or drops a sound, the system accepts it as a close semantic match but immediately drops an audio contrast reminder into the track: "Correct. The accurate word is [Word]. Notice the ending sound."
+  * Audio Cloze-Deletion Prompts & Quiet-Room Tap Toggles are fully integrated here.
+- Mode 2: Morphological "Math-Block" Builder (Visual Core):
+  * A text-free visual learning game block. Complex target terms are broken into floating pastel structural segments ([Prefix] + [Root] + [Suffix]). Users tap them in order to snap them together to build definitions, completely skipping dense academic paragraphs. Includes a Study Countdown Timer showing an active clock projection of remaining hours until full mastery based on response latency and errors.
+
+=========================================
+5. SYSTEM LEADERBOARD & WINNING ANIMATIONS
+=========================================
+- Layout: Split-screen setup featuring a vertical scrollable roster list on the Left (place number, name, mastery %, custom Face Icon face, and a glowing loop for the current user) and chunky rounded 3D Block Podium Steps on the Right holding 1st, 2nd, and 3rd place characters executing a gentle vertical idle bobbing.
+- Hybrid Sorting Panel: Prominent switch allowing users to change metrics between: Total Points (Historical cumulative progression map) or Weekly Velocity (Weekly cards cleared reset).
+- Unlockable Victory Effects (Active only on the podium blocks):
+  * "Score Accomplishment": Character holds an oversized clipboard with flat-vector star particles rippling out from behind their head.
+  * "Time Interval Milestone": Shimmering neon star geometries and crescent moons float up (Unlocked via 10 PM - 3 AM activity).
+  * "Streak Preservation": A soft pink/lavender flame wave moves beneath the podium step, making the avatar float up/down like a soft gel toy.
+  * "Mastery Milestone": Three oversized cartoon geometric loops slowly encircle the character in an orbital loop path.
+  * "Clearance Rate": The character rapidly vibrates with a lightweight motion-blur line effect while tiny speed lines dart inward.
+  * "Rank Shift Jump": When a user overtakes another student, their avatar executes a high-arc cartoon jump from its old position directly onto its new rank row or podium step with a soft squish-and-stretch landing effect.
+
+=========================================
+6. IN-PERSON ACCOUNT SECURITY & PASSWORD RESET SYSTEMS
+=========================================
+- Login Screen Reset Request:
+  * On the login interface layout, add a "Forgot Password?" click action link target.
+  * Tapping this target opens an entry overlay prompt for their account `username`.
+  * Submitting this form appends a tracking object directly into a restricted backend validation array pool (`password_reset_requests`) with NO email dispatching logic.
+- In-Person Moderator Validation Dashboard (RESTRICTED TO MODERATOR ACCOUNTS ONLY):
