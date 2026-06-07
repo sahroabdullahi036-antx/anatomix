@@ -32,7 +32,6 @@ export default function AccountSettings({ onClose }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [micEnabled, setMicEnabled] = useState(() => localStorage.getItem("anatomix_mic_enabled") === "true");
 
   const [pfp, setPfp] = useState<string | null>(() => loadLocalPfp(username));
   const [pfpBusy, setPfpBusy] = useState(false);
@@ -206,27 +205,6 @@ export default function AccountSettings({ onClose }: Props) {
                 </button>
               );
             })}
-          </div>
-        </div>
-
-        {/* Mic toggle */}
-        <div style={{ marginBottom: "20px" }}>
-          <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Microphone</div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "10px", border: "1px solid rgba(252,250,247,0.07)" }}>
-            <div>
-              <div style={{ color: "#fcfaf7", fontSize: "0.88rem", fontWeight: "600" }}>Enable Mic Input</div>
-              <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem" }}>Used in Hands-Free Vocabulary Hub</div>
-            </div>
-            <div
-              onClick={() => {
-                const next = !micEnabled;
-                setMicEnabled(next);
-                localStorage.setItem("anatomix_mic_enabled", String(next));
-              }}
-              style={{ width: "42px", height: "24px", borderRadius: "12px", backgroundColor: micEnabled ? "#4a6080" : "rgba(255,255,255,0.1)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
-            >
-              <div style={{ position: "absolute", top: "3px", left: micEnabled ? "21px" : "3px", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fcfaf7", transition: "left 0.2s" }} />
-            </div>
           </div>
         </div>
 

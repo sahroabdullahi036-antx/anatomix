@@ -14,6 +14,8 @@ export interface UserData {
   earnedAchievements: string[];
   studiedCount: number;
   classIds: string[];
+  unlockedChapters: number[];
+  passedChapters: number[];
   lastPath?: string;
 }
 
@@ -66,6 +68,9 @@ interface UserContextType {
   savePath: (path: string) => void;
   addDeck: (name: string, termIds: string[]) => void;
   removeDeck: (deckId: string) => void;
+  updateDeckTerms: (deckId: string, termIds: string[]) => void;
+  applyRemoteUnlocks: (nums: number[]) => void;
+  recordChapterPass: (chapterNum: number) => void;
   updateScore: (gameKey: string, score: number) => void;
   updateSRS: (termId: string, quality: "wrong" | "hard" | "easy") => void;
   recentUsers: string[];
@@ -92,10 +97,10 @@ function loadUser(username: string): UserData {
         const e = v as any;
         criticalReview[k] = { termId: e.termId, term: e.term, errorCount: e.errorCount ?? 0, correctStreak: e.correctStreak ?? 0, addedAt: e.addedAt ?? Date.now(), interval: e.interval ?? 1, nextReview: e.nextReview ?? Date.now() };
       }
-      return { clearedTermIds: [], studyStreak: 0, lastStudyDate: '', dailyChallengeDate: '', dailyChallengeTermIds: [], earnedAchievements: [], studiedCount: 0, classIds: [], srsDeck: {}, ...p, criticalReview };
+      return { clearedTermIds: [], studyStreak: 0, lastStudyDate: '', dailyChallengeDate: '', dailyChallengeTermIds: [], earnedAchievements: [], studiedCount: 0, classIds: [], unlockedChapters: [], passedChapters: [], srsDeck: {}, ...p, criticalReview };
     }
   } catch {}
-  return { username, decks: [], criticalReview: {}, srsDeck: {}, gameScores: {}, clearedTermIds: [], studyStreak: 0, lastStudyDate: '', dailyChallengeDate: '', dailyChallengeTermIds: [], earnedAchievements: [], studiedCount: 0, classIds: [] };
+  return { username, decks: [], criticalReview: {}, srsDeck: {}, gameScores: {}, clearedTermIds: [], studyStreak: 0, lastStudyDate: '', dailyChallengeDate: '', dailyChallengeTermIds: [], earnedAchievements: [], studiedCount: 0, classIds: [], unlockedChapters: [], passedChapters: [] };
 }
 
 function saveUser(data: UserData) {
@@ -223,6 +228,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const savePath = useCallback((path: string) => { update(prev => ({ ...prev, lastPath: path })); }, [update]);
   const addDeck = useCallback((name: string, termIds: string[]) => { update(prev => ({ ...prev, decks: [...prev.decks, { id: Date.now().toString(), name, termIds, createdAt: Date.now() }] })); }, [update]);
   const removeDeck = useCallback((deckId: string) => { update(prev => ({ ...prev, decks: prev.decks.filter(d => d.id !== deckId) })); }, [update]);
+  const updateDeckTerms = useCallback((deckId: string, termIds: string[]) => { update(prev => ({ ...prev, decks: prev.decks.map(d => d.id === deckId ? { ...d, termIds } : d) })); }, [update]);
+  const applyRemoteUnlocks = useCallback((nums: number[]) => {
+    setUser(prev => {
+      if (!prev) return prev;
+      const cur = prev.unlockedChapters ?? [];
+      if (cur.length === nums.length && cur.every(n => nums.includes(n))) return prev;
+      const next = { ...prev, unlockedChapters: nums };
+      saveUser(next);
+      return next;
+    });
+  }, []);
+  const recordChapterPass = useCallback((chapterNum: number) => { update(prev => (prev.passedChapters ?? []).includes(chapterNum) ? prev : ({ ...prev, passedChapters: [...(prev.passedChapters ?? []), chapterNum] })); }, [update]);
   const updateScore = useCallback((gameKey: string, score: number) => { update(prev => ({ ...prev, gameScores: { ...prev.gameScores, [gameKey]: Math.max(prev.gameScores[gameKey] ?? 0, score) } })); }, [update]);
 
   const updateSRS = useCallback((termId: string, quality: "wrong" | "hard" | "easy") => {
@@ -242,7 +259,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [update]);
 
   return (
-    <UserContext.Provider value={{ user, login, logout, recordMiss, recordCorrect, awardAchievement, savePath, addDeck, removeDeck, updateScore, updateSRS, recentUsers, onSyncNeeded }}>
+    <UserContext.Provider value={{ user, login, logout, recordMiss, recordCorrect, awardAchievement, savePath, addDeck, removeDeck, updateDeckTerms, applyRemoteUnlocks, recordChapterPass, updateScore, updateSRS, recentUsers, onSyncNeeded }}>
       {children}
     </UserContext.Provider>
   );

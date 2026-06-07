@@ -1,27 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser, SRSEntry } from "@/contexts/UserContext";
-import { ALL_TERMS, CHAPTERS, getTermsByChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
-import { speakTerm } from "@/lib/audioService";
-
-function MicButton({ text, testid }: { text: string; testid: string }) {
-  return (
-    <button
-      onClick={(e) => { e.stopPropagation(); speakTerm(text, 0.85, 1); }}
-      title="Hear pronunciation"
-      aria-label="Hear pronunciation"
-      data-testid={testid}
-      style={{ position: "absolute", bottom: "12px", right: "12px", width: "46px", height: "46px", borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", backgroundColor: "rgba(0,0,0,0.3)", color: "#fcfaf7", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-        <line x1="12" y1="19" x2="12" y2="23" />
-        <line x1="8" y1="23" x2="16" y2="23" />
-      </svg>
-    </button>
-  );
-}
+import { ALL_TERMS, CHAPTERS, getTermsByChapter, getTermChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
+import { useAccessibleChapters } from "@/lib/chapterAccess";
 
 const CHAPTER_TONES = [
   "#374a5e","#3a4d62","#364860","#3d5168","#394c64",
@@ -33,7 +14,9 @@ type Tab = "study" | "srs" | "critical" | "decks";
 
 export default function FlashcardsHub() {
   const [, navigate] = useLocation();
-  const { user, recordCorrect, recordMiss, addDeck, removeDeck, updateSRS } = useUser();
+  const { user, recordCorrect, recordMiss, addDeck, removeDeck, updateDeckTerms, updateSRS } = useUser();
+  const accessible = useAccessibleChapters();
+  const accSet = useMemo(() => new Set(accessible), [accessible]);
   const [tab, setTab] = useState<Tab>("study");
   const [chapterFilter, setChapterFilter] = useState<number>(0);
   const [cardIndex, setCardIndex] = useState(0);
@@ -44,15 +27,22 @@ export default function FlashcardsHub() {
   const [srsIdx, setSrsIdx] = useState(0);
   const [srsFlipped, setSrsFlipped] = useState(false);
   const [deckSearch, setDeckSearch] = useState("");
+  const [editingDeck, setEditingDeck] = useState<string | null>(null);
+  const [deckTermSearch, setDeckTermSearch] = useState("");
 
   const cleared = useMemo(() => new Set(user?.clearedTermIds ?? []), [user?.clearedTermIds]);
 
   useEffect(() => {
     const stored = localStorage.getItem(STUDY_CHAPTER_KEY);
-    if (stored) setChapterFilter(parseInt(stored, 10));
-  }, []);
+    if (stored) {
+      const n = parseInt(stored, 10);
+      if (accSet.has(n)) setChapterFilter(n);
+      else { setChapterFilter(0); localStorage.removeItem(STUDY_CHAPTER_KEY); }
+    }
+  }, [accSet]);
 
   const changeChapter = (val: number) => {
+    if (val > 0 && !accSet.has(val)) return;
     setChapterFilter(val); setCardIndex(0); setFlipped(false);
     if (val > 0) localStorage.setItem(STUDY_CHAPTER_KEY, String(val));
     else localStorage.removeItem(STUDY_CHAPTER_KEY);
@@ -62,9 +52,11 @@ export default function FlashcardsHub() {
     t.type !== "condition" && t.type !== "procedure";
 
   const baseStudyTerms = useMemo(() => {
-    const pool = chapterFilter === 0 ? ALL_TERMS : getTermsByChapter(chapterFilter);
+    const pool = chapterFilter === 0
+      ? ALL_TERMS.filter(t => accSet.has(getTermChapter(t.id)))
+      : getTermsByChapter(chapterFilter);
     return pool.filter(isStudyable);
-  }, [chapterFilter]);
+  }, [chapterFilter, accSet]);
 
   const studyTerms = useMemo(() => {
     if (!hideMastered) return baseStudyTerms;
@@ -188,14 +180,30 @@ export default function FlashcardsHub() {
                   onClick={() => changeChapter(0)}
                   style={{ padding: "10px 14px", borderRadius: "10px", border: chapterFilter === 0 ? "2px solid rgba(255,255,255,0.3)" : "1px solid rgba(255,255,255,0.07)", backgroundColor: chapterFilter === 0 ? "#4a6080" : "rgba(255,255,255,0.04)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", textAlign: "left" as const, transition: "all 0.15s" }}
                 >
-                  <div style={{ fontWeight: "700", fontSize: "0.85rem" }}>All Chapters</div>
-                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.72rem", marginTop: "2px" }}>{ALL_TERMS.length} terms</div>
+                  <div style={{ fontWeight: "700", fontSize: "0.85rem" }}>All Unlocked Chapters</div>
+                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.72rem", marginTop: "2px" }}>{baseStudyTerms.length} terms</div>
                 </button>
                 {CHAPTERS.map((ch, i) => {
                   const isActive = chapterFilter === ch.num;
                   const tone = CHAPTER_TONES[i % CHAPTER_TONES.length];
                   const prof = chapterProficiency(ch);
                   const isProficient = prof >= 0.8;
+                  const locked = !accSet.has(ch.num);
+                  if (locked) {
+                    return (
+                      <div key={ch.num} style={{ position: "relative" }}>
+                        <div
+                          title="Pass the previous chapter's test to unlock this one"
+                          style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.05)", backgroundColor: "rgba(255,255,255,0.02)", color: "rgba(252,250,247,0.35)", fontFamily: "inherit", textAlign: "left" as const, cursor: "not-allowed", boxSizing: "border-box" as const }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "700", fontSize: "0.82rem" }}>
+                            <span>🔒</span><span>{ch.title}</span>
+                          </div>
+                          <div style={{ fontSize: "0.7rem", marginTop: "2px", lineHeight: 1.3 }}>Locked - pass previous chapter test</div>
+                        </div>
+                      </div>
+                    );
+                  }
                   return (
                     <div key={ch.num} style={{ position: "relative" }}>
                       <button
@@ -332,7 +340,6 @@ export default function FlashcardsHub() {
                         <div style={{ color: "rgba(252,250,247,0.65)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{t.definition}</div>
                       </>
                     )}
-                    <MicButton text={t.term} testid="button-speak-srs" />
                   </div>
                   <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
                     {srsFlipped ? (
@@ -388,15 +395,63 @@ export default function FlashcardsHub() {
             </div>
             {user?.decks.length === 0 ? (
               <div style={{ textAlign: "center", padding: "40px", color: "rgba(252,250,247,0.3)" }}>No custom decks yet. Create one above.</div>
-            ) : user?.decks.map(deck => (
-              <div key={deck.id} style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "10px", padding: "16px 20px", marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(252,250,247,0.06)" }}>
-                <div>
-                  <div style={{ color: "#fcfaf7", fontWeight: "700" }}>{deck.name}</div>
-                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>{deck.termIds.length} terms - Created {new Date(deck.createdAt).toLocaleDateString()}</div>
+            ) : user?.decks.map(deck => {
+              const isEditing = editingDeck === deck.id;
+              const deckTermSet = new Set(deck.termIds);
+              const addable = (() => {
+                if (!isEditing || !deckTermSearch.trim()) return [];
+                const q = deckTermSearch.toLowerCase();
+                return ALL_TERMS
+                  .filter(t => isStudyable(t) && accSet.has(getTermChapter(t.id)) && !deckTermSet.has(t.id))
+                  .filter(t => t.term.toLowerCase().includes(q) || t.meaning.toLowerCase().includes(q))
+                  .slice(0, 8);
+              })();
+              return (
+                <div key={deck.id} style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "10px", padding: "16px 20px", marginBottom: "10px", border: "1px solid rgba(252,250,247,0.06)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <div style={{ color: "#fcfaf7", fontWeight: "700" }}>{deck.name}</div>
+                      <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>{deck.termIds.length} terms - Created {new Date(deck.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button data-testid={`button-edit-deck-${deck.id}`} onClick={() => { setEditingDeck(isEditing ? null : deck.id); setDeckTermSearch(""); }} style={{ backgroundColor: isEditing ? "#4a6080" : "rgba(255,255,255,0.08)", color: "#fcfaf7", border: "none", borderRadius: "6px", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.82rem" }}>{isEditing ? "Done" : "Edit Terms"}</button>
+                      <button onClick={() => { if (isEditing) setEditingDeck(null); removeDeck(deck.id); }} style={{ backgroundColor: "rgba(160,70,70,0.3)", color: "#e09090", border: "none", borderRadius: "6px", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.82rem" }}>Remove</button>
+                    </div>
+                  </div>
+                  {isEditing && (
+                    <div style={{ marginTop: "16px", borderTop: "1px solid rgba(252,250,247,0.08)", paddingTop: "16px" }}>
+                      {deck.termIds.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "6px", marginBottom: "14px" }}>
+                          {deck.termIds.map(id => {
+                            const t = ALL_TERMS.find(x => x.id === id);
+                            if (!t) return null;
+                            return (
+                              <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: "rgba(74,96,128,0.25)", border: "1px solid rgba(74,96,128,0.4)", borderRadius: "6px", padding: "4px 8px", color: "#fcfaf7", fontSize: "0.8rem" }}>
+                                {t.term}
+                                <button data-testid={`button-remove-term-${deck.id}-${id}`} onClick={() => updateDeckTerms(deck.id, deck.termIds.filter(x => x !== id))} style={{ background: "none", border: "none", color: "#e09090", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem", lineHeight: 1, padding: 0 }}>×</button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                      <input data-testid={`input-deck-term-search-${deck.id}`} value={deckTermSearch} onChange={e => setDeckTermSearch(e.target.value)} placeholder="Search unlocked terms to add..." style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+                      {deckTermSearch.trim() && (
+                        <div style={{ marginTop: "8px", display: "flex", flexDirection: "column" as const, gap: "4px" }}>
+                          {addable.length === 0 ? (
+                            <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.8rem", padding: "6px 2px" }}>No matching unlocked terms.</div>
+                          ) : addable.map(t => (
+                            <button key={t.id} data-testid={`button-add-term-${deck.id}-${t.id}`} onClick={() => { updateDeckTerms(deck.id, [...deck.termIds, t.id]); setDeckTermSearch(""); }} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left" as const, padding: "8px 12px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,250,247,0.07)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit" }}>
+                              <span style={{ fontWeight: "700", fontSize: "0.85rem" }}>{t.term}</span>
+                              <span style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.78rem", marginLeft: "12px" }}>{t.meaning}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <button onClick={() => removeDeck(deck.id)} style={{ backgroundColor: "rgba(160,70,70,0.3)", color: "#e09090", border: "none", borderRadius: "6px", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.82rem" }}>Remove</button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -460,7 +515,6 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
             </>
           )
         )}
-        <MicButton text={card.term} testid="button-speak-flashcard" />
       </div>
       <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
         <button onClick={onPrev} style={{ padding: "10px 16px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Prev</button>

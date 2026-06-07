@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { ALL_TERMS, CHAPTERS, getTermsByChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
+import { ALL_TERMS, CHAPTERS, getTermsByChapter, getTermChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
+import { useAccessibleChapters } from "@/lib/chapterAccess";
 import { shuffle } from "./games/shared";
 
 const Q_COUNT = 20;
@@ -15,7 +16,9 @@ function buildQuestion(term: typeof ALL_TERMS[0], pool: typeof ALL_TERMS) {
 
 export default function PracticeTest() {
   const [, navigate] = useLocation();
-  const { user, recordMiss, recordCorrect } = useUser();
+  const { user, recordMiss, recordCorrect, recordChapterPass } = useUser();
+  const accessible = useAccessibleChapters();
+  const accSet = useMemo(() => new Set(accessible), [accessible]);
   const [chapterFilter, setChapterFilter] = useState<number>(0);
   const [started, setStarted] = useState(false);
   const [questions, setQuestions] = useState<ReturnType<typeof buildQuestion>[]>([]);
@@ -28,8 +31,11 @@ export default function PracticeTest() {
 
   useEffect(() => {
     const stored = localStorage.getItem(STUDY_CHAPTER_KEY);
-    if (stored) setChapterFilter(parseInt(stored, 10));
-  }, []);
+    if (stored) {
+      const n = parseInt(stored, 10);
+      setChapterFilter(accSet.has(n) ? n : 0);
+    }
+  }, [accSet]);
 
   useEffect(() => {
     if (!started || finished) return;
@@ -42,10 +48,18 @@ export default function PracticeTest() {
     return () => clearInterval(t);
   }, [started, finished]);
 
+  const accessiblePool = useMemo(
+    () => ALL_TERMS.filter(t => accSet.has(getTermChapter(t.id))),
+    [accSet]
+  );
+
   const pool = useMemo(() => {
-    const base = chapterFilter > 0 ? getTermsByChapter(chapterFilter) : ALL_TERMS;
-    return base.length >= 8 ? base : ALL_TERMS;
-  }, [chapterFilter]);
+    // A single-chapter test must use ONLY that chapter's terms so that passing it
+    // genuinely reflects mastery of that chapter (and credits the unlock). The
+    // "All Unlocked Chapters" option mixes across the accessible union.
+    if (chapterFilter > 0 && accSet.has(chapterFilter)) return getTermsByChapter(chapterFilter);
+    return accessiblePool;
+  }, [chapterFilter, accSet, accessiblePool]);
 
   const start = () => {
     const terms = shuffle(pool).slice(0, Math.min(Q_COUNT, pool.length));
@@ -81,6 +95,10 @@ export default function PracticeTest() {
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
   const passed = pct >= 70;
 
+  useEffect(() => {
+    if (finished && total > 0 && passed && chapterFilter > 0) recordChapterPass(chapterFilter);
+  }, [finished, total, passed, chapterFilter, recordChapterPass]);
+
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
   const activeChapter = CHAPTERS.find(c => c.num === chapterFilter);
@@ -107,8 +125,8 @@ export default function PracticeTest() {
               onChange={e => setChapterFilter(+e.target.value)}
               style={{ width: "100%", padding: "12px 16px", borderRadius: "10px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "1rem" }}
             >
-              <option value={0}>All Chapters ({ALL_TERMS.length} terms)</option>
-              {CHAPTERS.map(ch => (
+              <option value={0}>All Unlocked Chapters ({accessiblePool.length} terms)</option>
+              {CHAPTERS.filter(ch => accSet.has(ch.num)).map(ch => (
                 <option key={ch.num} value={ch.num}>{ch.title}: {ch.subtitle} ({ch.termIds.length} terms)</option>
               ))}
             </select>
@@ -141,6 +159,19 @@ export default function PracticeTest() {
             <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "1.3rem", marginBottom: "6px" }}>{passed ? "Passed" : "Not yet"}</div>
             <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.9rem" }}>{score} of {total} correct</div>
             {activeChapter && <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.82rem", marginTop: "4px" }}>{activeChapter.title}</div>}
+            {passed && chapterFilter > 0 ? (
+              <div style={{ marginTop: "14px", display: "inline-block", backgroundColor: "rgba(89,110,96,0.35)", border: "1px solid rgba(122,170,122,0.5)", borderRadius: "10px", padding: "10px 16px", color: "#a7d4a7", fontSize: "0.85rem", fontWeight: "700" }}>
+                Chapter test passed - the next chapter is now unlocked!
+              </div>
+            ) : !passed && chapterFilter > 0 ? (
+              <div style={{ marginTop: "14px", display: "inline-block", backgroundColor: "rgba(0,0,0,0.2)", border: "1px solid rgba(192,112,112,0.4)", borderRadius: "10px", padding: "10px 16px", color: "rgba(224,144,144,0.9)", fontSize: "0.85rem" }}>
+                Score 70% or higher on this chapter's test to unlock the next chapter.
+              </div>
+            ) : passed && chapterFilter === 0 ? (
+              <div style={{ marginTop: "14px", display: "inline-block", backgroundColor: "rgba(0,0,0,0.2)", border: "1px solid rgba(252,250,247,0.12)", borderRadius: "10px", padding: "10px 16px", color: "rgba(252,250,247,0.55)", fontSize: "0.85rem" }}>
+                Take a single-chapter test to unlock the next chapter.
+              </div>
+            ) : null}
           </div>
           {missed.length > 0 && (
             <div>

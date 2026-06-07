@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { ALL_TERMS, getTermsByChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
+import { ALL_TERMS, getTermsByChapter, getTermChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
+import { useUser } from "@/contexts/UserContext";
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -10,21 +11,68 @@ export function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+/** Chapters the user has "begun" = at least one term cleared in them. */
+export function startedChapterNums(clearedIds: Iterable<string>): number[] {
+  const cleared = new Set(clearedIds);
+  return CHAPTERS.filter(ch => ch.termIds.some(id => cleared.has(id))).map(ch => ch.num);
+}
+
+/** Hook: sorted list of chapter numbers the current user has unlocked (begun). */
+export function useUnlockedChapters(): number[] {
+  const { user } = useUser();
+  return useMemo(
+    () => startedChapterNums(user?.clearedTermIds ?? []).sort((a, b) => a - b),
+    [user?.clearedTermIds]
+  );
+}
+
+/** Union of all terms belonging to the given chapter numbers. */
+export function termsForChapters(nums: number[]): typeof ALL_TERMS {
+  if (!nums.length) return [];
+  const set = new Set(nums);
+  return ALL_TERMS.filter(t => set.has(getTermChapter(t.id)));
+}
+
 export function useGameTerms(overridePool?: typeof ALL_TERMS) {
+  const unlocked = useUnlockedChapters();
   return useMemo(() => {
     let pool: typeof ALL_TERMS;
     if (overridePool) {
       pool = overridePool;
     } else {
-      const stored = localStorage.getItem(STUDY_CHAPTER_KEY);
-      const ch = stored ? parseInt(stored, 10) : 0;
-      pool = ch > 0 ? getTermsByChapter(ch) : ALL_TERMS;
+      const stored = parseInt(localStorage.getItem(STUDY_CHAPTER_KEY) || "0", 10);
+      pool = stored > 0 && unlocked.includes(stored) ? getTermsByChapter(stored) : termsForChapters(unlocked);
     }
     const isStudyable = (t: typeof ALL_TERMS[0]) =>
       t.type !== "condition" && t.type !== "procedure" && (t.type !== "prefix" || t.example);
     const filtered = pool.filter(isStudyable);
-    return shuffle(filtered.length >= 4 ? filtered : ALL_TERMS.filter(isStudyable));
-  }, [overridePool]);
+    if (filtered.length >= 4 || overridePool) return shuffle(filtered.length ? filtered : pool);
+    // never fall back to locked content: widen only to the user's full unlocked set
+    const all = termsForChapters(unlocked).filter(isStudyable);
+    return shuffle(all.length ? all : filtered);
+  }, [overridePool, unlocked]);
+}
+
+/** Full-page overlay shown when the user has not begun any chapter yet. */
+export function GameLock({ onBack, onStudy }: { onBack: () => void; onStudy: () => void }) {
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif", display: "flex", flexDirection: "column" }}>
+      <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
+        <button onClick={onBack} data-testid="button-lock-back" style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" }}>← Back</button>
+        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>Games Locked</span>
+      </div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+        <div style={{ maxWidth: "440px", textAlign: "center", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", padding: "40px 28px", border: "1px solid rgba(252,250,247,0.07)" }}>
+          <div style={{ fontSize: "44px", marginBottom: "14px" }}>🔒</div>
+          <h1 style={{ color: "#fcfaf7", fontSize: "1.4rem", fontWeight: "800", marginBottom: "10px" }}>Begin a chapter to unlock games</h1>
+          <p style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.92rem", lineHeight: 1.6, marginBottom: "26px" }}>
+            Games only use terms from chapters you've started. Study any chapter's flashcards first - the more chapters you begin, the more terms you can play with.
+          </p>
+          <button onClick={onStudy} data-testid="button-lock-study" style={{ padding: "13px 34px", borderRadius: "12px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Start Studying</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function GameShell({ title, score, streak, idx, total, onBack, children }: {

@@ -2,12 +2,13 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
-import { shuffle, WrongAnswer, WrongAnswerReview } from "./shared";
-import { checkAnswer } from "@/lib/answerUtils";
+import { shuffle, WrongAnswer, WrongAnswerReview, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
+import { checkAnswer, maskTermInText } from "@/lib/answerUtils";
 
 export default function SpellingBee() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect } = useUser();
+  const unlocked = useUnlockedChapters();
   const [chapterFilter, setChapterFilter] = useState(0);
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
@@ -19,13 +20,14 @@ export default function SpellingBee() {
 
   useEffect(() => {
     const s = localStorage.getItem(STUDY_CHAPTER_KEY);
-    if (s) setChapterFilter(parseInt(s, 10));
-  }, []);
+    const n = s ? parseInt(s, 10) : 0;
+    if (n > 0 && unlocked.includes(n)) setChapterFilter(n);
+  }, [unlocked]);
 
   const pool = useMemo(() => {
-    const base = chapterFilter > 0 ? getTermsByChapter(chapterFilter) : ALL_TERMS;
-    return base.length >= 5 ? base : ALL_TERMS;
-  }, [chapterFilter]);
+    const base = chapterFilter > 0 ? getTermsByChapter(chapterFilter) : termsForChapters(unlocked);
+    return base.length >= 5 ? base : termsForChapters(unlocked);
+  }, [chapterFilter, unlocked]);
 
   const terms = useMemo(() => shuffle(pool).slice(0, 10), [pool]);
 
@@ -52,6 +54,8 @@ export default function SpellingBee() {
   const hdr: React.CSSProperties = { backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" };
   const backBtn: React.CSSProperties = { backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" };
 
+  if (unlocked.length === 0) return <GameLock onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
+
   if (!started) return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
       <div style={hdr}><button onClick={() => navigate("/")} style={backBtn}>Back</button><span style={{ color: "#fcfaf7", fontWeight: "700" }}>Spelling Bee</span></div>
@@ -61,8 +65,8 @@ export default function SpellingBee() {
         <div style={{ marginBottom: "28px" }}>
           <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Chapter</div>
           <select value={chapterFilter} onChange={e => setChapterFilter(+e.target.value)} style={{ width: "100%", padding: "12px 16px", borderRadius: "10px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "1rem" }}>
-            <option value={0}>All Chapters</option>
-            {CHAPTERS.map(ch => <option key={ch.num} value={ch.num}>{ch.title}: {ch.subtitle}</option>)}
+            <option value={0}>All My Chapters</option>
+            {CHAPTERS.filter(ch => unlocked.includes(ch.num)).map(ch => <option key={ch.num} value={ch.num}>{ch.title}: {ch.subtitle}</option>)}
           </select>
         </div>
         <button onClick={start} style={{ padding: "14px 40px", borderRadius: "12px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Start</button>
@@ -110,8 +114,8 @@ export default function SpellingBee() {
         </div>
         <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", padding: "32px", marginBottom: "24px", border: "1px solid rgba(252,250,247,0.06)" }}>
           <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>{current.type} - {current.system}</div>
-          <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "8px" }}>{current.meaning}</div>
-          <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.9rem", lineHeight: 1.5 }}>{current.definition}</div>
+          <div style={{ color: "#fcfaf7", fontSize: "1.1rem", fontWeight: "700", marginBottom: "8px" }}>{maskTermInText(current.meaning, current.term)}</div>
+          <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.9rem", lineHeight: 1.5 }}>{maskTermInText(current.definition, current.term)}</div>
         </div>
         {revealed ? (
           <div style={{ textAlign: "center" }}>

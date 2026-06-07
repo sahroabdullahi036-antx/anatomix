@@ -1,15 +1,14 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { ALL_TERMS } from "@/data/medicalData";
-import { GameShell, shuffle, useGameTerms } from "./shared";
-
-const WORD_PART_TERMS = ALL_TERMS.filter(t => t.wordParts && t.wordParts.length >= 2);
+import { GameShell, shuffle, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
+import { maskTermInText } from "@/lib/answerUtils";
 
 export default function LinguisticAutopsy() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect, updateScore } = useUser();
-  const terms = useMemo(() => shuffle(WORD_PART_TERMS), []);
+  const unlocked = useUnlockedChapters();
+  const terms = useMemo(() => shuffle(termsForChapters(unlocked).filter(t => t.wordParts && t.wordParts.length >= 2)), [unlocked]);
   const [idx, setIdx] = useState(0);
   const [assembled, setAssembled] = useState<string[]>([]);
   const [scrambled, setScrambled] = useState<string[]>([]);
@@ -48,6 +47,7 @@ export default function LinguisticAutopsy() {
     setResult(null); setAssembled([]); setIdx(i => i + 1);
   };
 
+  if (unlocked.length === 0) return <GameLock onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
   if (!current) return <GameShell title="Linguistic Autopsy" score={score} streak={streak} idx={idx} total={terms.length} onBack={() => navigate("/games")}><div style={{ color: "#fcfaf7" }}>No terms with word parts available.</div></GameShell>;
 
   return (
@@ -55,7 +55,7 @@ export default function LinguisticAutopsy() {
       <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "14px", padding: "24px", marginBottom: "20px" }}>
         <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>Assemble the word parts in physiological order:</div>
         <div style={{ color: "#fcfaf7", fontSize: "1.2rem", fontWeight: "700", marginBottom: "8px" }}>💬 {current.casualMeaning}</div>
-        <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.88rem" }}>{current.definition}</div>
+        <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.88rem" }}>{maskTermInText(current.definition, current.term)}</div>
       </div>
 
       <div style={{ marginBottom: "16px" }}>

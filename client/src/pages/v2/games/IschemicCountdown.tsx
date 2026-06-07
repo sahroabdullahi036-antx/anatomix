@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { ALL_TERMS } from "@/data/medicalData";
-import { shuffle, ProgressBar } from "./shared";
+import { shuffle, ProgressBar, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
 
 export default function IschemicCountdown() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect, updateScore } = useUser();
-  const terms = useMemo(() => shuffle(ALL_TERMS), []);
+  const unlocked = useUnlockedChapters();
+  const terms = useMemo(() => shuffle(termsForChapters(unlocked)), [unlocked]);
   const [idx, setIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(20);
   const [speed, setSpeed] = useState(1);
@@ -22,7 +22,7 @@ export default function IschemicCountdown() {
   const newChoices = useCallback(() => {
     if (!terms[idx % terms.length]) return;
     const t = terms[idx % terms.length];
-    const others = shuffle(ALL_TERMS.filter(x => x.id !== t.id)).slice(0, 3).map(x => x.meaning);
+    const others = shuffle(termsForChapters(unlocked).filter(x => x.id !== t.id)).slice(0, 3).map(x => x.meaning);
     setChoices(shuffle([t.meaning, ...others]));
   }, [idx, terms]);
 
@@ -52,6 +52,8 @@ export default function IschemicCountdown() {
     }
     setTimeout(() => { setSelected(null); setIdx(i => i + 1); }, 800);
   };
+
+  if (unlocked.length === 0) return <GameLock onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
 
   if (gameOver) {
     return (
@@ -95,7 +97,7 @@ export default function IschemicCountdown() {
         <div style={{ backgroundColor: "rgba(0,0,0,0.22)", borderRadius: "14px", padding: "24px", marginBottom: "16px", textAlign: "center" }}>
           <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", marginBottom: "10px" }}>{current.type} · {current.system}</div>
           <div style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", fontFamily: "monospace" }}>{current.term}</div>
-          <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", marginTop: "8px" }}>💬 {current.casualMeaning}</div>
+          <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem", marginTop: "8px" }}>Pick the correct meaning</div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>

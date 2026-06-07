@@ -7,3 +7,4 @@
 - [Owner account security](owner-account-security.md) — anatomixowner secured via write-once `config/owner` hash; rules must be deployed to Firebase to take effect
 - [Dashboard tile two-tone](dashboard-tile-color.md) — all module tiles share TILE; Multiplayer uses MP_TILE; both blue hue ~216 so global palette filter recolors together yet Multiplayer stays distinct per palette
 - [Profile pictures](profile-pics.md) — dress-up avatar REMOVED; pics are compressed ~128px JPEG data-URLs in Firestore user doc (+localStorage cache), no Storage; ProfilePic component with initials fallback
+- [Chapter unlock model](chapter-unlock.md) — next chapter unlocks ONLY by passing that chapter's single-chapter Practice Test (>=70%), NOT by flashcards; passedChapters drives computeAccessibleChapters

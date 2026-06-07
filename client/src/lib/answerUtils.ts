@@ -60,3 +60,26 @@ export const checkAnswer = (userAnswer: string, correctAnswer: string): boolean 
  */
 export const validateFillBlank = (userInput: string, correctTerm: string): boolean =>
   checkAnswer(userInput, correctTerm);
+
+/**
+ * Redact the target term (and its significant words / comma-separated forms)
+ * from clue text so a game's definition/meaning never hands you the answer.
+ * e.g. maskTermInText("Abnormally rapid heart rate (tachycardia)", "Tachycardia")
+ *      -> "Abnormally rapid heart rate (____)"
+ */
+export const maskTermInText = (text: string, term: string): string => {
+  if (!text || !term) return text;
+  const targets = new Set<string>();
+  const consider = (s: string) => { const t = s.trim(); if (t.length >= 4) targets.add(t); };
+  consider(term);
+  splitTermForms(term).forEach(consider);
+  term.split(/[\s,/()\-]+/).forEach(consider);
+  // longest first so multi-word terms are masked before their parts
+  const ordered = [...targets].sort((a, b) => b.length - a.length);
+  let out = text;
+  for (const t of ordered) {
+    const esc = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(new RegExp(esc, "gi"), "____");
+  }
+  return out;
+};

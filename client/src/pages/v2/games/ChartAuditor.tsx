@@ -1,8 +1,7 @@
 import { useState, useMemo, type ReactElement } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { ALL_TERMS } from "@/data/medicalData";
-import { GameShell, shuffle } from "./shared";
+import { GameShell, shuffle, useUnlockedChapters, GameLock } from "./shared";
 
 const AUDITS = [
   {
@@ -17,7 +16,7 @@ const AUDITS = [
     paragraph: "Post-op note: The surgeon performed a colon camera examination (colonoscopy). Biopsies showed intestinal swelling disease consistent with Crohn's. The patient also has a spleen that's too big (splenomegaly) and requires a spleen cut-out (splenectomy) if it worsens.",
     errors: ["intestinal swelling disease", "spleen cut-out"],
     fixes: ["inflammatory bowel disease", "splenectomy"],
-    explanation: "Intestinal swelling disease → inflammatory bowel disease (IBD). The term 'splenectomy' was actually correct and should not be changed.",
+    explanation: "Intestinal swelling disease → inflammatory bowel disease (IBD). Spleen cut-out → splenectomy (surgical removal of the spleen).",
   },
   {
     id: "a3",
@@ -33,11 +32,40 @@ const AUDITS = [
     fixes: ["pericarditis (inflammation)", "arrhythmia"],
     explanation: "The pericardium is the sac  -  pericarditis means inflammation of it, not 'fluid sac'. Arrhythmia is correct (any abnormal heart rhythm).",
   },
+  {
+    id: "a5",
+    paragraph: "Pulmonology note: The patient reported shortness of breath (dyspnea) and was found to have a lung air-sac infection (pneumonia). Imaging also showed a collapsed lung (atelectasis). Spirometry confirmed long-term airway blockage disease consistent with a heavy smoking history.",
+    errors: ["lung air-sac infection", "long-term airway blockage disease"],
+    fixes: ["pneumonia", "COPD"],
+    explanation: "Lung air-sac infection → pneumonia (infection inflaming the alveoli). Long-term airway blockage disease → COPD (chronic obstructive pulmonary disease).",
+  },
+  {
+    id: "a6",
+    paragraph: "Nephrology consult: Urinalysis showed kidney inflammation (nephritis) and the patient passed a kidney stone (renal calculus). He reported painful urination (dysuria) and a bladder infection swelling. Ultrasound revealed kidney swelling from urine backup.",
+    errors: ["bladder infection swelling", "kidney swelling from urine backup"],
+    fixes: ["cystitis", "hydronephrosis"],
+    explanation: "Bladder infection swelling → cystitis (inflammation of the bladder). Kidney swelling from urine backup → hydronephrosis (distension of the renal pelvis from obstructed outflow).",
+  },
+  {
+    id: "a7",
+    paragraph: "Orthopedics: The patient sustained a broken bone (fracture) of the femur and shows joint inflammation (arthritis) in both knees. She reports muscle pain (myalgia), a spine curve sideways, and bone-thinning brittleness on her DEXA scan.",
+    errors: ["spine curve sideways", "bone-thinning brittleness"],
+    fixes: ["scoliosis", "osteoporosis"],
+    explanation: "Spine curve sideways → scoliosis (lateral curvature of the spine). Bone-thinning brittleness → osteoporosis (reduced bone density that raises fracture risk).",
+  },
+  {
+    id: "a8",
+    paragraph: "Endocrine note: The patient has a too-much-sugar-in-blood condition with an elevated A1c. Exam revealed an overactive thyroid (hyperthyroidism) with weight loss. She also reports excessive thirst (polydipsia) and a low-thyroid sluggishness noted on prior records.",
+    errors: ["too-much-sugar-in-blood condition", "low-thyroid sluggishness"],
+    fixes: ["diabetes mellitus", "hypothyroidism"],
+    explanation: "Too-much-sugar-in-blood condition → diabetes mellitus. Low-thyroid sluggishness → hypothyroidism (an underactive thyroid).",
+  },
 ];
 
 export default function ChartAuditor() {
   const [, navigate] = useLocation();
   const { updateScore } = useUser();
+  const unlocked = useUnlockedChapters();
   const audits = useMemo(() => shuffle(AUDITS), []);
   const [idx, setIdx] = useState(0);
   const [found, setFound] = useState<string[]>([]);
@@ -77,6 +105,8 @@ export default function ChartAuditor() {
     }
     return parts;
   };
+
+  if (unlocked.length === 0) return <GameLock onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
 
   return (
     <GameShell title="Chart Auditor" score={score} streak={found.length} idx={idx} total={audits.length} onBack={() => navigate("/games")}>

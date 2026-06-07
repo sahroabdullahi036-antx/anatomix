@@ -1,15 +1,17 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
-import { shuffle, WrongAnswer, WrongAnswerReview } from "./shared";
+import { shuffle, WrongAnswer, WrongAnswerReview, GameLock, useUnlockedChapters, termsForChapters } from "./shared";
+import { maskTermInText } from "@/lib/answerUtils";
 
 const MAX_WRONG = 6;
 const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-export default function HangmanGame() {
+export default function VitalSigns() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect } = useUser();
+  const unlocked = useUnlockedChapters();
   const [chapterFilter, setChapterFilter] = useState(0);
   const [started, setStarted] = useState(false);
   const [termIdx, setTermIdx] = useState(0);
@@ -17,10 +19,16 @@ export default function HangmanGame() {
   const [finished, setFinished] = useState(false);
   const [sessionResults, setSessionResults] = useState<Array<{ term: string; won: boolean }>>([]);
 
+  useEffect(() => {
+    const s = localStorage.getItem(STUDY_CHAPTER_KEY);
+    const n = s ? parseInt(s, 10) : 0;
+    if (n > 0 && unlocked.includes(n)) setChapterFilter(n);
+  }, [unlocked]);
+
   const pool = useMemo(() => {
-    const base = chapterFilter > 0 ? getTermsByChapter(chapterFilter) : ALL_TERMS;
-    return base.length >= 5 ? base : ALL_TERMS;
-  }, [chapterFilter]);
+    const base = chapterFilter > 0 ? getTermsByChapter(chapterFilter) : termsForChapters(unlocked);
+    return base.length >= 5 ? base : termsForChapters(unlocked);
+  }, [chapterFilter, unlocked]);
 
   const terms = useMemo(() => shuffle(pool).slice(0, 10), [pool]);
   const current = terms[termIdx];
@@ -34,8 +42,6 @@ export default function HangmanGame() {
   const roundOver = won || lost;
 
   const start = () => {
-    const s = localStorage.getItem(STUDY_CHAPTER_KEY);
-    if (s) setChapterFilter(parseInt(s, 10));
     setStarted(true); setTermIdx(0); setGuessed(new Set()); setSessionResults([]); setFinished(false);
   };
 
@@ -57,19 +63,21 @@ export default function HangmanGame() {
   const hdr: React.CSSProperties = { backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" };
   const backBtn: React.CSSProperties = { backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" };
 
+  if (unlocked.length === 0) return <GameLock onBack={() => navigate("/")} onStudy={() => navigate("/flashcards")} />;
+
   if (!started) return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
-      <div style={hdr}><button onClick={() => navigate("/")} style={backBtn}>← Dashboard</button><span style={{ color: "#fcfaf7", fontWeight: "700" }}>Hangman</span></div>
+      <div style={hdr}><button onClick={() => navigate("/")} style={backBtn}>← Dashboard</button><span style={{ color: "#fcfaf7", fontWeight: "700" }}>Vital Signs</span></div>
       <div style={{ maxWidth: "560px", margin: "0 auto", padding: "60px 24px", textAlign: "center" }}>
-        <h1 style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", marginBottom: "8px" }}>Hangman</h1>
-        <p style={{ color: "rgba(252,250,247,0.45)", marginBottom: "32px" }}>Guess the medical term one letter at a time. The definition is your only clue. {MAX_WRONG} wrong guesses allowed.</p>
+        <h1 style={{ color: "#fcfaf7", fontSize: "1.8rem", fontWeight: "800", marginBottom: "8px" }}>Vital Signs</h1>
+        <p style={{ color: "rgba(252,250,247,0.45)", marginBottom: "32px" }}>Reveal the medical term one letter at a time. The definition is your only clue - keep the patient's vitals up. {MAX_WRONG} wrong guesses and you flatline.</p>
         <div style={{ marginBottom: "28px" }}>
-          <select value={chapterFilter} onChange={e => setChapterFilter(+e.target.value)} style={{ width: "100%", padding: "12px 16px", borderRadius: "10px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "1rem" }}>
-            <option value={0}>All Chapters</option>
-            {CHAPTERS.map(ch => <option key={ch.num} value={ch.num}>{ch.title}: {ch.subtitle}</option>)}
+          <select value={chapterFilter} onChange={e => setChapterFilter(+e.target.value)} data-testid="select-chapter" style={{ width: "100%", padding: "12px 16px", borderRadius: "10px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", fontFamily: "inherit", fontSize: "1rem" }}>
+            <option value={0}>All My Chapters</option>
+            {CHAPTERS.filter(ch => unlocked.includes(ch.num)).map(ch => <option key={ch.num} value={ch.num}>{ch.title}: {ch.subtitle}</option>)}
           </select>
         </div>
-        <button onClick={start} style={{ padding: "14px 40px", borderRadius: "12px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Start</button>
+        <button onClick={start} data-testid="button-start" style={{ padding: "14px 40px", borderRadius: "12px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Start</button>
       </div>
     </div>
   );
@@ -104,17 +112,17 @@ export default function HangmanGame() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
       <div style={{ ...hdr, justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}><button onClick={() => setStarted(false)} style={backBtn}>Exit</button><span style={{ color: "#fcfaf7", fontWeight: "700" }}>Hangman</span></div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}><button onClick={() => setStarted(false)} style={backBtn}>Exit</button><span style={{ color: "#fcfaf7", fontWeight: "700" }}>Vital Signs</span></div>
         <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>{termIdx + 1} / {terms.length}</span>
       </div>
       <div style={{ maxWidth: "640px", margin: "0 auto", padding: "32px 24px" }}>
         <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "20px 24px", marginBottom: "20px", border: "1px solid rgba(252,250,247,0.06)" }}>
           <div style={{ color: "rgba(252,250,247,0.35)", fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{current.type} - {current.system}</div>
-          <div style={{ color: "rgba(252,250,247,0.85)", fontSize: "0.9rem", lineHeight: 1.5 }}>{current.definition}</div>
+          <div style={{ color: "rgba(252,250,247,0.85)", fontSize: "0.9rem", lineHeight: 1.5 }}>{maskTermInText(current.definition, current.term)}</div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-          <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.75rem" }}>Health</div>
+          <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.75rem" }}>Vitals</div>
           <div style={{ flex: 1, height: "8px", borderRadius: "4px", backgroundColor: "rgba(0,0,0,0.3)", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${healthPct * 100}%`, backgroundColor: healthColor, borderRadius: "4px", transition: "width 0.3s, background-color 0.3s" }} />
           </div>
@@ -141,12 +149,12 @@ export default function HangmanGame() {
         {roundOver ? (
           <div style={{ textAlign: "center" }}>
             <div style={{ color: won ? "#7aaa7a" : "#c07070", fontWeight: "700", marginBottom: "6px" }}>{won ? "Correct!" : `The term was: ${current.term}`}</div>
-            <button onClick={next} style={{ padding: "12px 32px", borderRadius: "10px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>{termIdx + 1 >= terms.length ? "See Results" : "Next"}</button>
+            <button onClick={next} data-testid="button-next" style={{ padding: "12px 32px", borderRadius: "10px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>{termIdx + 1 >= terms.length ? "See Results" : "Next"}</button>
           </div>
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center" }}>
             {ALPHA.map(l => (
-              <button key={l} onClick={() => guess(l)} disabled={guessed.has(l)} style={{ width: "38px", height: "38px", borderRadius: "6px", backgroundColor: guessed.has(l) ? (wrongGuesses.includes(l) ? "rgba(160,70,70,0.2)" : "rgba(60,130,80,0.2)") : "rgba(255,255,255,0.08)", color: guessed.has(l) ? (wrongGuesses.includes(l) ? "#c07070" : "#7aaa7a") : "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", cursor: guessed.has(l) ? "default" : "pointer", fontFamily: "monospace", fontWeight: "700", fontSize: "0.85rem" }}>{l}</button>
+              <button key={l} onClick={() => guess(l)} disabled={guessed.has(l)} data-testid={`button-letter-${l}`} style={{ width: "38px", height: "38px", borderRadius: "6px", backgroundColor: guessed.has(l) ? (wrongGuesses.includes(l) ? "rgba(160,70,70,0.2)" : "rgba(60,130,80,0.2)") : "rgba(255,255,255,0.08)", color: guessed.has(l) ? (wrongGuesses.includes(l) ? "#c07070" : "#7aaa7a") : "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", cursor: guessed.has(l) ? "default" : "pointer", fontFamily: "monospace", fontWeight: "700", fontSize: "0.85rem" }}>{l}</button>
             ))}
           </div>
         )}

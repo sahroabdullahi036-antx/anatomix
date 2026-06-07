@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
-import { ALL_TERMS, SYSTEMS } from "@/data/medicalData";
+import { ALL_TERMS } from "@/data/medicalData";
 
 const PREFIXES = ALL_TERMS.filter(t => t.type === "prefix");
 const ROOTS = ALL_TERMS.filter(t => t.type === "root");
 const SUFFIXES = ALL_TERMS.filter(t => t.type === "suffix");
+const ROOT_SYSTEMS = Array.from(new Set(ROOTS.map(r => r.system))).sort();
 
 const VALID_COMBOS: Record<string, string> = {
   "cardi/o-logy": "Cardiology  -  the study of the heart",
@@ -71,19 +72,13 @@ export default function RootBuilder() {
 
   const filteredRoots = useMemo(() => {
     if (systemFilter === "all") return ROOTS;
-    return ROOTS.filter(r => r.system.toLowerCase() === systemFilter.toLowerCase());
+    return ROOTS.filter(r => r.system === systemFilter);
   }, [systemFilter]);
 
   const builtTerm = useMemo(() => {
-    if (!root) return null;
-    const key = suffix ? `${root}-${suffix.replace(/^-/, "")}` : null;
-    if (key && VALID_COMBOS[key]) return VALID_COMBOS[key];
-    if (root && suffix) {
-      const rootTerm = ALL_TERMS.find(t => t.term === root);
-      const suffTerm = ALL_TERMS.find(t => t.term === suffix);
-      if (rootTerm && suffTerm) return `Possible term: ${root.replace("/o", "")}${suffix}  -  combining "${rootTerm.meaning}" + "${suffTerm.meaning}"`;
-    }
-    return null;
+    if (!root || !suffix) return null;
+    const key = `${root}-${suffix.replace(/^-/, "")}`;
+    return VALID_COMBOS[key] ?? null;
   }, [root, suffix]);
 
   const clear = () => { setPrefix(null); setRoot(null); setSuffix(null); };
@@ -138,6 +133,10 @@ export default function RootBuilder() {
             <div style={{ color: "#90e090", fontWeight: "700", fontSize: "0.8rem", textTransform: "uppercase", marginBottom: "6px" }}>✓ Valid Textbook Term</div>
             <div style={{ color: "#fcfaf7", fontSize: "1rem" }}>{builtTerm}</div>
           </div>
+        ) : (root && suffix) ? (
+          <div style={{ backgroundColor: "rgba(0,0,0,0.15)", border: "1px solid rgba(160,90,90,0.3)", borderRadius: "12px", padding: "16px 20px", marginBottom: "24px", color: "rgba(224,144,144,0.85)", fontSize: "0.9rem" }}>
+            Not a standard medical term. Try a different root + suffix combination.
+          </div>
         ) : (root || suffix) ? (
           <div style={{ backgroundColor: "rgba(0,0,0,0.15)", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "12px", padding: "16px 20px", marginBottom: "24px", color: "rgba(252,250,247,0.5)", fontSize: "0.9rem" }}>
             Add a root + suffix combination to check for a valid term. Prefix is optional.
@@ -161,7 +160,7 @@ export default function RootBuilder() {
                 style={{ width: "100%", padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(252,250,247,0.1)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.2)", fontFamily: "inherit", fontSize: "0.82rem" }}
               >
                 <option value="all">All Systems</option>
-                {SYSTEMS.map(s => <option key={s.id} value={s.officialName}>{s.officialName}</option>)}
+                {ROOT_SYSTEMS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "370px", overflowY: "auto" }}>

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, saveChapterOrder, getChapterOrder, subscribeToAudioSettings, saveAudioSettings, subscribeToPasswordResets, resolvePasswordReset, clearPasswordReset, UserPinEntry, FirestoreUserProgress, FirestoreClass, AudioSettings, PasswordResetRequest } from "@/firebase/firestoreService";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, setUserUnlockedChapters, saveChapterOrder, getChapterOrder, subscribeToAudioSettings, saveAudioSettings, subscribeToFeatureToggles, saveFeatureToggles, subscribeToPasswordResets, resolvePasswordReset, clearPasswordReset, UserPinEntry, FirestoreUserProgress, FirestoreClass, AudioSettings, FeatureToggles, PasswordResetRequest } from "@/firebase/firestoreService";
 import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal, addCustomTerms, removeCustomTerm, applyChapterOrder } from "@/data/medicalData";
 import { lookupLocalTerm } from "@/data/termLookup";
 import OnboardingTour, { Step } from "./OnboardingTour";
@@ -42,7 +42,9 @@ export default function ModeratorDashboard() {
   const { db, ready } = useFirebase();
   const [students, setStudents] = useState<FirestoreUserProgress[]>([]);
   const [classes, setClasses] = useState<FirestoreClass[]>([]);
-  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers" | "terms" | "chapters" | "audio" | "resets">("roster");
+  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers" | "terms" | "chapters" | "audio" | "features" | "resets">("roster");
+  const [features, setFeatures] = useState<FeatureToggles>({ visualCardView: false, leaderboard: false });
+  const [featuresSaving, setFeaturesSaving] = useState(false);
   const [filterClass, setFilterClass] = useState<string>("all");
   const [newClassName, setNewClassName] = useState("");
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
@@ -56,6 +58,8 @@ export default function ModeratorDashboard() {
   const [pinSaving, setPinSaving] = useState(false);
   const [renameSaving, setRenameSaving] = useState(false);
   const [removeConfirm, setRemoveConfirm] = useState(false);
+  const [unlockEdit, setUnlockEdit] = useState<number[]>([]);
+  const [unlockSaving, setUnlockSaving] = useState(false);
   const toKey = (u: string) => u.toLowerCase().replace(/\s+/g, "_");
 
   const [termSearch, setTermSearch] = useState("");
@@ -94,6 +98,12 @@ export default function ModeratorDashboard() {
       if (nums.length > 0) { applyChapterOrder(nums); setChapterOrderNums(nums); }
       else setChapterOrderNums(CHAPTERS.map(c => c.num));
     });
+  }, [db, ready]);
+
+  useEffect(() => {
+    if (!db || !ready) return;
+    const unsub = subscribeToFeatureToggles(db, setFeatures);
+    return unsub;
   }, [db, ready]);
 
   const openChapterEdit = (num: number) => {
@@ -219,6 +229,7 @@ export default function ModeratorDashboard() {
           <button onClick={() => setTab("terms")} style={tabBtn("terms")}>Term Editor ({ALL_TERMS.length})</button>
           <button onClick={() => setTab("chapters")} style={tabBtn("chapters")}>Chapters ({CHAPTERS.length})</button>
           <button onClick={() => setTab("audio")} style={tabBtn("audio")}>Audio Settings</button>
+          <button onClick={() => setTab("features")} style={tabBtn("features")}>Features</button>
           <button onClick={() => setTab("resets")} style={{ ...tabBtn("resets"), position: "relative" as const }}>
             Password Resets
             {passwordResets.filter(r => r.status === "pending").length > 0 && (
@@ -264,7 +275,7 @@ export default function ModeratorDashboard() {
                           {pins[toKey(s.username)]?.pin && <span style={{ backgroundColor: "rgba(74,96,128,0.4)", color: "#7aabcc", fontSize: "0.68rem", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>PIN</span>}
                           {pins[toKey(s.username)]?.locked && <span style={{ backgroundColor: "rgba(160,100,40,0.4)", color: "#d4a843", fontSize: "0.68rem", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>LOCKED</span>}
                           <button onClick={e => { e.stopPropagation(); setAssignModal(s.username); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Assign Class</button>
-                          <button onClick={e => { e.stopPropagation(); setManageModal(s.username); setRenameInput(s.username); setPinInputModal(""); setRemoveConfirm(false); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Manage</button>
+                          <button onClick={e => { e.stopPropagation(); setManageModal(s.username); setRenameInput(s.username); setPinInputModal(""); setRemoveConfirm(false); setUnlockEdit(s.unlockedChapters ?? []); }} style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Manage</button>
                           <span style={{ color: "rgba(252,250,247,0.3)", fontSize: "0.72rem" }}>{new Date(s.lastSeen).toLocaleDateString()}</span>
                         </div>
                       </div>
@@ -436,7 +447,7 @@ export default function ModeratorDashboard() {
                       {pins[toKey(t)]?.pin && <span style={{ backgroundColor: "rgba(74,96,128,0.4)", color: "#7aabcc", fontSize: "0.68rem", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>PIN</span>}
                     </div>
                     <div style={{ display: "flex", gap: "8px" }}>
-                      <button onClick={() => { setManageModal(t); setRenameInput(t); setPinInputModal(""); setRemoveConfirm(false); }} style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Manage</button>
+                      <button onClick={() => { setManageModal(t); setRenameInput(t); setPinInputModal(""); setRemoveConfirm(false); setUnlockEdit(students.find(x => toKey(x.username) === toKey(t))?.unlockedChapters ?? []); }} style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(252,250,247,0.6)", border: "1px solid rgba(252,250,247,0.1)", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Manage</button>
                       <button onClick={() => revokeTeacher(t)} style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(160,70,70,0.3)", color: "#e09090", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>Revoke</button>
                     </div>
                   </div>
@@ -489,6 +500,25 @@ export default function ModeratorDashboard() {
                     </button>
                   </div>
                 )}
+              </div>
+
+              <div style={{ borderTop: "1px solid rgba(252,250,247,0.06)", paddingTop: "14px" }}>
+                <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "8px" }}>Chapter Access</div>
+                <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", marginBottom: "10px" }}>Unlock chapters early for this student. Chapters also unlock automatically as they finish the previous one.</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", maxHeight: "180px", overflowY: "auto" as const, marginBottom: "10px" }}>
+                  {CHAPTERS.map(ch => {
+                    const on = unlockEdit.includes(ch.num);
+                    return (
+                      <button key={ch.num} data-testid={`button-unlock-chapter-${ch.num}`} onClick={() => setUnlockEdit(prev => on ? prev.filter(n => n !== ch.num) : [...prev, ch.num])} style={{ display: "flex", alignItems: "center", gap: "8px", textAlign: "left" as const, padding: "8px 10px", borderRadius: "7px", backgroundColor: on ? "rgba(74,96,128,0.35)" : "rgba(255,255,255,0.04)", border: on ? "1px solid rgba(74,96,128,0.6)" : "1px solid rgba(252,250,247,0.08)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>
+                        <span>{on ? "✓" : "○"}</span>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{ch.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <button disabled={unlockSaving} onClick={async () => { if (!db) return; setUnlockSaving(true); await setUserUnlockedChapters(db, u, unlockEdit); setUnlockSaving(false); }} style={{ width: "100%", padding: "9px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.82rem", opacity: unlockSaving ? 0.5 : 1 }}>
+                  {unlockSaving ? "Saving..." : "Save Chapter Access"}
+                </button>
               </div>
 
               <div style={{ borderTop: "1px solid rgba(252,250,247,0.06)", paddingTop: "14px" }}>
@@ -775,17 +805,6 @@ export default function ModeratorDashboard() {
               </div>
             </div>
 
-            {/* Voice volume */}
-            <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: "1px solid rgba(252,250,247,0.07)" }}>
-              <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Voice Volume</div>
-              <div style={{ display: "flex", gap: "8px" }}>
-                {lvlBtn("Off", audioSettings.voiceVolumeLevel, 0, v => setAudioSettings(s => ({ ...s, voiceVolumeLevel: v })))}
-                {lvlBtn("Low", audioSettings.voiceVolumeLevel, 1, v => setAudioSettings(s => ({ ...s, voiceVolumeLevel: v })))}
-                {lvlBtn("Med", audioSettings.voiceVolumeLevel, 2, v => setAudioSettings(s => ({ ...s, voiceVolumeLevel: v })))}
-                {lvlBtn("High", audioSettings.voiceVolumeLevel, 3, v => setAudioSettings(s => ({ ...s, voiceVolumeLevel: v })))}
-              </div>
-            </div>
-
             {/* Click sounds */}
             <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: "1px solid rgba(252,250,247,0.07)" }}>
               <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Click Sounds</div>
@@ -826,6 +845,31 @@ export default function ModeratorDashboard() {
           </div>
         );
       })()}
+
+      {tab === "features" && (
+        <div style={{ maxWidth: "540px", display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.82rem", lineHeight: 1.5 }}>
+            Control which optional sections appear on every student's dashboard. These are hidden by default and only show when turned on here.
+          </div>
+          {([
+            { key: "visualCardView" as const, label: "Visual Flashcards Queue", desc: "Show the Visual Flashcards Queue tile at the top of the dashboard." },
+            { key: "leaderboard" as const, label: "Leaderboard", desc: "Show the Leaderboard tile and the header Leaderboard link." },
+          ]).map(f => (
+            <div key={f.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: "1px solid rgba(252,250,247,0.07)" }}>
+              <div>
+                <div style={{ color: "#fcfaf7", fontWeight: "700" }}>{f.label}</div>
+                <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>{f.desc}</div>
+              </div>
+              <div onClick={() => setFeatures(s => ({ ...s, [f.key]: !s[f.key] }))} style={{ width: "48px", height: "26px", borderRadius: "13px", backgroundColor: features[f.key] ? "#4a6080" : "rgba(255,255,255,0.12)", cursor: "pointer", position: "relative", transition: "background 0.2s" }}>
+                <div style={{ position: "absolute", top: "3px", left: features[f.key] ? "25px" : "3px", width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#fcfaf7", transition: "left 0.2s" }} />
+              </div>
+            </div>
+          ))}
+          <button onClick={async () => { if (!db) return; setFeaturesSaving(true); await saveFeatureToggles(db, features); setFeaturesSaving(false); }} disabled={featuresSaving} style={{ padding: "13px", borderRadius: "10px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.95rem", opacity: featuresSaving ? 0.6 : 1 }}>
+            {featuresSaving ? "Saving..." : "Save Feature Settings"}
+          </button>
+        </div>
+      )}
 
       {tab === "resets" && (
         <div style={{ maxWidth: "600px" }}>

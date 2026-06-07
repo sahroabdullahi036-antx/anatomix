@@ -10,6 +10,15 @@
 // respell() is an algorithmic fallback for any term not in the map (e.g. custom
 // terms added later by moderators).
 
+// Build-time data baked from authoritative sources (dictionaryapi.dev /
+// Wiktionary): real human audio clip URLs (`a`) and IPA transcriptions (`i`),
+// keyed by normalizeKey(). Used to ground pronunciation in real data where it
+// exists; the rule-based engine guarantees coverage for everything else.
+import generatedRaw from "@/data/pronunciations.generated.json";
+
+type BakedEntry = { a?: string; i?: string };
+const BAKED = generatedRaw as Record<string, BakedEntry>;
+
 // Keyed by normalizeKey() output: lowercase, parentheticals removed, first
 // alternative only, slashes/hyphens stripped.
 const PRONUNCIATIONS: Record<string, string> = {
@@ -295,7 +304,7 @@ const SUFFIX_RESPELL: [string, string][] = [
   ["gram", " gram"],
 ];
 
-function normalizeKey(raw: string): string {
+export function normalizeKey(raw: string): string {
   return raw
     .toLowerCase()
     .replace(/\([^)]*\)/g, " ")   // drop parentheticals e.g. (CHF)
@@ -342,14 +351,77 @@ function respell(word: string): string {
   return w.trim();
 }
 
+// ── Authoritative IPA → speech-friendly respelling ────────────
+// For terms we have a real dictionary IPA transcription for but no curated
+// entry (mainly terms added later). Approximate, but grounded in the
+// authoritative phonetic transcription rather than guesswork. Symbols are
+// matched longest-first per position.
+const IPA_MAP: [string, string][] = [
+  // diphthongs / long vowels / affricates (multi-codepoint first)
+  ["a\u026a", "ahy"], ["e\u026a", "ay"], ["\u0254\u026a", "oy"],
+  ["a\u028a", "ow"], ["o\u028a", "oh"], ["\u0259\u028a", "oh"],
+  ["\u026a\u0259", "eer"], ["e\u0259", "air"], ["\u028a\u0259", "oor"],
+  ["t\u0283", "ch"], ["d\u0292", "j"],
+  ["i\u02d0", "ee"], ["\u0251\u02d0", "ah"], ["\u0254\u02d0", "aw"],
+  ["u\u02d0", "oo"], ["\u025c\u02d0", "ur"],
+  // single vowels
+  ["\u025c", "ur"], ["\u025d", "ur"],
+  ["i", "ee"], ["\u026a", "ih"], ["\u025b", "eh"], ["e", "eh"],
+  ["\u00e6", "a"], ["\u0251", "ah"], ["\u0252", "ah"], ["\u028c", "uh"],
+  ["\u0259", "uh"], ["\u0254", "aw"], ["u", "oo"], ["\u028a", "uu"],
+  ["o", "oh"], ["y", "ee"],
+  // consonants
+  ["\u0283", "sh"], ["\u0292", "zh"], ["\u03b8", "th"], ["\u00f0", "th"],
+  ["\u014b", "ng"], ["\u0279", "r"], ["r", "r"], ["j", "y"],
+  ["\u0261", "g"], ["g", "g"], ["x", "k"], ["\u00e7", "h"], ["\u0294", ""],
+  ["p", "p"], ["b", "b"], ["t", "t"], ["d", "d"], ["k", "k"], ["m", "m"],
+  ["n", "n"], ["f", "f"], ["v", "v"], ["s", "s"], ["z", "z"], ["l", "l"],
+  ["h", "h"], ["w", "w"],
+];
+
+function ipaToRespell(ipa: string): string {
+  let s = ipa.replace(/[/\[\]()]/g, "");        // strip delimiters & optional-sound parens
+  s = s.replace(/[\u0300-\u036f]/g, "");          // drop combining diacritics
+  const syllables = s.split(/[\u02c8\u02cc.\u00b7\s]+/).filter(Boolean);
+  const out = syllables
+    .map((syl) => {
+      let i = 0;
+      let res = "";
+      while (i < syl.length) {
+        let matched = false;
+        for (const [sym, eng] of IPA_MAP) {
+          if (syl.startsWith(sym, i)) { res += eng; i += sym.length; matched = true; break; }
+        }
+        if (!matched) i++; // skip unknown symbol (length marks, ties, etc.)
+      }
+      return res;
+    })
+    .filter(Boolean);
+  return out.join(" ").trim();
+}
+
+/** Real human audio clip URL baked at build time, if one exists for this term. */
+export function bakedAudio(input: string): string | null {
+  if (!input) return null;
+  const key = normalizeKey(input);
+  return (BAKED[key]?.a as string) ?? null;
+}
+
 /**
  * Convert a medical term (or any text) into a speech-engine-friendly string.
- * Returns curated phonetics when available, otherwise an algorithmic respelling.
+ * Priority: curated map (hand-tuned for the deck) > authoritative dictionary
+ * IPA (great for terms added later) > algorithmic medical respelling. Every
+ * path resolves to a value so coverage is guaranteed for current and future terms.
  */
 export function pronounce(input: string): string {
   if (!input) return "";
   const key = normalizeKey(input);
   if (!key) return "";
   if (PRONUNCIATIONS[key]) return PRONUNCIATIONS[key];
+  const ipa = BAKED[key]?.i;
+  if (ipa) {
+    const r = ipaToRespell(ipa);
+    if (r) return r;
+  }
   return key.split(" ").map(respell).join(" ");
 }

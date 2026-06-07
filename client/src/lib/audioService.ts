@@ -1,4 +1,4 @@
-// Web Audio API service — all sounds generated locally, no external files
+// Web Audio API service - all sounds generated locally, no external files
 
 import { pronounce } from "./pronunciation";
 
@@ -177,26 +177,124 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
   window.speechSynthesis.onvoiceschanged = selectVoice;
 }
 
-function utter(text: string, rate: number, volume: number) {
-  if (!("speechSynthesis" in window) || !text) return;
-  if (!voiceResolved) selectVoice();
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  if (preferredVoice) u.voice = preferredVoice;
-  u.rate = rate;
-  u.volume = volume;
-  u.pitch = 1;
-  window.speechSynthesis.speak(u);
+function speakSynth(text: string, rate: number, volume: number): Promise<void> {
+  return new Promise((resolve) => {
+    if (!("speechSynthesis" in window) || !text) { resolve(); return; }
+    if (!voiceResolved) selectVoice();
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    if (preferredVoice) u.voice = preferredVoice;
+    u.rate = rate;
+    u.volume = volume;
+    u.pitch = 1;
+    u.onend = () => resolve();
+    u.onerror = () => resolve();
+    window.speechSynthesis.speak(u);
+  });
 }
 
-// Speak a medical term — runs it through the pronunciation engine first so the
-// engine pronounces it accurately instead of mangling the raw spelling.
-export function speakTerm(text: string, rate = 0.8, volume = 1) {
-  utter(pronounce(text), rate, volume);
+// ── Speaking a term (one consistent free voice) ─────────────
+// Every term is spoken with the SAME voice: Google Translate's free TTS
+// endpoint (no key, human-sounding, covers any current or future word). It is
+// played via an <audio> element (no fetch), so cross-origin is fine and the
+// user gesture is preserved. If the network blocks it, we fall back to the
+// built-in SpeechSynthesis voice via the medical respelling engine (offline).
+let currentAudio: HTMLAudioElement | null = null;
+let playToken = 0;
+
+const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+function haltPlayback() {
+  if (currentAudio) { try { currentAudio.pause(); } catch {} currentAudio = null; }
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+// Stop any in-progress speech or clip playback and supersede pending requests.
+export function stopSpeech() {
+  playToken++;
+  haltPlayback();
+}
+
+// Clean a single name into something the TTS engine reads naturally.
+function cleanName(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, " ") // drop parentheticals
+    .replace(/-/g, " ")          // "-itis" -> " itis", "hyper-" -> "hyper"
+    .replace(/\//g, "")          // combining form "cardi/o" -> "cardio"
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// A card's term may list several names ("a-, an-", "ex-, exo-"). Read them all.
+function termNames(term: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const part of term.split(",")) {
+    const name = cleanName(part);
+    if (name && !seen.has(name)) { seen.add(name); out.push(name); }
+  }
+  return out;
+}
+
+// Google Translate's free TTS endpoint for one already-cleaned name.
+function googleTtsUrl(name: string): string | null {
+  if (!name || name.length > 180) return null;
+  return `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(name)}`;
+}
+
+function playClip(url: string, volume: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio(url);
+    audio.volume = volume;
+    currentAudio = audio;
+    audio.onended = () => { if (currentAudio === audio) currentAudio = null; resolve(); };
+    audio.onerror = () => { if (currentAudio === audio) currentAudio = null; reject(new Error("audio")); };
+    audio.play().catch(reject);
+  });
+}
+
+// Warm the Google TTS clip for the first name of a term so the next play is
+// instant (e.g. the next card in a queue). Best-effort; ignores failures.
+export function prefetchTerm(text: string) {
+  const name = termNames(text)[0];
+  const url = name ? googleTtsUrl(name) : null;
+  if (!url) return;
+  try { const a = new Audio(); a.preload = "auto"; a.src = url; a.load(); } catch {}
+}
+
+// Speak one name: the consistent Google voice first, offline synth as fallback.
+async function speakName(name: string, rate: number, volume: number, token: number): Promise<void> {
+  const url = googleTtsUrl(name);
+  if (url) {
+    if (token !== playToken) return;
+    try { await playClip(url, volume); return; }
+    catch { /* blocked/offline - fall through to the built-in voice */ }
+  }
+  if (token !== playToken) return;
+  await speakSynth(pronounce(name), rate, volume);
+}
+
+// Speak a medical term with one consistent voice. Cards listing multiple names
+// ("a-, an-") read every name in order. Resolves when playback finishes so
+// callers can sequence after it; a monotonic token supersedes older requests.
+export async function speakTerm(text: string, rate = 0.8, volume = 1): Promise<void> {
+  if (!text) return;
+  const token = ++playToken;
+  haltPlayback();
+  const names = termNames(text);
+  for (let i = 0; i < names.length; i++) {
+    if (token !== playToken) return;
+    await speakName(names[i], rate, volume, token);
+    if (token !== playToken) return;
+    if (i < names.length - 1) await delay(250); // brief gap between names
+  }
 }
 
 // Speak plain text verbatim (no medical respelling) with the chosen voice.
-export function speak(text: string, rate = 0.95, volume = 1) {
-  utter(text, rate, volume);
+export async function speak(text: string, rate = 0.95, volume = 1): Promise<void> {
+  ++playToken;
+  haltPlayback();
+  await speakSynth(text, rate, volume);
 }

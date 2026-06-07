@@ -1,12 +1,12 @@
 import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { ALL_TERMS } from "@/data/medicalData";
-import { GameShell, shuffle, useGameTerms } from "./shared";
+import { GameShell, shuffle, useGameTerms, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
 
 export default function MultipleChoice() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect, updateScore } = useUser();
+  const unlocked = useUnlockedChapters();
   const terms = useGameTerms();
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -17,10 +17,10 @@ export default function MultipleChoice() {
 
   const choices = useMemo(() => {
     if (!current) return [];
-    const others = ALL_TERMS.filter(t => t.id !== current.id && t.type === current.type);
+    const others = termsForChapters(unlocked).filter(t => t.id !== current.id && t.type === current.type);
     const distractors = shuffle(others).slice(0, 3).map(t => t.meaning);
     return shuffle([current.meaning, ...distractors]);
-  }, [current]);
+  }, [current, unlocked]);
 
   const handleSelect = (choice: string) => {
     if (selected) return;
@@ -41,6 +41,7 @@ export default function MultipleChoice() {
     setIdx(i => (i + 1) % terms.length);
   };
 
+  if (unlocked.length === 0) return <GameLock onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
   if (!current) return null;
   const correct = selected === current.meaning;
 
@@ -51,7 +52,7 @@ export default function MultipleChoice() {
           {current.type} · {current.system}
         </div>
         <div style={{ color: "#fcfaf7", fontSize: "2rem", fontWeight: "800", fontFamily: "monospace", marginBottom: "10px" }}>{current.term}</div>
-        <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.9rem" }}>💬 {current.casualMeaning}</div>
+        <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.85rem" }}>What does this term mean?</div>
         {current.homonymWarning && selected && (
           <div style={{ marginTop: "14px", backgroundColor: "rgba(220,150,50,0.2)", border: "1px solid rgba(220,150,50,0.4)", borderRadius: "8px", padding: "10px 14px" }}>
             <span style={{ color: "#f0c060", fontWeight: "700", fontSize: "0.8rem" }}>⚠️ DUAL MEANING ALERT: </span>
@@ -84,6 +85,7 @@ export default function MultipleChoice() {
             {correct ? `✓ Correct! +${10 + (streak - 1) * 2} pts` : "✗ Incorrect"}
           </div>
           {!correct && <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.85rem", marginBottom: "14px" }}>Correct: <strong>{current.meaning}</strong></div>}
+          <div style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.85rem", marginBottom: "6px" }}>💬 {current.casualMeaning}</div>
           <div style={{ color: "rgba(252,250,247,0.6)", fontSize: "0.82rem", marginBottom: "16px" }}>{current.definition}</div>
           <button onClick={next} style={{ padding: "12px 28px", borderRadius: "10px", backgroundColor: "#fcfaf7", color: "#8b4f58", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700" }}>Next Question →</button>
         </div>

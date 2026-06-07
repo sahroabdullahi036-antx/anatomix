@@ -18,6 +18,8 @@ export interface FirestoreUserProgress {
   lastSeen: number;
   classIds: string[];
   profilePic?: string;
+  unlockedChapters?: number[];
+  passedChapters?: number[];
 }
 
 export async function setProfilePic(db: Firestore, username: string, dataUrl: string): Promise<void> {
@@ -76,9 +78,24 @@ export async function syncUserToFirestore(db: Firestore, user: UserData): Promis
       earnedAchievements: (user as any).earnedAchievements ?? [],
       lastSeen: Date.now(),
       classIds: (user as any).classIds ?? [],
+      passedChapters: user.passedChapters ?? [],
     };
     await setDoc(doc(db, "users", userKey(user.username)), data, { merge: true });
   } catch {}
+}
+
+export async function setUserUnlockedChapters(db: Firestore, username: string, chapters: number[]): Promise<void> {
+  await setDoc(doc(db, "users", userKey(username)), { unlockedChapters: chapters }, { merge: true });
+}
+
+export function subscribeToUserDoc(
+  db: Firestore,
+  username: string,
+  cb: (data: FirestoreUserProgress | null) => void
+): Unsubscribe {
+  return onSnapshot(doc(db, "users", userKey(username)), snap => {
+    cb(snap.exists() ? (snap.data() as FirestoreUserProgress) : null);
+  });
 }
 
 export async function getAllUsers(db: Firestore): Promise<FirestoreUserProgress[]> {
@@ -509,6 +526,35 @@ export async function saveAudioSettings(db: Firestore, settings: AudioSettings):
 export function subscribeToAudioSettings(db: Firestore, cb: (s: AudioSettings) => void): Unsubscribe {
   return onSnapshot(doc(db, "config", "audioSettings"), snap => {
     cb(snap.exists() ? { ...DEFAULT_AUDIO, ...(snap.data() as AudioSettings) } : DEFAULT_AUDIO);
+  });
+}
+
+// ── Feature Toggles (moderator-controlled visibility) ─────────────────────────
+
+export interface FeatureToggles {
+  visualCardView: boolean;
+  leaderboard: boolean;
+}
+
+const DEFAULT_FEATURES: FeatureToggles = {
+  visualCardView: false,
+  leaderboard: false,
+};
+
+export async function getFeatureToggles(db: Firestore): Promise<FeatureToggles> {
+  try {
+    const snap = await getDoc(doc(db, "config", "features"));
+    return snap.exists() ? { ...DEFAULT_FEATURES, ...(snap.data() as FeatureToggles) } : DEFAULT_FEATURES;
+  } catch { return DEFAULT_FEATURES; }
+}
+
+export async function saveFeatureToggles(db: Firestore, toggles: FeatureToggles): Promise<void> {
+  await setDoc(doc(db, "config", "features"), toggles);
+}
+
+export function subscribeToFeatureToggles(db: Firestore, cb: (t: FeatureToggles) => void): Unsubscribe {
+  return onSnapshot(doc(db, "config", "features"), snap => {
+    cb(snap.exists() ? { ...DEFAULT_FEATURES, ...(snap.data() as FeatureToggles) } : DEFAULT_FEATURES);
   });
 }
 

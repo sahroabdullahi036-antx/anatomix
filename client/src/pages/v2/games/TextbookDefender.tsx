@@ -1,13 +1,13 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { ALL_TERMS } from "@/data/medicalData";
-import { GameShell, shuffle } from "./shared";
+import { GameShell, shuffle, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
 
 export default function TextbookDefender() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect, updateScore } = useUser();
-  const terms = useMemo(() => shuffle(ALL_TERMS.filter(t => t.type === "condition" || t.type === "root")), []);
+  const unlocked = useUnlockedChapters();
+  const terms = useMemo(() => shuffle(termsForChapters(unlocked).filter(t => t.type === "condition" || t.type === "root")), [unlocked]);
   const [idx, setIdx] = useState(0);
   const [destroyed, setDestroyed] = useState<string[]>([]);
   const [wrong, setWrong] = useState<string | null>(null);
@@ -18,7 +18,7 @@ export default function TextbookDefender() {
   const current = terms[idx % terms.length];
   const { correct, invaders } = useMemo(() => {
     if (!current) return { correct: "", invaders: [] };
-    const others = shuffle(ALL_TERMS.filter(t => t.id !== current.id)).slice(0, 2);
+    const others = shuffle(termsForChapters(unlocked).filter(t => t.id !== current.id)).slice(0, 2);
     const inv = shuffle([current.casualMeaning, ...others.map(t => t.casualMeaning)]);
     return { correct: current.casualMeaning, invaders: inv };
   }, [idx, current?.id]);
@@ -49,6 +49,7 @@ export default function TextbookDefender() {
     setDestroyed([]); setDone(false); setWrong(null); setIdx(i => i + 1);
   };
 
+  if (unlocked.length === 0) return <GameLock onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
   if (!current) return null;
 
   return (

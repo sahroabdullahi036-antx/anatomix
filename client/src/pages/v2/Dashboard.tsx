@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser, ACHIEVEMENTS } from "@/contexts/UserContext";
+import { useFirebase } from "@/contexts/FirebaseContext";
+import { subscribeToFeatureToggles, FeatureToggles } from "@/firebase/firestoreService";
 import { CHAPTERS, getTermsByChapter, ALL_TERMS } from "@/data/medicalData";
 import { hasPassword } from "@/utils/auth";
 import AccountSettings from "./AccountSettings";
@@ -19,8 +21,6 @@ const MODULES = [
   { path: "/flashcards",         title: "Flashcards",       color: TILE,    tag: "" },
   { path: "/games",              title: "Games",            color: TILE,    tag: "" },
   { path: "/practice-test",      title: "Practice Test",    color: TILE,    tag: "" },
-  { path: "/daily-challenge",    title: "Daily Challenge",  color: TILE,    tag: "" },
-  { path: "/games/spelling-bee", title: "Spelling Bee",     color: TILE,    tag: "" },
   { path: "/multiplayer",        title: "Multiplayer",      color: MP_TILE, tag: "live" },
 ];
 
@@ -65,6 +65,8 @@ export default function Dashboard() {
   const [showAchievements, setShowAchievements] = useState(false);
   const [spotlightFlipped, setSpotlightFlipped] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const { db, ready } = useFirebase();
+  const [features, setFeatures] = useState<FeatureToggles>({ visualCardView: false, leaderboard: false });
 
   useEffect(() => {
     if (!user) return;
@@ -73,6 +75,12 @@ export default function Dashboard() {
       setShowTour(true);
     }
   }, [user?.username]);
+
+  useEffect(() => {
+    if (!db || !ready) return;
+    const unsub = subscribeToFeatureToggles(db, setFeatures);
+    return unsub;
+  }, [db, ready]);
 
   const finishTour = () => {
     if (user) localStorage.setItem(tourKey(user.username), "1");
@@ -110,7 +118,7 @@ export default function Dashboard() {
           <span style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.9rem", fontWeight: "600" }}>{user?.username}</span>
           <button onClick={() => setShowTour(true)} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Guide</button>
           <button onClick={() => navigate("/chat")} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Chat</button>
-          <button onClick={() => navigate("/leaderboard")} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Leaderboard</button>
+          {features.leaderboard && <button onClick={() => navigate("/leaderboard")} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Leaderboard</button>}
           <button onClick={() => setShowSettings(true)} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Account</button>
           <button onClick={logout} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }} data-testid="button-logout">Log Out</button>
         </div>
@@ -122,50 +130,47 @@ export default function Dashboard() {
           <p style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.95rem", margin: 0 }}>Your personalized medical terminology study hub.</p>
         </div>
 
-        {/* Three primary learning paths */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "32px" }}>
-          {[
-            {
-              path: "/hands-free",
-              title: "Hands-Free Vocabulary Hub",
-              desc: "Listen, pause, repeat. Audio-driven flashcards.",
-              color: "#2d3f52",
-              accent: "#6a9fc0",
-            },
-            {
+        {/* Optional primary learning paths (moderator-gated, hidden by default) */}
+        {(() => {
+          const paths = [
+            features.visualCardView && {
               path: "/flashcards",
               title: "Visual Flashcards Queue",
               desc: "Card-by-card study with spaced repetition.",
               color: "#2d3f40",
               accent: "#6ac0a8",
             },
-            {
+            features.leaderboard && {
               path: "/leaderboard",
               title: "Leaderboard",
               desc: "See where you rank among your classmates.",
               color: "#3a2d4a",
               accent: "#a88adc",
             },
-          ].map(p => {
-            return (
-              <button
-                key={p.path}
-                onClick={() => navigate(p.path)}
-                className="tile-hover"
-                style={{
-                  backgroundColor: p.color, border: `1px solid ${p.accent}33`,
-                  borderRadius: "16px", padding: "22px 20px", cursor: "pointer",
-                  textAlign: "left", fontFamily: "inherit", width: "100%",
-                  display: "flex", flexDirection: "column", gap: "8px", minHeight: "120px",
-                }}
-              >
-                <div style={{ color: p.accent, fontWeight: "800", fontSize: "0.95rem", lineHeight: 1.2 }}>{p.title}</div>
-                <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem", lineHeight: 1.4, flex: 1 }}>{p.desc}</div>
-                <div style={{ color: p.accent, fontSize: "0.78rem", fontWeight: "700" }}>Open</div>
-              </button>
-            );
-          })}
-        </div>
+          ].filter(Boolean) as { path: string; title: string; desc: string; color: string; accent: string }[];
+          if (paths.length === 0) return null;
+          return (
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${paths.length}, 1fr)`, gap: "14px", marginBottom: "32px" }}>
+              {paths.map(p => (
+                <button
+                  key={p.path}
+                  onClick={() => navigate(p.path)}
+                  className="tile-hover"
+                  style={{
+                    backgroundColor: p.color, border: `1px solid ${p.accent}33`,
+                    borderRadius: "16px", padding: "22px 20px", cursor: "pointer",
+                    textAlign: "left", fontFamily: "inherit", width: "100%",
+                    display: "flex", flexDirection: "column", gap: "8px", minHeight: "120px",
+                  }}
+                >
+                  <div style={{ color: p.accent, fontWeight: "800", fontSize: "0.95rem", lineHeight: 1.2 }}>{p.title}</div>
+                  <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem", lineHeight: 1.4, flex: 1 }}>{p.desc}</div>
+                  <div style={{ color: p.accent, fontSize: "0.78rem", fontWeight: "700" }}>Open</div>
+                </button>
+              ))}
+            </div>
+          );
+        })()}
 
         {showAchievements && (
           <div style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,250,247,0.07)", borderRadius: "14px", padding: "20px 24px", marginBottom: "24px" }}>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { CHAPTERS, getTermsByChapter, ALL_TERMS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
+import { CHAPTERS, getTermsByChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
+import { useUnlockedChapters, termsForChapters } from "./games/shared";
 
 const GAME_TONES = [
   "#374a5e","#3a4d62","#364860","#3d5168","#394c64",
@@ -13,11 +14,11 @@ const GAMES = [
   { path: "/games/multiple-choice",    num: 1,  title: "Multiple Choice Quiz",       desc: "4 choices with sound-alike distractors",            tag: "" },
   { path: "/games/linguistic-autopsy", num: 2,  title: "Linguistic Autopsy",         desc: "Arrange scrambled word-parts in correct order",      tag: "" },
   { path: "/games/textbook-defender",  num: 3,  title: "Textbook Defender",          desc: "Destroy incorrect definitions before they reach you", tag: "" },
-  { path: "/games/combining-linker",   num: 4,  title: "Combining Form Linker",      desc: "Domino chain: each card must share a root or suffix", tag: "" },
+  { path: "/games/combining-linker",   num: 4,  title: "Combining Form Linker",      desc: "Domino chain: each card must share a root or word-part", tag: "" },
   { path: "/games/chart-auditor",      num: 5,  title: "Chart Auditor",              desc: "Find and replace incorrect terms in clinical text",   tag: "" },
   { path: "/games/ischemic-countdown", num: 6,  title: "Ischemic Countdown",         desc: "Survival mode: right gains time, wrong speeds it up", tag: "" },
   { path: "/games/spelling-bee",       num: 7,  title: "Spelling Bee",               desc: "Type the exact spelling from the definition alone",   tag: "" },
-  { path: "/games/hangman",            num: 8,  title: "Hangman",                    desc: "Guess the medical term letter by letter, 6 lives",    tag: "" },
+  { path: "/games/vital-signs",        num: 8,  title: "Vital Signs",                desc: "Reveal the term from its definition before vitals flatline", tag: "" },
   { path: "/games/memory-match",       num: 9,  title: "Memory Match",               desc: "Flip card pairs linking terms to definitions",        tag: "" },
 ];
 
@@ -30,13 +31,16 @@ const CHAPTER_TONES = [
 export default function GameSelector() {
   const [, navigate] = useLocation();
   const { user } = useUser();
+  const unlocked = useUnlockedChapters();
   const [chapterFilter, setChapterFilter] = useState<number>(0);
   const [showChapterPicker, setShowChapterPicker] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STUDY_CHAPTER_KEY);
-    if (stored) setChapterFilter(parseInt(stored, 10));
-  }, []);
+    const n = stored ? parseInt(stored, 10) : 0;
+    if (n > 0 && unlocked.includes(n)) setChapterFilter(n);
+    else { setChapterFilter(0); if (n > 0) localStorage.removeItem(STUDY_CHAPTER_KEY); }
+  }, [unlocked]);
 
   const changeChapter = (val: number) => {
     setChapterFilter(val);
@@ -46,7 +50,8 @@ export default function GameSelector() {
   };
 
   const activeChapter = CHAPTERS.find(c => c.num === chapterFilter);
-  const termCount = chapterFilter > 0 ? getTermsByChapter(chapterFilter).length : ALL_TERMS.length;
+  const unlockedTermCount = termsForChapters(unlocked).length;
+  const termCount = chapterFilter > 0 ? getTermsByChapter(chapterFilter).length : unlockedTermCount;
   const critCount = Object.keys(user?.criticalReview ?? {}).length;
 
   return (
@@ -73,7 +78,7 @@ export default function GameSelector() {
               onClick={() => setShowChapterPicker(p => !p)}
               style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px", borderRadius: "10px", backgroundColor: activeChapter ? CHAPTER_TONES[(activeChapter.num - 1) % CHAPTER_TONES.length] : "rgba(255,255,255,0.07)", border: "1px solid rgba(252,250,247,0.1)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.88rem" }}
             >
-              <span>{activeChapter ? `${activeChapter.title}: ${activeChapter.subtitle}` : "All Chapters"}</span>
+              <span>{activeChapter ? `${activeChapter.title}: ${activeChapter.subtitle}` : "All My Chapters"}</span>
               <span style={{ opacity: 0.45, fontSize: "0.78rem" }}>{termCount} terms</span>
               <span style={{ opacity: 0.4, fontSize: "0.72rem" }}>{showChapterPicker ? "▲" : "▼"}</span>
             </button>
@@ -91,10 +96,10 @@ export default function GameSelector() {
                   onClick={() => changeChapter(0)}
                   style={{ padding: "10px 14px", borderRadius: "10px", border: chapterFilter === 0 ? "2px solid rgba(255,255,255,0.25)" : "1px solid rgba(255,255,255,0.07)", backgroundColor: chapterFilter === 0 ? "#4a6080" : "rgba(255,255,255,0.04)", color: "#fcfaf7", cursor: "pointer", fontFamily: "inherit", textAlign: "left" as const }}
                 >
-                  <div style={{ fontWeight: "700", fontSize: "0.85rem" }}>All Chapters</div>
-                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.72rem", marginTop: "2px" }}>{ALL_TERMS.length} terms</div>
+                  <div style={{ fontWeight: "700", fontSize: "0.85rem" }}>All My Chapters</div>
+                  <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.72rem", marginTop: "2px" }}>{unlockedTermCount} terms</div>
                 </button>
-                {CHAPTERS.map((ch, i) => (
+                {CHAPTERS.filter(ch => unlocked.includes(ch.num)).map((ch, i) => (
                   <button
                     key={ch.num}
                     onClick={() => changeChapter(ch.num)}

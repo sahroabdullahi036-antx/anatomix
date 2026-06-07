@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { syncUserToFirestore } from "@/firebase/firestoreService";
+import { syncUserToFirestore, subscribeToUserDoc } from "@/firebase/firestoreService";
 
 const DEBOUNCE_MS = 3000;
 
@@ -20,4 +20,19 @@ export function useFirebaseSync() {
     });
     return () => { unsub(); if (timer.current) clearTimeout(timer.current); };
   }, [ready, db, onSyncNeeded]);
+}
+
+/** Keeps the local user's moderator-controlled chapter unlocks in sync from Firestore. */
+export function useRemoteUserDoc() {
+  const { user, applyRemoteUnlocks } = useUser();
+  const { db, ready } = useFirebase();
+  const username = user?.username;
+
+  useEffect(() => {
+    if (!ready || !db || !username) return;
+    const unsub = subscribeToUserDoc(db, username, data => {
+      applyRemoteUnlocks(Array.isArray(data?.unlockedChapters) ? data!.unlockedChapters! : []);
+    });
+    return () => unsub();
+  }, [ready, db, username, applyRemoteUnlocks]);
 }
