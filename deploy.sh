@@ -7,7 +7,8 @@ npm run build
 echo "==> Checking Firebase login..."
 if ! npx firebase-tools projects:list >/dev/null 2>&1; then
   echo "==> You need to sign in to Firebase (one time). A link will appear below."
-  npx firebase-tools login
+  echo "==> Open the link, approve, then paste the code back here."
+  npx firebase-tools login --no-localhost
 fi
 
 echo "==> Deploying to Firebase Hosting..."
