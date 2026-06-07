@@ -28,23 +28,32 @@ anatomy page has been switched back to a button based explorer.
 ## HARD PREFERENCES (every recommendation must respect these)
 
 1. Style: cartoon soft game look, rounded, playful but clean. Match the existing dark
-   UI in `client/src/pages/v2`.
+   UI in `client/src/pages/v2`. Design constants: bg #252830, text #fcfaf7, primary
+   buttons #4a6080. Use inline styles, not Tailwind classes, in v2 pages.
 2. Never use white or off-white as a background or surface fill. Backgrounds stay on the
-   existing dark surfaces. Text may use the existing light token (`#fcfaf7`).
+   existing dark surfaces. Text may use the existing light token (#fcfaf7).
 3. No emojis anywhere in the UI or in copy.
 4. No em dashes and no en dashes anywhere. Use a hyphen, comma, or colon instead.
 5. Everything must be free. No paid APIs or services or asset libraries. Persistence is
-   the existing Firebase or Firestore only. Any sound must be free or generated locally.
+   the existing Firebase or Firestore only. Any sound must be free or generated locally
+   (Web Audio API).
 6. Respect the global palette filter: the whole app is wrapped in a CSS hue-rotate
    filter. Elements that must show a literal color use `inverseFilter` from
    `usePalette()`. New palette-following colors should be authored on the blue base hue
    (about hue 216) so they recolor consistently.
-7. Gate every Firestore read on the `ready` flag (anonymous auth).
+7. Gate every Firestore read on the `ready` flag (anonymous auth). Pattern:
+   `if (!db || !ready) return;` with `[db, ready]` as deps.
 8. Reuse existing Firestore helpers and collections. Do not build a parallel data layer.
+9. No paid AI. The offline term lookup engine in `termLookup.ts` is the only lookup
+   allowed. Do not reintroduce Gemini or any paid API.
+10. UserData fields already in use: username, decks, criticalReview, srsDeck, gameScores,
+    clearedTermIds, studyStreak, lastStudyDate, dailyChallengeDate, dailyChallengeTermIds,
+    earnedAchievements, studiedCount, classIds, lastPath. Extend carefully and persist
+    changes via the existing Firestore sync path (onSyncNeeded / useFirebaseSync).
 
 ---
 
-## RECOMMENDATIONS SO FAR (proposals, not approved)
+## RECOMMENDATIONS (proposals, not approved)
 
 Each item lists the idea, why it helps, and a short note on how it could work. Detail is
 for evaluation only. Do not build until the user approves the specific item.
@@ -111,25 +120,106 @@ Why: tactile feedback makes the games feel alive and rewarding.
 How: generate tones locally with the Web Audio API, add a persisted mute toggle, and add
 short CSS pulses and shakes that respect reduced motion.
 
----
+### R9. Resume strip on the dashboard
+Idea: a compact strip near the top of the student dashboard showing the current streak,
+today's daily challenge status, and a one-tap button to jump back to the last page or
+game the student was on.
+Why: removes friction to re-entering a session and makes the dashboard feel alive.
+How: `lastPath` already exists on UserData. Render it as a pill button that routes to
+the saved path. Streak and daily challenge status come from existing UserData fields
+(`studyStreak`, `dailyChallengeDate`).
 
-## IDEAS NOT YET DETAILED (seeds for the next bot to expand)
+### R10. Blitz mode with combo multiplier
+Idea: a timed sub-mode available inside existing games where a run of consecutive correct
+answers builds a combo that multiplies the score, broken by any wrong answer.
+Why: adds adrenaline and replay value to games students already know without building a
+new game engine.
+How: add an optional `blitz` query param or toggle on the GameSelector entry for
+compatible games (MultipleChoice, SpellingBee, IschemicCountdown). Track a `combo`
+counter and `multiplier` locally, display a combo counter UI element, and record the
+blitz score separately under a new `gameScores` key like `mc_blitz`.
 
-- Resume strip on the dashboard: streak, today's quest, and a one tap resume of the last
-  game played.
-- Speed or blitz mode on existing games with a combo multiplier.
-- Chapter gauntlet: a mixed run through one chapter across several existing game types.
-- Class vs class weekly challenge.
-- Per student weekly recap shown on the dashboard.
+### R11. Chapter gauntlet
+Idea: a run that pulls one question from each game type in sequence for a single
+chapter, scoring a combined total.
+Why: tests the chapter from every angle in one sitting and gives a meaningful "chapter
+cleared" moment beyond the progress bar.
+How: a new route `/games/gauntlet/:chapterNum` that sequences mini-rounds from
+MultipleChoice, SpellingBee, and one other game, totals the score, and writes to a
+`gauntlet_chN` key in `gameScores`. A launch button on ChapterSummary pages.
 
-The next bot should expand these and add new ones, then ask the user which to build.
+### R12. Class vs class weekly challenge
+Idea: each class competes against one other class (or all others) on total terms cleared
+in a week, with the winning class shown a banner at the start of the next week.
+Why: interclass competition gives students a team identity and a reason to help
+classmates study.
+How: build on R5 (class leaderboard). Sum each class's weekly term counts in Firestore
+and display a ranked class list visible to students inside the class view. The moderator
+sets whether inter-class comparison is enabled.
+
+### R13. Per-student weekly recap
+Idea: every Monday the student dashboard shows a small card with last week's terms
+cleared, games played, streak days, and top game score, then fades away after dismissal.
+Why: personal history makes progress feel real and gives a natural re-engagement hook at
+the start of each week.
+How: store a snapshot of key counters on Sunday night (client-side, keyed by ISO week in
+localStorage), render the recap card when the stored week is the previous week, and
+dismiss on a button tap.
+
+### R14. Term of the day
+Idea: each day the dashboard highlights one term with its full breakdown (prefix, root,
+suffix meanings), a short definition, and a quick single-question challenge the student
+can tap through in seconds.
+Why: a tiny daily ritual keeps the app in habit without requiring a full session.
+How: select the term deterministically by day index mod the chapter's term list (same
+pattern as Clinical Spotlight in anatomix-arch.md). Store whether the student answered
+today's term in `dailyChallengeDate`-style localStorage key so it does not repeat within
+the day.
+
+### R15. Missed terms smart review queue
+Idea: a dedicated "Weak Spots" session on the dashboard that surfaces the terms the
+student gets wrong most often across all games, ordered by error count.
+Why: students often do not know which terms they actually struggle with across game
+types. A focused list turns scattered errors into a targeted study plan.
+How: `criticalReview` already records errorCount per term. Render the top 10 by
+errorCount as a mini flashcard session. No new data model needed, just a new entry point
+on the dashboard.
+
+### R16. Personal best tracker per game
+Idea: on the GameSelector tile and inside each game's results screen, prominently display
+the student's all-time best score and how the current run compared.
+Why: knowing a personal best before starting creates a target and increases motivation to
+replay.
+How: `gameScores` already stores the best score per key. Add a "Your best" line to each
+GameSelector tile and a "beat your best" vs "new record" result banner at game end. Zero
+extra Firestore work.
+
+### R17. Study timer with session summary
+Idea: an optional countdown (25 min default, adjustable) the student can start from the
+dashboard. When it ends, a summary card shows terms studied, correct rate, and which
+chapter was active.
+Why: timed sessions help students manage study time and create a natural stopping point
+that feels satisfying rather than abrupt.
+How: purely client-side. A floating timer button on the dashboard that starts a
+Web Worker or setInterval countdown, minimizes to a corner pill during games, and shows
+a summary modal on expiry. No persistence needed beyond the current session.
+
+### R18. Chapter mastery card
+Idea: when a chapter hits 100% cleared, a one-time styled card appears with the chapter
+name, date achieved, and a label like "Mastered". The card stays visible on
+ChapterSummary and can be dismissed.
+Why: a clear finish line and a visible trophy for each chapter make long-term progress
+feel rewarding.
+How: track mastered chapters in a `masteredChapters: string[]` field on UserData,
+written when clearedTermIds covers all termIds in that chapter. Render a highlighted
+card at the top of ChapterSummary for mastered chapters.
 
 ---
 
 ## NEXT BOT INSTRUCTIONS
 
 1. Read the hard preferences above and keep every proposal inside them.
-2. Add more recommendations in the same format as R1 through R8.
+2. Add more recommendations in the same format as R1 through R18.
 3. Present the list to the user and let them pick.
 4. Only implement an item after the user explicitly approves that item.
 5. After any approved build, run `npx tsc --noEmit` and confirm it passes, then restart
