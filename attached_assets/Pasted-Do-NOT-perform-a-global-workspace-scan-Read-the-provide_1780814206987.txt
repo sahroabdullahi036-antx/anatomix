@@ -1,0 +1,69 @@
+Do NOT perform a global workspace scan. Read the provided api.pixellab.ai MCP documentation properties to handle programmatic vector SVG layer updates. Completely overwrite the active profile components using this strict, asset-isolated React structure. All layout elements must adhere to the 2D flat-vector "Pastel Life" game design format:
+
+=========================================
+1. RE-STYLED CLOSET CONTAINER & VECTOR EMBED (`src/components/ClosetModal.jsx`)
+=========================================
+import React from 'react';
+
+export default function ClosetModal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+
+  const presetPastelColors = ['#E8F5E9', '#F3E5F5', '#E1BEE7', '#FCE4EC', '#FFF3E0', '#E0F2F1', '#FFFDE7'];
+
+  const handleAssetColorChange = (layerType, hexCode) => {
+    document.documentElement.style.setProperty(`--avatar-${layerType}-color`, hexCode);
+    if (window.playInterfaceClickSound) window.playInterfaceClickSound();
+  };
+
+  return (
+    <div className="closet-drawer-overlay" style={{
+      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+      backgroundColor: 'rgba(30, 30, 36, 0.4)', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)'
+    }}>
+      {/* Soft, Oversized Rounded Pastel Panel Container */}
+      <div style={{
+        backgroundColor: '#FFFFFF', border: '3px solid #1E1E24', borderRadius: '24px',
+        padding: '24px', width: '90%', maxWidth: '550px', boxSizing: 'border-box',
+        position: 'relative', animation: 'scaleUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+      }}>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>My Closet Wardrobe</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+        </div>
+
+        {/* High-Velocity Color Selector Row */}
+        <div style={{ marginBottom: '24px' }}>
+          <p style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 'bold', color: '#666' }}>SELECT UNIFORM COLOR</p>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {presetPastelColors.map((color) => (
+              <button
+                key={color}
+                onClick={() => handleAssetColorChange('outfit', color)}
+                style={{
+                  width: '40px', height: '40px', backgroundColor: color,
+                  border: '2px solid #1E1E24', borderRadius: '50%', cursor: 'pointer',
+                  transform: 'scale(1)', transition: 'transform 0.1s ease'
+                }}
+                className="pastel-color-tile"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Master Action Layout Button */}
+        <button 
+          onClick={onClose}
+          style={{
+            width: '100%', padding: '16px', border: '3px solid #1E1E24', borderRadius: '16px',
+            backgroundColor: '#BBDEFB', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'
+          }}
+          className="marshmallow-btn"
+        >
+          Confirm & Save Changes
+        </button>
+      </div>
+    </div>
+  );
+}
