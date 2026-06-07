@@ -471,3 +471,80 @@ export async function sendDmMessage(db: Firestore, threadId: string, author: str
   await addDoc(collection(db, "dmThreads", threadId, "messages"), { author, text, createdAt: Date.now() });
   await updateDoc(doc(db, "dmThreads", threadId), { lastMessage: text, lastAt: Date.now() });
 }
+
+// ── Audio Settings ────────────────────────────────────────────────────────────
+
+export interface AudioSettings {
+  globalAudioEnabled: boolean;
+  voiceVolumeLevel: 0 | 1 | 2 | 3;
+  clickSoundLevel: 0 | 1 | 2 | 3;
+  bgMusicLevel: 0 | 1 | 2 | 3;
+  soundscapePreset: "none" | "metronome" | "ambient-hum";
+}
+
+const DEFAULT_AUDIO: AudioSettings = {
+  globalAudioEnabled: false,
+  voiceVolumeLevel: 2,
+  clickSoundLevel: 1,
+  bgMusicLevel: 0,
+  soundscapePreset: "none",
+};
+
+export async function getAudioSettings(db: Firestore): Promise<AudioSettings> {
+  try {
+    const snap = await getDoc(doc(db, "config", "audioSettings"));
+    return snap.exists() ? { ...DEFAULT_AUDIO, ...(snap.data() as AudioSettings) } : DEFAULT_AUDIO;
+  } catch { return DEFAULT_AUDIO; }
+}
+
+export async function saveAudioSettings(db: Firestore, settings: AudioSettings): Promise<void> {
+  await setDoc(doc(db, "config", "audioSettings"), settings);
+}
+
+export function subscribeToAudioSettings(db: Firestore, cb: (s: AudioSettings) => void): Unsubscribe {
+  return onSnapshot(doc(db, "config", "audioSettings"), snap => {
+    cb(snap.exists() ? { ...DEFAULT_AUDIO, ...(snap.data() as AudioSettings) } : DEFAULT_AUDIO);
+  });
+}
+
+// ── Password Reset Requests ───────────────────────────────────────────────────
+
+export interface PasswordResetRequest {
+  username: string;
+  requestedAt: number;
+  status: "pending" | "approved" | "denied";
+  tempPassword?: string;
+}
+
+export async function requestPasswordReset(db: Firestore, username: string): Promise<void> {
+  const key = userKey(username);
+  await setDoc(doc(db, "passwordResets", key), {
+    username,
+    requestedAt: Date.now(),
+    status: "pending",
+  });
+}
+
+export function subscribeToPasswordResets(db: Firestore, cb: (reqs: PasswordResetRequest[]) => void): Unsubscribe {
+  return onSnapshot(collection(db, "passwordResets"), snap => {
+    const reqs = snap.docs.map(d => d.data() as PasswordResetRequest);
+    reqs.sort((a, b) => b.requestedAt - a.requestedAt);
+    cb(reqs);
+  });
+}
+
+export async function resolvePasswordReset(
+  db: Firestore,
+  username: string,
+  status: "approved" | "denied",
+  tempPassword?: string
+): Promise<void> {
+  const key = userKey(username);
+  const update: Partial<PasswordResetRequest> = { status };
+  if (tempPassword) update.tempPassword = tempPassword;
+  await updateDoc(doc(db, "passwordResets", key), update as any);
+}
+
+export async function clearPasswordReset(db: Firestore, username: string): Promise<void> {
+  await deleteDoc(doc(db, "passwordResets", userKey(username)));
+}

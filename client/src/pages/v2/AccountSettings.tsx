@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { hasPassword, verifyPassword, setPassword, removePassword } from "@/utils/auth";
 import { usePalette, PALETTES, PaletteName, ColorMode } from "@/contexts/ThemeContext";
+import AvatarCloset from "./AvatarCloset";
+import Avatar, { loadAvatar } from "@/components/Avatar";
 
 interface Props {
   onClose: () => void;
@@ -27,6 +29,10 @@ export default function AccountSettings({ onClose }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showCloset, setShowCloset] = useState(false);
+  const [micEnabled, setMicEnabled] = useState(() => localStorage.getItem("anatomix_mic_enabled") === "true");
+
+  const avatarConfig = loadAvatar(username);
 
   const clear = () => { setCurrent(""); setNext(""); setConfirm(""); setError(""); setSuccess(""); };
 
@@ -74,21 +80,31 @@ export default function AccountSettings({ onClose }: Props) {
   });
 
   return (
+    <>
     <div
       onClick={e => e.target === e.currentTarget && onClose()}
       style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "24px" }}
     >
-      <div style={{ backgroundColor: "#2e3240", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "400px", border: "1px solid rgba(252,250,247,0.1)" }}>
+      <div style={{ backgroundColor: "#2e3240", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "440px", border: "1px solid rgba(252,250,247,0.1)", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
           <h2 style={{ color: "#fcfaf7", fontWeight: "800", fontSize: "1rem", margin: 0 }}>Account Settings</h2>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(252,250,247,0.45)", cursor: "pointer", fontSize: "1.2rem", fontFamily: "inherit", padding: "4px 8px" }}>x</button>
         </div>
 
-        <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.85rem", marginBottom: "20px" }}>
-          Profile: <span style={{ color: "#fcfaf7", fontWeight: "700" }}>{username}</span>
-          <span style={{ marginLeft: "10px", fontSize: "0.78rem", color: pwSet ? "#7aaa7a" : "rgba(252,250,247,0.3)" }}>
-            {pwSet ? "Password protected" : "No password"}
-          </span>
+        {/* Avatar preview + closet button */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "12px", padding: "14px 16px", marginBottom: "20px" }}>
+          <div style={{ flexShrink: 0 }}>
+            <Avatar config={avatarConfig} size={56} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "0.9rem" }}>{username}</div>
+            <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", marginBottom: "8px" }}>
+              {pwSet ? "Password protected" : "No password set"}
+            </div>
+            <button onClick={() => setShowCloset(true)} style={{ padding: "7px 14px", borderRadius: "8px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.8rem" }}>
+              My Profile Look
+            </button>
+          </div>
         </div>
 
         <div style={{ marginBottom: "20px" }}>
@@ -151,6 +167,27 @@ export default function AccountSettings({ onClose }: Props) {
                 </button>
               );
             })}
+          </div>
+        </div>
+
+        {/* Mic toggle */}
+        <div style={{ marginBottom: "20px" }}>
+          <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Microphone</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "10px", border: "1px solid rgba(252,250,247,0.07)" }}>
+            <div>
+              <div style={{ color: "#fcfaf7", fontSize: "0.88rem", fontWeight: "600" }}>Enable Mic Input</div>
+              <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem" }}>Used in Hands-Free Vocabulary Hub</div>
+            </div>
+            <div
+              onClick={() => {
+                const next = !micEnabled;
+                setMicEnabled(next);
+                localStorage.setItem("anatomix_mic_enabled", String(next));
+              }}
+              style={{ width: "42px", height: "24px", borderRadius: "12px", backgroundColor: micEnabled ? "#4a6080" : "rgba(255,255,255,0.1)", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+            >
+              <div style={{ position: "absolute", top: "3px", left: micEnabled ? "21px" : "3px", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fcfaf7", transition: "left 0.2s" }} />
+            </div>
           </div>
         </div>
 
@@ -219,5 +256,7 @@ export default function AccountSettings({ onClose }: Props) {
         </div>
       </div>
     </div>
+    {showCloset && <AvatarCloset onClose={() => setShowCloset(false)} />}
+  </>
   );
 }

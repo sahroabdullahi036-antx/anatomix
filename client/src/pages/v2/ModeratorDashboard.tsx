@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, saveChapterOrder, getChapterOrder, UserPinEntry, FirestoreUserProgress, FirestoreClass } from "@/firebase/firestoreService";
+import { subscribeToUsers, subscribeToClasses, saveClass, deleteClass, addStudentToClass, removeStudentFromClass, subscribeToTeachers, addTeacher, removeTeacher, subscribeToUserPins, setUserPin, clearUserPin, setUsernameLocked, renameUser, removeUserEntirely, getTermOverrides, saveTermOverride, deleteTermOverride, getChapterOverrides, saveChapterOverride, deleteChapterOverride, getCustomTerms, saveCustomTerm, deleteCustomTerm, saveChapterOrder, getChapterOrder, subscribeToAudioSettings, saveAudioSettings, subscribeToPasswordResets, resolvePasswordReset, clearPasswordReset, UserPinEntry, FirestoreUserProgress, FirestoreClass, AudioSettings, PasswordResetRequest } from "@/firebase/firestoreService";
 import { CHAPTERS, ALL_TERMS, MedicalTerm, applyTermOverrides, applyChapterOverrides, resetChapterToOriginal, addCustomTerms, removeCustomTerm, applyChapterOrder } from "@/data/medicalData";
 import { lookupLocalTerm } from "@/data/termLookup";
 import OnboardingTour, { Step } from "./OnboardingTour";
@@ -42,7 +42,7 @@ export default function ModeratorDashboard() {
   const { db, ready } = useFirebase();
   const [students, setStudents] = useState<FirestoreUserProgress[]>([]);
   const [classes, setClasses] = useState<FirestoreClass[]>([]);
-  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers" | "terms" | "chapters">("roster");
+  const [tab, setTab] = useState<"roster" | "classes" | "games" | "teachers" | "terms" | "chapters" | "audio" | "resets">("roster");
   const [filterClass, setFilterClass] = useState<string>("all");
   const [newClassName, setNewClassName] = useState("");
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
@@ -75,6 +75,10 @@ export default function ModeratorDashboard() {
   const [chapterOrderNums, setChapterOrderNums] = useState<number[]>(() => CHAPTERS.map(c => c.num));
   const [aiLookupLoading, setAiLookupLoading] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>({ globalAudioEnabled: false, voiceVolumeLevel: 2, clickSoundLevel: 1, bgMusicLevel: 0, soundscapePreset: "none" });
+  const [audioSaving, setAudioSaving] = useState(false);
+  const [passwordResets, setPasswordResets] = useState<PasswordResetRequest[]>([]);
+  const [resetTempPwd, setResetTempPwd] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!db || !ready) return;
@@ -155,7 +159,9 @@ export default function ModeratorDashboard() {
     const u2 = subscribeToClasses(db, setClasses);
     const u3 = subscribeToTeachers(db, setTeachers);
     const u4 = subscribeToUserPins(db, setPins);
-    return () => { u1(); u2(); u3(); u4(); };
+    const u5 = subscribeToAudioSettings(db, setAudioSettings);
+    const u6 = subscribeToPasswordResets(db, setPasswordResets);
+    return () => { u1(); u2(); u3(); u4(); u5(); u6(); };
   }, [db, ready]);
 
   const filteredStudents = filterClass === "all" ? students : students.filter(s => {
@@ -212,6 +218,15 @@ export default function ModeratorDashboard() {
           <button onClick={() => setTab("teachers")} style={tabBtn("teachers")}>Teachers ({teachers.length})</button>
           <button onClick={() => setTab("terms")} style={tabBtn("terms")}>Term Editor ({ALL_TERMS.length})</button>
           <button onClick={() => setTab("chapters")} style={tabBtn("chapters")}>Chapters ({CHAPTERS.length})</button>
+          <button onClick={() => setTab("audio")} style={tabBtn("audio")}>Audio Settings</button>
+          <button onClick={() => setTab("resets")} style={{ ...tabBtn("resets"), position: "relative" as const }}>
+            Password Resets
+            {passwordResets.filter(r => r.status === "pending").length > 0 && (
+              <span style={{ position: "absolute", top: "-6px", right: "-6px", backgroundColor: "#c07070", color: "#fcfaf7", borderRadius: "10px", padding: "1px 6px", fontSize: "0.68rem", fontWeight: "800" }}>
+                {passwordResets.filter(r => r.status === "pending").length}
+              </span>
+            )}
+          </button>
         </div>
 
         {tab === "roster" && (
@@ -742,6 +757,129 @@ export default function ModeratorDashboard() {
           </div>
         );
       })()}
+
+      {tab === "audio" && (() => {
+        const lvlBtn = (label: string, cur: number, val: number, onChange: (n: any) => void) => (
+          <button key={val} onClick={() => onChange(val)} style={{ padding: "8px 14px", borderRadius: "8px", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.82rem", backgroundColor: cur === val ? "#4a6080" : "rgba(255,255,255,0.07)", color: "#fcfaf7" }}>{label}</button>
+        );
+        return (
+          <div style={{ maxWidth: "540px", display: "flex", flexDirection: "column", gap: "24px" }}>
+            {/* Master toggle */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: "1px solid rgba(252,250,247,0.07)" }}>
+              <div>
+                <div style={{ color: "#fcfaf7", fontWeight: "700" }}>Global Audio</div>
+                <div style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>Enable audio features for all students</div>
+              </div>
+              <div onClick={() => setAudioSettings(s => ({ ...s, globalAudioEnabled: !s.globalAudioEnabled }))} style={{ width: "48px", height: "26px", borderRadius: "13px", backgroundColor: audioSettings.globalAudioEnabled ? "#4a6080" : "rgba(255,255,255,0.12)", cursor: "pointer", position: "relative", transition: "background 0.2s" }}>
+                <div style={{ position: "absolute", top: "3px", left: audioSettings.globalAudioEnabled ? "25px" : "3px", width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#fcfaf7", transition: "left 0.2s" }} />
+              </div>
+            </div>
+
+            {/* Voice volume */}
+            <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: "1px solid rgba(252,250,247,0.07)" }}>
+              <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Voice Volume</div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {lvlBtn("Off", audioSettings.voiceVolumeLevel, 0, v => setAudioSettings(s => ({ ...s, voiceVolumeLevel: v })))}
+                {lvlBtn("Low", audioSettings.voiceVolumeLevel, 1, v => setAudioSettings(s => ({ ...s, voiceVolumeLevel: v })))}
+                {lvlBtn("Med", audioSettings.voiceVolumeLevel, 2, v => setAudioSettings(s => ({ ...s, voiceVolumeLevel: v })))}
+                {lvlBtn("High", audioSettings.voiceVolumeLevel, 3, v => setAudioSettings(s => ({ ...s, voiceVolumeLevel: v })))}
+              </div>
+            </div>
+
+            {/* Click sounds */}
+            <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: "1px solid rgba(252,250,247,0.07)" }}>
+              <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Click Sounds</div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {lvlBtn("Off", audioSettings.clickSoundLevel, 0, v => setAudioSettings(s => ({ ...s, clickSoundLevel: v })))}
+                {lvlBtn("Low", audioSettings.clickSoundLevel, 1, v => setAudioSettings(s => ({ ...s, clickSoundLevel: v })))}
+                {lvlBtn("Med", audioSettings.clickSoundLevel, 2, v => setAudioSettings(s => ({ ...s, clickSoundLevel: v })))}
+                {lvlBtn("High", audioSettings.clickSoundLevel, 3, v => setAudioSettings(s => ({ ...s, clickSoundLevel: v })))}
+              </div>
+            </div>
+
+            {/* Background music */}
+            <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: "1px solid rgba(252,250,247,0.07)" }}>
+              <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Background Music</div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {lvlBtn("Off", audioSettings.bgMusicLevel, 0, v => setAudioSettings(s => ({ ...s, bgMusicLevel: v })))}
+                {lvlBtn("Low", audioSettings.bgMusicLevel, 1, v => setAudioSettings(s => ({ ...s, bgMusicLevel: v })))}
+                {lvlBtn("Med", audioSettings.bgMusicLevel, 2, v => setAudioSettings(s => ({ ...s, bgMusicLevel: v })))}
+                {lvlBtn("High", audioSettings.bgMusicLevel, 3, v => setAudioSettings(s => ({ ...s, bgMusicLevel: v })))}
+              </div>
+            </div>
+
+            {/* Soundscape */}
+            <div style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: "1px solid rgba(252,250,247,0.07)" }}>
+              <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px" }}>Soundscape</div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {(["none", "metronome", "ambient-hum"] as const).map(p => (
+                  <button key={p} onClick={() => setAudioSettings(s => ({ ...s, soundscapePreset: p }))} style={{ padding: "8px 16px", borderRadius: "8px", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.82rem", backgroundColor: audioSettings.soundscapePreset === p ? "#4a6080" : "rgba(255,255,255,0.07)", color: "#fcfaf7" }}>
+                    {p === "none" ? "None" : p === "metronome" ? "Metronome" : "Ambient Hum"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={async () => { if (!db) return; setAudioSaving(true); await saveAudioSettings(db, audioSettings); setAudioSaving(false); }} disabled={audioSaving} style={{ padding: "13px", borderRadius: "10px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.95rem", opacity: audioSaving ? 0.6 : 1 }}>
+              {audioSaving ? "Saving..." : "Save Audio Settings"}
+            </button>
+          </div>
+        );
+      })()}
+
+      {tab === "resets" && (
+        <div style={{ maxWidth: "600px" }}>
+          <div style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.82rem", marginBottom: "20px", lineHeight: 1.5 }}>
+            Students can request a password reset from the login screen. Approve by setting a temporary password they can use to sign in, then change.
+          </div>
+          {passwordResets.length === 0 && (
+            <div style={{ color: "rgba(252,250,247,0.3)", textAlign: "center", padding: "60px 0" }}>No reset requests yet.</div>
+          )}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {passwordResets.map(req => (
+              <div key={req.username} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px 20px", border: `1px solid ${req.status === "pending" ? "rgba(200,150,50,0.3)" : "rgba(252,250,247,0.07)"}` }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                  <div>
+                    <span style={{ color: "#fcfaf7", fontWeight: "700" }}>{req.username}</span>
+                    <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.78rem", marginLeft: "10px" }}>{new Date(req.requestedAt).toLocaleString()}</span>
+                  </div>
+                  <span style={{ padding: "3px 8px", borderRadius: "6px", fontSize: "0.72rem", fontWeight: "700", backgroundColor: req.status === "pending" ? "rgba(200,150,50,0.25)" : req.status === "approved" ? "rgba(60,130,80,0.25)" : "rgba(160,70,70,0.25)", color: req.status === "pending" ? "#d4a843" : req.status === "approved" ? "#7aaa7a" : "#c07070" }}>
+                    {req.status.toUpperCase()}
+                  </span>
+                </div>
+                {req.status === "approved" && req.tempPassword && (
+                  <div style={{ backgroundColor: "rgba(60,130,80,0.12)", border: "1px solid rgba(80,160,100,0.25)", borderRadius: "8px", padding: "10px 14px", marginBottom: "10px" }}>
+                    <div style={{ color: "rgba(252,250,247,0.55)", fontSize: "0.78rem", marginBottom: "4px" }}>Temp password set:</div>
+                    <div style={{ color: "#7aaa7a", fontWeight: "700", fontFamily: "monospace" }}>{req.tempPassword}</div>
+                  </div>
+                )}
+                {req.status === "pending" && (
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <input
+                      type="text"
+                      value={resetTempPwd[req.username] ?? ""}
+                      onChange={e => setResetTempPwd(p => ({ ...p, [req.username]: e.target.value }))}
+                      placeholder="Set temp password..."
+                      style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(252,250,247,0.1)", color: "#fcfaf7", outline: "none", fontFamily: "inherit", fontSize: "0.88rem" }}
+                    />
+                    <button onClick={async () => { if (!db || !resetTempPwd[req.username]?.trim()) return; await resolvePasswordReset(db, req.username, "approved", resetTempPwd[req.username].trim()); }} style={{ padding: "8px 16px", borderRadius: "8px", backgroundColor: "rgba(60,130,80,0.3)", color: "#7aaa7a", border: "1px solid rgba(80,160,100,0.3)", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.82rem" }}>
+                      Approve
+                    </button>
+                    <button onClick={async () => { if (!db) return; await resolvePasswordReset(db, req.username, "denied"); }} style={{ padding: "8px 14px", borderRadius: "8px", backgroundColor: "rgba(160,70,70,0.2)", color: "#c07070", border: "1px solid rgba(160,80,80,0.3)", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "0.82rem" }}>
+                      Deny
+                    </button>
+                  </div>
+                )}
+                {req.status !== "pending" && (
+                  <button onClick={async () => { if (!db) return; await clearPasswordReset(db, req.username); }} style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(252,250,247,0.4)", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "0.78rem" }}>
+                    Clear
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {assignModal && (
         <div onClick={() => setAssignModal(null)} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>

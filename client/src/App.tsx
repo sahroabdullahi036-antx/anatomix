@@ -6,6 +6,7 @@ import { UserProvider, useUser } from "./contexts/UserContext";
 import { FirebaseProvider, useFirebase } from "./contexts/FirebaseContext";
 import { PaletteProvider, usePalette } from "./contexts/ThemeContext";
 import { useFirebaseSync } from "./hooks/useFirebaseSync";
+import { ParticleBurstProvider } from "./components/ParticleBurst";
 import { subscribeToTeachers, getTermOverrides, getChapterOverrides, getCustomTerms, getChapterOrder } from "./firebase/firestoreService";
 import { applyTermOverrides, applyChapterOverrides, addCustomTerms, applyChapterOrder } from "./data/medicalData";
 import LoginGate from "./pages/v2/LoginGate";
@@ -32,6 +33,8 @@ import MultiplayerHub from "./pages/v2/multiplayer/MultiplayerHub";
 import GameRoom from "./pages/v2/multiplayer/GameRoom";
 import SystemExplorer from "./pages/v2/SystemExplorer";
 import ChatHub from "./pages/v2/ChatHub";
+import HandsFreeHub from "./pages/v2/HandsFreeHub";
+import Leaderboard from "./pages/v2/Leaderboard";
 
 const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
 
@@ -78,6 +81,8 @@ function AppRoutes() {
       <Route path="/games/chart-auditor" component={ChartAuditor} />
       <Route path="/games/ischemic-countdown" component={IschemicCountdown} />
       <Route path="/chat" component={ChatHub} />
+      <Route path="/hands-free" component={HandsFreeHub} />
+      <Route path="/leaderboard" component={Leaderboard} />
       <Route component={HomeComponent} />
     </Switch>
   );
@@ -122,7 +127,9 @@ function App() {
       <ErrorBoundary>
         <UserProvider>
           <PaletteProvider>
-            <InnerApp />
+            <ParticleBurstProvider>
+              <InnerApp />
+            </ParticleBurstProvider>
           </PaletteProvider>
         </UserProvider>
       </ErrorBoundary>

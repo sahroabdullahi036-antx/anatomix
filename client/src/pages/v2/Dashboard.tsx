@@ -110,6 +110,7 @@ export default function Dashboard() {
           <span style={{ color: "rgba(252,250,247,0.7)", fontSize: "0.9rem", fontWeight: "600" }}>{user?.username}</span>
           <button onClick={() => setShowTour(true)} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Guide</button>
           <button onClick={() => navigate("/chat")} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Chat</button>
+          <button onClick={() => navigate("/leaderboard")} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Leaderboard</button>
           <button onClick={() => setShowSettings(true)} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }}>Account</button>
           <button onClick={logout} style={{ color: "rgba(252,250,247,0.45)", fontSize: "0.8rem", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", borderRadius: "6px", fontFamily: "inherit" }} data-testid="button-logout">Log Out</button>
         </div>
@@ -119,6 +120,51 @@ export default function Dashboard() {
         <div style={{ marginBottom: "28px" }}>
           <h1 style={{ color: "#fcfaf7", fontSize: "1.9rem", fontWeight: "800", margin: "0 0 6px", letterSpacing: "-0.02em" }}>Welcome back, {user?.username}</h1>
           <p style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.95rem", margin: 0 }}>Your personalized medical terminology study hub.</p>
+        </div>
+
+        {/* Three primary learning paths */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "32px" }}>
+          {[
+            {
+              path: "/hands-free",
+              title: "Hands-Free Vocabulary Hub",
+              desc: "Listen, pause, repeat. Audio-driven flashcards.",
+              color: "#2d3f52",
+              accent: "#6a9fc0",
+            },
+            {
+              path: "/flashcards",
+              title: "Visual Flashcards Queue",
+              desc: "Card-by-card study with spaced repetition.",
+              color: "#2d3f40",
+              accent: "#6ac0a8",
+            },
+            {
+              path: "/leaderboard",
+              title: "Leaderboard",
+              desc: "See where you rank among your classmates.",
+              color: "#3a2d4a",
+              accent: "#a88adc",
+            },
+          ].map(p => {
+            return (
+              <button
+                key={p.path}
+                onClick={() => navigate(p.path)}
+                className="tile-hover"
+                style={{
+                  backgroundColor: p.color, border: `1px solid ${p.accent}33`,
+                  borderRadius: "16px", padding: "22px 20px", cursor: "pointer",
+                  textAlign: "left", fontFamily: "inherit", width: "100%",
+                  display: "flex", flexDirection: "column", gap: "8px", minHeight: "120px",
+                }}
+              >
+                <div style={{ color: p.accent, fontWeight: "800", fontSize: "0.95rem", lineHeight: 1.2 }}>{p.title}</div>
+                <div style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.8rem", lineHeight: 1.4, flex: 1 }}>{p.desc}</div>
+                <div style={{ color: p.accent, fontSize: "0.78rem", fontWeight: "700" }}>Open</div>
+              </button>
+            );
+          })}
         </div>
 
         {showAchievements && (

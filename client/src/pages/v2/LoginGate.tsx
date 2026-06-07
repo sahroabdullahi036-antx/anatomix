@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useFirebase } from "@/contexts/FirebaseContext";
 import { accountExists, hasPassword, verifyPassword, setPassword as savePassword, hashPassword } from "@/utils/auth";
-import { subscribeToUserPins, getOwnerPasswordHash, setOwnerPasswordHash, UserPinEntry } from "@/firebase/firestoreService";
+import { subscribeToUserPins, getOwnerPasswordHash, setOwnerPasswordHash, requestPasswordReset, UserPinEntry } from "@/firebase/firestoreService";
 
-type Step = "username" | "password" | "pin" | "new-account";
+type Step = "username" | "password" | "pin" | "new-account" | "forgot";
 type LoginMode = "login" | "signup";
 
 const IS_HOST = (u: string) => u.toLowerCase() === "anatomixowner";
@@ -43,6 +43,16 @@ export default function LoginGate() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [pins, setPins] = useState<Record<string, UserPinEntry>>({});
+  const [forgotUsername, setForgotUsername] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  // Dev bypass: ?dev=username or ?bypass=username in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dev = params.get("dev") || params.get("bypass");
+    if (dev) login(dev.trim());
+  }, []);
 
   useEffect(() => {
     if (!db) return;
@@ -290,8 +300,43 @@ export default function LoginGate() {
                 {error && <div style={{ color: "#e09090", fontSize: "0.85rem", marginBottom: "12px" }}>{error}</div>}
                 <button type="submit" disabled={!password || loading} style={primaryBtn(!password || loading)}>{loading ? "Checking..." : "Open My Study Space"}</button>
               </form>
-              <div style={{ textAlign: "center", marginTop: "16px" }}>
+              <div style={{ textAlign: "center", marginTop: "16px", display: "flex", justifyContent: "center", gap: "16px" }}>
                 <button onClick={reset} style={ghostBtn}>Back</button>
+                <button onClick={() => { setForgotUsername(username); setForgotSent(false); setStep("forgot"); }} style={ghostBtn}>Forgot Password?</button>
+              </div>
+            </>
+          )}
+
+          {step === "forgot" && (
+            <>
+              <h2 style={{ color: "#F7F4EF", fontSize: "1.1rem", fontWeight: "600", marginBottom: "4px", textAlign: "center" }}>Reset Password</h2>
+              <p style={{ color: "rgba(247,244,239,0.45)", fontSize: "0.85rem", marginBottom: "20px", textAlign: "center", lineHeight: 1.5 }}>
+                Submit a reset request. Your moderator will set a temporary password for you.
+              </p>
+              {!forgotSent ? (
+                <form onSubmit={async e => {
+                  e.preventDefault();
+                  if (!db || !forgotUsername.trim()) return;
+                  setForgotLoading(true);
+                  try { await requestPasswordReset(db, forgotUsername.trim()); setForgotSent(true); } catch { setError("Could not send request. Please try again."); }
+                  setForgotLoading(false);
+                }}>
+                  <input type="text" value={forgotUsername} onChange={e => { setForgotUsername(e.target.value); setError(""); }} placeholder="Your username..." autoFocus style={inputStyle} />
+                  {error && <div style={{ color: "#e09090", fontSize: "0.85rem", marginBottom: "12px" }}>{error}</div>}
+                  <button type="submit" disabled={!forgotUsername.trim() || forgotLoading} style={primaryBtn(!forgotUsername.trim() || forgotLoading)}>
+                    {forgotLoading ? "Sending..." : "Send Reset Request"}
+                  </button>
+                </form>
+              ) : (
+                <div style={{ backgroundColor: "rgba(60,130,80,0.15)", border: "1px solid rgba(80,160,100,0.3)", borderRadius: "10px", padding: "20px", textAlign: "center" }}>
+                  <div style={{ color: "#7aaa7a", fontWeight: "700", marginBottom: "8px" }}>Request sent.</div>
+                  <div style={{ color: "rgba(247,244,239,0.55)", fontSize: "0.85rem", lineHeight: 1.5 }}>
+                    Your moderator has been notified. Check back after they approve your request and set a temporary password.
+                  </div>
+                </div>
+              )}
+              <div style={{ textAlign: "center", marginTop: "16px" }}>
+                <button onClick={() => { setStep("password"); setError(""); }} style={ghostBtn}>Back to Sign In</button>
               </div>
             </>
           )}
