@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
-import { shuffle, WrongAnswer, WrongAnswerReview, GameLock, useUnlockedChapters, termsForChapters } from "./shared";
+import { shuffle, WrongAnswer, WrongAnswerReview, GameLock, GameEmpty, useAnswerFx, useUnlockedChapters, termsForChapters } from "./shared";
 import { maskTermInText } from "@/lib/answerUtils";
 
 const MAX_WRONG = 6;
@@ -11,6 +11,7 @@ const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 export default function VitalSigns() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect } = useUser();
+  const { burst } = useAnswerFx();
   const unlocked = useUnlockedChapters();
   const [chapterFilter, setChapterFilter] = useState(0);
   const [started, setStarted] = useState(false);
@@ -18,6 +19,7 @@ export default function VitalSigns() {
   const [guessed, setGuessed] = useState<Set<string>>(new Set());
   const [finished, setFinished] = useState(false);
   const [sessionResults, setSessionResults] = useState<Array<{ term: string; won: boolean }>>([]);
+  const wordRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const s = localStorage.getItem(STUDY_CHAPTER_KEY);
@@ -37,9 +39,11 @@ export default function VitalSigns() {
 
   const wrongGuesses = Array.from(guessed).filter(l => !termUpper.includes(l));
   const wrongCount = wrongGuesses.length;
-  const won = termChars.split("").every(c => guessed.has(c));
+  const won = termChars.length > 0 && termChars.split("").every(c => guessed.has(c));
   const lost = wrongCount >= MAX_WRONG;
   const roundOver = won || lost;
+
+  useEffect(() => { if (won && wordRef.current) burst(wordRef.current); }, [won]);
 
   const start = () => {
     setStarted(true); setTermIdx(0); setGuessed(new Set()); setSessionResults([]); setFinished(false);
@@ -106,6 +110,8 @@ export default function VitalSigns() {
     );
   }
 
+  if (!current) return <GameEmpty onBack={() => navigate("/")} onStudy={() => navigate("/flashcards")} />;
+
   const healthPct = Math.max(0, (MAX_WRONG - wrongCount) / MAX_WRONG);
   const healthColor = wrongCount < 2 ? "#7aaa7a" : wrongCount < 4 ? "#d4a843" : "#c07070";
 
@@ -129,7 +135,7 @@ export default function VitalSigns() {
           <div style={{ color: healthColor, fontSize: "0.82rem", fontWeight: "700" }}>{MAX_WRONG - wrongCount}/{MAX_WRONG}</div>
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center", marginBottom: "28px" }}>
+        <div ref={wordRef} style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center", marginBottom: "28px" }}>
           {termUpper.split("").map((ch, i) => {
             const isLetter = /[A-Z]/.test(ch);
             const revealed = !isLetter || guessed.has(ch) || roundOver;
@@ -154,7 +160,7 @@ export default function VitalSigns() {
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center" }}>
             {ALPHA.map(l => (
-              <button key={l} onClick={() => guess(l)} disabled={guessed.has(l)} data-testid={`button-letter-${l}`} style={{ width: "38px", height: "38px", borderRadius: "6px", backgroundColor: guessed.has(l) ? (wrongGuesses.includes(l) ? "rgba(160,70,70,0.2)" : "rgba(60,130,80,0.2)") : "rgba(255,255,255,0.08)", color: guessed.has(l) ? (wrongGuesses.includes(l) ? "#c07070" : "#7aaa7a") : "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", cursor: guessed.has(l) ? "default" : "pointer", fontFamily: "monospace", fontWeight: "700", fontSize: "0.85rem" }}>{l}</button>
+              <button key={l} onClick={() => guess(l)} disabled={guessed.has(l)} data-testid={`button-letter-${l}`} className="ax-pop" style={{ width: "38px", height: "38px", borderRadius: "6px", backgroundColor: guessed.has(l) ? (wrongGuesses.includes(l) ? "rgba(160,70,70,0.2)" : "rgba(60,130,80,0.2)") : "rgba(255,255,255,0.08)", color: guessed.has(l) ? (wrongGuesses.includes(l) ? "#c07070" : "#7aaa7a") : "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", cursor: guessed.has(l) ? "default" : "pointer", fontFamily: "monospace", fontWeight: "700", fontSize: "0.85rem" }}>{l}</button>
             ))}
           </div>
         )}

@@ -288,3 +288,21 @@
   transform: scale(0.96);
   animation: btn-scale-press 0.15s ease-out;
 }
+
+/* Answer feedback shared by quizzes + games */
+@keyframes ax-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+@keyframes ax-correct-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.ax-pop { transition: transform 0.1s ease; }
+.ax-pop:active:not(:disabled) { transform: scale(0.95); }
+.ax-shake { animation: ax-shake 0.4s ease-out; }
+.ax-correct { animation: ax-correct-pop 0.42s cubic-bezier(0.34,1.56,0.64,1); }

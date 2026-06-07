@@ -2,12 +2,13 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
-import { shuffle, WrongAnswer, WrongAnswerReview, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
+import { shuffle, WrongAnswer, WrongAnswerReview, useUnlockedChapters, termsForChapters, GameLock, GameEmpty, useAnswerFx } from "./shared";
 import { checkAnswer, maskTermInText } from "@/lib/answerUtils";
 
 export default function SpellingBee() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect } = useUser();
+  const { burst } = useAnswerFx();
   const unlocked = useUnlockedChapters();
   const [chapterFilter, setChapterFilter] = useState(0);
   const [started, setStarted] = useState(false);
@@ -37,7 +38,7 @@ export default function SpellingBee() {
     if (!typed.trim()) return;
     const term = terms[idx];
     const correct = checkAnswer(typed, term.term);
-    if (correct) recordCorrect(term.id);
+    if (correct) { recordCorrect(term.id); burst(inputRef.current); }
     else recordMiss(term.id, term.term);
     setResults(r => [...r, { correct, term: term.term, typed }]);
     setRevealed(true);
@@ -99,6 +100,7 @@ export default function SpellingBee() {
   }
 
   const current = terms[idx];
+  if (!current) return <GameEmpty onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
   const isCorrect = checkAnswer(typed, current.term);
 
   return (
@@ -132,7 +134,7 @@ export default function SpellingBee() {
         ) : (
           <form onSubmit={e => { e.preventDefault(); submit(); }}>
             <input ref={inputRef} value={typed} onChange={e => setTyped(e.target.value)} placeholder="Type the medical term..." style={{ width: "100%", padding: "16px", borderRadius: "12px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.12)", fontFamily: "monospace", fontSize: "1.1rem", outline: "none", boxSizing: "border-box", marginBottom: "14px" }} />
-            <button type="submit" disabled={!typed.trim()} style={{ width: "100%", padding: "14px", borderRadius: "10px", backgroundColor: typed.trim() ? "#4a6080" : "rgba(255,255,255,0.06)", color: "#fcfaf7", border: "none", cursor: typed.trim() ? "pointer" : "default", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Submit</button>
+            <button type="submit" disabled={!typed.trim()} className="ax-pop" style={{ width: "100%", padding: "14px", borderRadius: "10px", backgroundColor: typed.trim() ? "#4a6080" : "rgba(255,255,255,0.06)", color: "#fcfaf7", border: "none", cursor: typed.trim() ? "pointer" : "default", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Submit</button>
           </form>
         )}
       </div>

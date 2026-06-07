@@ -1,6 +1,44 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { ALL_TERMS, getTermsByChapter, getTermChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
 import { useUser } from "@/contexts/UserContext";
+import { useParticleBurst } from "@/components/ParticleBurst";
+
+/**
+ * Answer-feedback effects shared by every quiz/game. `burst` fires a confetti
+ * burst centered on the clicked element (use on correct answers). Pair with the
+ * CSS classes `ax-pop` (tactile press), `ax-shake` (wrong buzz) and `ax-correct`
+ * (correct pop) defined in index.css.
+ */
+export function useAnswerFx() {
+  const { triggerBurst } = useParticleBurst();
+  const burst = useCallback((el: Element | null | undefined) => {
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    triggerBurst(r.left + r.width / 2, r.top + r.height / 2);
+  }, [triggerBurst]);
+  const burstEvent = useCallback((e: { currentTarget: Element }) => burst(e.currentTarget), [burst]);
+  return { burst, burstEvent };
+}
+
+/**
+ * Pick items with DISTINCT key values, skipping any equal to `exclude`. Used to
+ * build answer distractors: many terms share an identical meaning string (e.g.
+ * "inflammation", "heart"), so naive random distractors can duplicate the correct
+ * answer's text and make a correct pick score as wrong. Comparison is
+ * case-insensitive and trimmed.
+ */
+export function distinctByKey<T>(items: T[], keyOf: (t: T) => string, exclude?: string): T[] {
+  const seen = new Set<string>();
+  if (exclude != null) seen.add(exclude.trim().toLowerCase());
+  const out: T[] = [];
+  for (const it of items) {
+    const k = keyOf(it).trim().toLowerCase();
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    out.push(it);
+  }
+  return out;
+}
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -69,6 +107,28 @@ export function GameLock({ onBack, onStudy }: { onBack: () => void; onStudy: () 
             Games only use terms from chapters you've started. Study any chapter's flashcards first - the more chapters you begin, the more terms you can play with.
           </p>
           <button onClick={onStudy} data-testid="button-lock-study" style={{ padding: "13px 34px", borderRadius: "12px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Start Studying</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Shown when the user's started chapters don't contain enough terms for a game. */
+export function GameEmpty({ onBack, onStudy, message }: { onBack: () => void; onStudy: () => void; message?: string }) {
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: "#252830", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif", display: "flex", flexDirection: "column" }}>
+      <div style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 24px", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(252,250,247,0.07)" }}>
+        <button onClick={onBack} data-testid="button-empty-back" style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "1px solid rgba(252,250,247,0.1)", borderRadius: "8px", padding: "8px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: "0.9rem" }}>← Games</button>
+        <span style={{ color: "#fcfaf7", fontWeight: "700" }}>Not Enough Terms Yet</span>
+      </div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+        <div style={{ maxWidth: "440px", textAlign: "center", backgroundColor: "rgba(255,255,255,0.04)", borderRadius: "16px", padding: "40px 28px", border: "1px solid rgba(252,250,247,0.07)" }}>
+          <div style={{ fontSize: "44px", marginBottom: "14px" }}>📚</div>
+          <h1 style={{ color: "#fcfaf7", fontSize: "1.4rem", fontWeight: "800", marginBottom: "10px" }}>This game needs more terms</h1>
+          <p style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.92rem", lineHeight: 1.6, marginBottom: "26px" }}>
+            {message ?? "The chapters you've started don't have enough terms of the right kind for this mode yet. Study a few more chapters and come back."}
+          </p>
+          <button onClick={onStudy} data-testid="button-empty-study" style={{ padding: "13px 34px", borderRadius: "12px", backgroundColor: "#4a6080", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: "700", fontSize: "1rem" }}>Study Chapters</button>
         </div>
       </div>
     </div>

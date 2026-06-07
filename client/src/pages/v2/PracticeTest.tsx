@@ -3,13 +3,17 @@ import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, CHAPTERS, getTermsByChapter, getTermChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
 import { useAccessibleChapters } from "@/lib/chapterAccess";
-import { shuffle } from "./games/shared";
+import { shuffle, distinctByKey, useAnswerFx } from "./games/shared";
 
 const Q_COUNT = 20;
 const TIME_LIMIT = 600;
 
 function buildQuestion(term: typeof ALL_TERMS[0], pool: typeof ALL_TERMS) {
-  const wrong = shuffle(pool.filter(t => t.id !== term.id)).slice(0, 3);
+  // Distractors must have meanings distinct from each other AND from the correct
+  // answer. Many terms share an identical meaning string ("inflammation", "heart",
+  // ...), which otherwise puts two identical choices on screen and scores a correct
+  // pick as wrong.
+  const wrong = distinctByKey(shuffle(pool.filter(t => t.id !== term.id)), t => t.meaning, term.meaning).slice(0, 3);
   const choices = shuffle([term, ...wrong]);
   return { term, choices, correct: term.id };
 }
@@ -17,6 +21,7 @@ function buildQuestion(term: typeof ALL_TERMS[0], pool: typeof ALL_TERMS) {
 export default function PracticeTest() {
   const [, navigate] = useLocation();
   const { user, recordMiss, recordCorrect, recordChapterPass } = useUser();
+  const { burst } = useAnswerFx();
   const accessible = useAccessibleChapters();
   const accSet = useMemo(() => new Set(accessible), [accessible]);
   const [chapterFilter, setChapterFilter] = useState<number>(0);
@@ -73,13 +78,13 @@ export default function PracticeTest() {
     setStarted(true);
   };
 
-  const choose = (id: string) => {
+  const choose = (id: string, el?: Element) => {
     if (revealed) return;
     setSelected(id);
     setRevealed(true);
     setAnswers(a => ({ ...a, [idx]: id }));
     const q = questions[idx];
-    if (id === q.correct) recordCorrect(q.term.id);
+    if (id === q.correct) { recordCorrect(q.term.id); burst(el); }
     else recordMiss(q.term.id, q.term.term);
   };
 
@@ -222,10 +227,13 @@ export default function PracticeTest() {
               if (choice.id === q.correct) { bg = "rgba(60,130,80,0.35)"; border = "1px solid rgba(80,160,100,0.5)"; }
               else if (choice.id === selected) { bg = "rgba(160,60,60,0.35)"; border = "1px solid rgba(180,80,80,0.5)"; }
             }
+            const fx = revealed ? (choice.id === q.correct ? " ax-correct" : choice.id === selected ? " ax-shake" : "") : "";
             return (
               <button
                 key={choice.id}
-                onClick={() => choose(choice.id)}
+                onClick={(e) => choose(choice.id, e.currentTarget)}
+                disabled={revealed}
+                className={`ax-pop${fx}`}
                 style={{ backgroundColor: bg, border, borderRadius: "10px", padding: "14px 18px", cursor: revealed ? "default" : "pointer", fontFamily: "inherit", textAlign: "left", color: "#fcfaf7", transition: "all 0.15s" }}
               >
                 <div style={{ fontWeight: "600", fontSize: "0.92rem" }}>{choice.meaning}</div>

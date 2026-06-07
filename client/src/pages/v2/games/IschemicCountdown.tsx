@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { shuffle, ProgressBar, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
+import { shuffle, distinctByKey, useAnswerFx, ProgressBar, useUnlockedChapters, termsForChapters, GameLock, GameEmpty } from "./shared";
 
 export default function IschemicCountdown() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect, updateScore } = useUser();
+  const { burst } = useAnswerFx();
   const unlocked = useUnlockedChapters();
   const terms = useMemo(() => shuffle(termsForChapters(unlocked)), [unlocked]);
   const [idx, setIdx] = useState(0);
@@ -22,7 +23,7 @@ export default function IschemicCountdown() {
   const newChoices = useCallback(() => {
     if (!terms[idx % terms.length]) return;
     const t = terms[idx % terms.length];
-    const others = shuffle(termsForChapters(unlocked).filter(x => x.id !== t.id)).slice(0, 3).map(x => x.meaning);
+    const others = distinctByKey(shuffle(termsForChapters(unlocked).filter(x => x.id !== t.id)), x => x.meaning, t.meaning).slice(0, 3).map(x => x.meaning);
     setChoices(shuffle([t.meaning, ...others]));
   }, [idx, terms]);
 
@@ -35,7 +36,7 @@ export default function IschemicCountdown() {
     return () => clearTimeout(timer);
   }, [timeLeft, gameOver, selected, speed, score]);
 
-  const handleAnswer = (choice: string) => {
+  const handleAnswer = (choice: string, el?: Element) => {
     if (selected || gameOver) return;
     setSelected(choice);
     if (choice === current.meaning) {
@@ -44,6 +45,7 @@ export default function IschemicCountdown() {
       setTimeLeft(t => Math.min(t + 5, 25));
       setSpeed(sp => Math.max(0.8, sp - 0.05));
       recordCorrect(current.id);
+      burst(el);
     } else {
       setStreak(0);
       setSpeed(sp => sp + 0.15);
@@ -72,7 +74,7 @@ export default function IschemicCountdown() {
     );
   }
 
-  if (!current) return null;
+  if (!current) return <GameEmpty onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#8b4f58", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
@@ -105,8 +107,9 @@ export default function IschemicCountdown() {
             let bg = "rgba(252,250,247,0.08)";
             if (selected === c) bg = c === current.meaning ? "rgba(80,160,80,0.4)" : "rgba(200,80,80,0.4)";
             if (selected && c === current.meaning) bg = "rgba(80,160,80,0.4)";
+            const fx = selected ? (c === current.meaning ? " ax-correct" : c === selected ? " ax-shake" : "") : "";
             return (
-              <button key={i} onClick={() => handleAnswer(c)} disabled={!!selected}
+              <button key={i} onClick={(e) => handleAnswer(c, e.currentTarget)} disabled={!!selected} className={`ax-pop${fx}`}
                 style={{ padding: "14px", borderRadius: "10px", backgroundColor: bg, border: "1px solid rgba(252,250,247,0.1)", color: "#fcfaf7", cursor: selected ? "default" : "pointer", fontFamily: "inherit", fontSize: "0.88rem", transition: "background 0.15s" }}>
                 {c}
               </button>

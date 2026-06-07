@@ -1,11 +1,12 @@
 import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
-import { GameShell, shuffle, useGameTerms, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
+import { GameShell, shuffle, distinctByKey, useAnswerFx, useGameTerms, useUnlockedChapters, termsForChapters, GameLock, GameEmpty } from "./shared";
 
 export default function MultipleChoice() {
   const [, navigate] = useLocation();
   const { recordMiss, recordCorrect, updateScore } = useUser();
+  const { burst } = useAnswerFx();
   const unlocked = useUnlockedChapters();
   const terms = useGameTerms();
   const [idx, setIdx] = useState(0);
@@ -18,17 +19,18 @@ export default function MultipleChoice() {
   const choices = useMemo(() => {
     if (!current) return [];
     const others = termsForChapters(unlocked).filter(t => t.id !== current.id && t.type === current.type);
-    const distractors = shuffle(others).slice(0, 3).map(t => t.meaning);
+    const distractors = distinctByKey(shuffle(others), t => t.meaning, current.meaning).slice(0, 3).map(t => t.meaning);
     return shuffle([current.meaning, ...distractors]);
   }, [current, unlocked]);
 
-  const handleSelect = (choice: string) => {
+  const handleSelect = (choice: string, el?: Element) => {
     if (selected) return;
     setSelected(choice);
     if (choice === current.meaning) {
       setScore(s => s + 10 + streak * 2);
       setStreak(s => s + 1);
       recordCorrect(current.id);
+      burst(el);
     } else {
       setStreak(0);
       recordMiss(current.id, current.term);
@@ -42,7 +44,7 @@ export default function MultipleChoice() {
   };
 
   if (unlocked.length === 0) return <GameLock onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
-  if (!current) return null;
+  if (!current) return <GameEmpty onBack={() => navigate("/games")} onStudy={() => navigate("/flashcards")} />;
   const correct = selected === current.meaning;
 
   return (
@@ -69,8 +71,9 @@ export default function MultipleChoice() {
             if (choice === current.meaning) { bg = "rgba(80,160,80,0.35)"; border = "1px solid rgba(100,200,100,0.5)"; }
             else if (choice === selected) { bg = "rgba(200,80,80,0.35)"; border = "1px solid rgba(220,100,100,0.5)"; }
           }
+          const fx = selected ? (choice === current.meaning ? " ax-correct" : choice === selected ? " ax-shake" : "") : "";
           return (
-            <button key={i} onClick={() => handleSelect(choice)} disabled={!!selected}
+            <button key={i} onClick={(e) => handleSelect(choice, e.currentTarget)} disabled={!!selected} className={`ax-pop${fx}`}
               style={{ padding: "14px 18px", borderRadius: "10px", backgroundColor: bg, border, color: "#fcfaf7", cursor: selected ? "default" : "pointer", fontFamily: "inherit", textAlign: "left", fontSize: "0.9rem", transition: "all 0.15s" }}>
               <span style={{ color: "rgba(252,250,247,0.4)", marginRight: "10px", fontWeight: "700" }}>{String.fromCharCode(65 + i)}.</span>
               {choice}

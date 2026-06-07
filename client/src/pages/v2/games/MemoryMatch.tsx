@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/UserContext";
 import { ALL_TERMS, getTermsByChapter, CHAPTERS, STUDY_CHAPTER_KEY } from "@/data/medicalData";
-import { shuffle, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
+import { shuffle, useAnswerFx, useUnlockedChapters, termsForChapters, GameLock } from "./shared";
 
 const PAIR_COUNT = 8;
 
@@ -11,8 +11,10 @@ interface Card { id: string; content: string; termId: string; side: "term" | "de
 export default function MemoryMatch() {
   const [, navigate] = useLocation();
   const { recordCorrect, recordMiss } = useUser();
+  const { burst } = useAnswerFx();
   const unlocked = useUnlockedChapters();
   const [chapterFilter, setChapterFilter] = useState(0);
+  const [pairCount, setPairCount] = useState(PAIR_COUNT);
   const [started, setStarted] = useState(false);
   const [cards, setCards] = useState<Card[]>([]);
   const [flipped, setFlipped] = useState<string[]>([]);
@@ -41,6 +43,7 @@ export default function MemoryMatch() {
 
   const start = () => {
     const terms = shuffle(pool).slice(0, PAIR_COUNT);
+    setPairCount(terms.length);
     const deck: Card[] = [];
     terms.forEach(t => {
       deck.push({ id: `${t.id}-term`, content: t.term, termId: t.id, side: "term" });
@@ -62,9 +65,10 @@ export default function MemoryMatch() {
       if (a.termId === b.termId) {
         setMatched(m => new Set([...m, a.termId]));
         recordCorrect(a.termId);
+        burst(document.querySelector(`[data-card="${cardId}"]`));
         setFlipped([]);
         setLocked(false);
-        if (matched.size + 1 === PAIR_COUNT) setFinished(true);
+        if (matched.size + 1 >= pairCount) setFinished(true);
       } else {
         recordMiss(a.termId, cards.find(c => c.termId === a.termId && c.side === "term")?.content ?? "");
         setTimeout(() => { setFlipped([]); setLocked(false); }, 900);
@@ -125,7 +129,7 @@ export default function MemoryMatch() {
         <div style={{ display: "flex", gap: "20px" }}>
           <span style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem" }}>{moves} moves</span>
           <span style={{ color: "rgba(252,250,247,0.5)", fontSize: "0.85rem", fontFamily: "monospace" }}>{mm}:{ss}</span>
-          <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>{matched.size}/{PAIR_COUNT} matched</span>
+          <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.82rem" }}>{matched.size}/{pairCount} matched</span>
         </div>
       </div>
       <div style={{ maxWidth: "800px", margin: "0 auto", padding: "28px 16px" }}>
@@ -134,7 +138,7 @@ export default function MemoryMatch() {
             const show = isFlipped(c);
             const match = isMatched(c);
             return (
-              <div key={c.id} onClick={() => handleFlip(c.id)} style={{ height: "90px", borderRadius: "10px", cursor: show ? "default" : "pointer", backgroundColor: match ? "rgba(60,130,80,0.25)" : show ? (c.side === "term" ? "#364860" : "#3d5a47") : "rgba(255,255,255,0.06)", border: match ? "1px solid rgba(80,160,100,0.4)" : show ? "1px solid rgba(252,250,247,0.12)" : "1px solid rgba(252,250,247,0.07)", display: "flex", alignItems: "center", justifyContent: "center", padding: "10px", textAlign: "center", transition: "all 0.2s", userSelect: "none" }}>
+              <div key={c.id} data-card={c.id} onClick={() => handleFlip(c.id)} style={{ height: "90px", borderRadius: "10px", cursor: show ? "default" : "pointer", backgroundColor: match ? "rgba(60,130,80,0.25)" : show ? (c.side === "term" ? "#364860" : "#3d5a47") : "rgba(255,255,255,0.06)", border: match ? "1px solid rgba(80,160,100,0.4)" : show ? "1px solid rgba(252,250,247,0.12)" : "1px solid rgba(252,250,247,0.07)", display: "flex", alignItems: "center", justifyContent: "center", padding: "10px", textAlign: "center", transition: "all 0.2s", userSelect: "none" }}>
                 {show ? (
                   <span style={{ color: "#fcfaf7", fontSize: c.side === "term" ? "0.8rem" : "0.72rem", fontWeight: c.side === "term" ? "800" : "600", fontFamily: c.side === "term" ? "monospace" : "inherit", lineHeight: 1.3 }}>{c.content}</span>
                 ) : (

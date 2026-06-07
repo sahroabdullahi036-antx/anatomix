@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { ALL_TERMS, SYSTEMS, type MedicalTerm } from "@/data/medicalData";
-import { speakTerm } from "@/lib/audioService";
 
 type FilterType = 'all' | 'prefix' | 'suffix' | 'root' | 'condition' | 'procedure';
 const FILTERS: { key: FilterType; label: string }[] = [
@@ -95,19 +94,6 @@ function DictCard({ term, expanded, onToggle, typeColors }: { term: MedicalTerm;
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px", flexWrap: "wrap" }}>
             <span style={{ color: "#fcfaf7", fontWeight: "700", fontSize: "1rem", fontFamily: "monospace" }}>{term.term}</span>
-            <button
-              onClick={(e) => { e.stopPropagation(); speakTerm(term.term, 0.85, 1); }}
-              aria-label={`Pronounce ${term.term}`}
-              data-testid={`button-speak-dict-${term.id}`}
-              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "26px", height: "26px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(252,250,247,0.12)", color: "#7aabcc", cursor: "pointer", flexShrink: 0, padding: 0 }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                <line x1="12" y1="19" x2="12" y2="23" />
-                <line x1="8" y1="23" x2="16" y2="23" />
-              </svg>
-            </button>
             <span style={{ backgroundColor: color, color: "#fcfaf7", fontSize: "0.68rem", fontWeight: "700", padding: "2px 7px", borderRadius: "4px", textTransform: "uppercase" }}>{term.type}</span>
             {term.system && term.system !== "General" && <span style={{ color: "rgba(252,250,247,0.4)", fontSize: "0.75rem" }}>{term.system}</span>}
           </div>
