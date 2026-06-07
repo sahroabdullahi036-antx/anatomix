@@ -32,7 +32,7 @@ const ghostBtn: React.CSSProperties = {
 
 export default function LoginGate() {
   const { login, recentUsers } = useUser();
-  const { db } = useFirebase();
+  const { db, ready } = useFirebase();
   const [step, setStep] = useState<Step>("username");
   const [loginMode, setLoginMode] = useState<LoginMode>("login");
   const [username, setUsername] = useState("");
@@ -55,10 +55,10 @@ export default function LoginGate() {
   }, []);
 
   useEffect(() => {
-    if (!db) return;
+    if (!db || !ready) return;
     const unsub = subscribeToUserPins(db, setPins);
     return unsub;
-  }, [db]);
+  }, [db, ready]);
 
   const reset = () => {
     setStep("username"); setUsername(""); setPassword(""); setPinInput("");
@@ -76,7 +76,7 @@ export default function LoginGate() {
   };
 
   const startHostLogin = async () => {
-    if (!db) { setError("Cannot reach the server. Please check your connection and try again."); return; }
+    if (!db || !ready) { setError("Still connecting to the server — please wait a moment and try again."); return; }
     setLoading(true); setError("");
     try {
       const ownerHash = await getOwnerPasswordHash(db);
@@ -134,7 +134,7 @@ export default function LoginGate() {
     setLoading(true); setError("");
     const trimmed = username.trim();
     if (IS_HOST(trimmed)) {
-      if (!db) { setLoading(false); setError("Cannot reach the server."); return; }
+      if (!db || !ready) { setLoading(false); setError("Still connecting to the server — please wait a moment and try again."); return; }
       try {
         const ownerHash = await getOwnerPasswordHash(db);
         const entered = await hashPassword(password);
@@ -161,7 +161,7 @@ export default function LoginGate() {
       if (!newPassword) { setError("A password is required to secure the owner account."); return; }
       if (newPassword.length < 4) { setError("Password must be at least 4 characters."); return; }
       if (newPassword !== newConfirm) { setError("Passwords do not match."); return; }
-      if (!db) { setError("Cannot reach the server."); return; }
+      if (!db || !ready) { setError("Still connecting to the server — please wait a moment and try again."); return; }
       setLoading(true); setError("");
       try {
         const existing = await getOwnerPasswordHash(db);

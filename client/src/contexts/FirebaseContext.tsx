@@ -38,7 +38,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setAuth(firebaseAuth);
       signInAnonymously(firebaseAuth)
         .then(() => setReady(true))
-        .catch(() => setReady(true));
+        .catch((err) => { console.error("Anonymous auth failed:", err?.code, err?.message); setReady(true); });
     } catch (err) {
       console.error("Firebase init error:", err);
       setReady(false);
