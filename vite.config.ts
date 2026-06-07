@@ -17,6 +17,14 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          firebase: ["firebase/app", "firebase/auth", "firebase/firestore"],
+          react: ["react", "react-dom", "wouter"],
+        },
+      },
+    },
   },
   server: {
     port: 5000,
