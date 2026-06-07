@@ -1,5 +1,7 @@
 // Web Audio API service — all sounds generated locally, no external files
 
+import { pronounce } from "./pronunciation";
+
 let ctx: AudioContext | null = null;
 let droneNode: OscillatorNode | null = null;
 let droneGain: GainNode | null = null;
@@ -123,11 +125,78 @@ export function stopAll() {
   stopMetronome();
 }
 
-export function speakTerm(text: string, rate = 0.8, volume = 1) {
+// ── Speech (text-to-speech) ─────────────────────────────────
+// Pick the most natural-sounding English voice the device offers. Quality
+// varies by OS/browser, so we prefer known high-quality neural voices and fall
+// back gracefully.
+let preferredVoice: SpeechSynthesisVoice | null = null;
+let voiceResolved = false;
+
+const VOICE_PREFERENCES = [
+  "google us english",
+  "microsoft aria",
+  "microsoft jenny",
+  "microsoft michelle",
+  "microsoft ana",
+  "microsoft guy",
+  "samantha",
+  "karen",
+  "moira",
+  "tessa",
+  "google uk english female",
+  "microsoft zira",
+  "fiona",
+  "daniel",
+];
+
+function selectVoice() {
   if (!("speechSynthesis" in window)) return;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+  const en = voices.filter((v) => /^en[-_]?/i.test(v.lang));
+  for (const pref of VOICE_PREFERENCES) {
+    const match = en.find((v) => v.name.toLowerCase().includes(pref));
+    if (match) {
+      preferredVoice = match;
+      voiceResolved = true;
+      return;
+    }
+  }
+  // Fallbacks: any local en-US, then any English, then anything.
+  preferredVoice =
+    en.find((v) => /en[-_]?us/i.test(v.lang) && v.localService) ||
+    en.find((v) => /en[-_]?us/i.test(v.lang)) ||
+    en[0] ||
+    voices[0] ||
+    null;
+  voiceResolved = true;
+}
+
+if (typeof window !== "undefined" && "speechSynthesis" in window) {
+  selectVoice();
+  window.speechSynthesis.onvoiceschanged = selectVoice;
+}
+
+function utter(text: string, rate: number, volume: number) {
+  if (!("speechSynthesis" in window) || !text) return;
+  if (!voiceResolved) selectVoice();
   window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = rate;
-  utter.volume = volume;
-  window.speechSynthesis.speak(utter);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  if (preferredVoice) u.voice = preferredVoice;
+  u.rate = rate;
+  u.volume = volume;
+  u.pitch = 1;
+  window.speechSynthesis.speak(u);
+}
+
+// Speak a medical term — runs it through the pronunciation engine first so the
+// engine pronounces it accurately instead of mangling the raw spelling.
+export function speakTerm(text: string, rate = 0.8, volume = 1) {
+  utter(pronounce(text), rate, volume);
+}
+
+// Speak plain text verbatim (no medical respelling) with the chosen voice.
+export function speak(text: string, rate = 0.95, volume = 1) {
+  utter(text, rate, volume);
 }

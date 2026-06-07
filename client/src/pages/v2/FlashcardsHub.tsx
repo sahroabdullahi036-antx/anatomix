@@ -2,6 +2,26 @@ import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useUser, SRSEntry } from "@/contexts/UserContext";
 import { ALL_TERMS, CHAPTERS, getTermsByChapter, STUDY_CHAPTER_KEY } from "@/data/medicalData";
+import { speakTerm } from "@/lib/audioService";
+
+function MicButton({ text, testid }: { text: string; testid: string }) {
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); speakTerm(text, 0.85, 1); }}
+      title="Hear pronunciation"
+      aria-label="Hear pronunciation"
+      data-testid={testid}
+      style={{ position: "absolute", bottom: "12px", right: "12px", width: "46px", height: "46px", borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", backgroundColor: "rgba(0,0,0,0.3)", color: "#fcfaf7", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+        <line x1="12" y1="19" x2="12" y2="23" />
+        <line x1="8" y1="23" x2="16" y2="23" />
+      </svg>
+    </button>
+  );
+}
 
 const CHAPTER_TONES = [
   "#374a5e","#3a4d62","#364860","#3d5168","#394c64",
@@ -298,7 +318,7 @@ export default function FlashcardsHub() {
                     {srsIdx + 1} / {srsDueTerms.length}
                     <span style={{ color: "#7aabcc", marginLeft: "12px" }}>interval: {item.entry.interval}d</span>
                   </div>
-                  <div onClick={() => setSrsFlipped(f => !f)} style={{ backgroundColor: TYPE_COLORS[t.type] ?? "#394d62", borderRadius: "16px", padding: "40px 32px", minHeight: "220px", cursor: "pointer", textAlign: "center", marginBottom: "16px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", userSelect: "none", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
+                  <div onClick={() => setSrsFlipped(f => !f)} style={{ position: "relative", backgroundColor: TYPE_COLORS[t.type] ?? "#394d62", borderRadius: "16px", padding: "40px 32px", minHeight: "220px", cursor: "pointer", textAlign: "center", marginBottom: "16px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", userSelect: "none", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
                     {!srsFlipped ? (
                       <>
                         <div style={{ fontSize: "0.72rem", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "rgba(252,250,247,0.45)", marginBottom: "12px" }}>{t.type} - {t.system}</div>
@@ -312,6 +332,7 @@ export default function FlashcardsHub() {
                         <div style={{ color: "rgba(252,250,247,0.65)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: "400px" }}>{t.definition}</div>
                       </>
                     )}
+                    <MicButton text={t.term} testid="button-speak-srs" />
                   </div>
                   <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
                     {srsFlipped ? (
@@ -402,7 +423,7 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
         {critEntry && <span style={{ color: "#e09090", marginLeft: "12px" }}>{critEntry.correctStreak} correct - next review in {nextReviewDays === 0 ? "less than 1" : nextReviewDays} day{nextReviewDays !== 1 ? "s" : ""}</span>}
         {reversed && <span style={{ color: "rgba(74,96,128,0.9)", marginLeft: "12px", fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase" }}>Reverse</span>}
       </div>
-      <div onClick={onFlip} style={{ backgroundColor: color, borderRadius: "16px", padding: "40px 32px", minHeight: "220px", cursor: "pointer", textAlign: "center", marginBottom: "16px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", userSelect: "none", transition: "transform 0.15s", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
+      <div onClick={onFlip} style={{ position: "relative", backgroundColor: color, borderRadius: "16px", padding: "40px 32px", minHeight: "220px", cursor: "pointer", textAlign: "center", marginBottom: "16px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", userSelect: "none", transition: "transform 0.15s", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
         {!reversed ? (
           !flipped ? (
             <>
@@ -439,6 +460,7 @@ function FlashCard({ card, flipped, onFlip, onNext, onPrev, onCorrect, onMiss, i
             </>
           )
         )}
+        <MicButton text={card.term} testid="button-speak-flashcard" />
       </div>
       <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
         <button onClick={onPrev} style={{ padding: "10px 16px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", color: "#fcfaf7", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Prev</button>
