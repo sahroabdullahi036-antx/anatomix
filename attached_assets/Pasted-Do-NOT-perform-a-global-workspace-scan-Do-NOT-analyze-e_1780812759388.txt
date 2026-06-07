@@ -1,0 +1,233 @@
+Do NOT perform a global workspace scan. Do NOT analyze external layout files, tracking frameworks, or routing folders. Isolate your focus completely to overwriting the exact file blocks provided below. This is a direct, zero-leeway replacement script; execute it instantly.
+
+=========================================
+1. HTML STRUCTURE (index.html - Overwrite Avatar Wrapper)
+=========================================
+Replace your current avatar display container element exactly with this syntax-valid structural block:
+
+<div class="avatar-view-container">
+  <svg viewBox="0 0 100 100" class="pastel-avatar-vector" id="main-avatar-svg">
+    <!-- Fluffy Hair Back Layer -->
+    <path d="M 28,28 C 24,14 76,14 72,28 C 72,32 28,32 28,28 Z" fill="var(--avatar-hair-color)" stroke="#1E1E24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Unisex Cylindrical Torso Base -->
+    <path d="M30,55 C30,48 40,46 50,46 C60,46 70,48 70,55 L70,81 C70,83 68,85 65,85 L35,85 C32,85 30,83 30,81 Z" fill="var(--avatar-outfit-color)" stroke="#1E1E24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Chunky V-Neck Collar Line -->
+    <path d="M42,46 L50,54 L58,46" fill="none" stroke="#1E1E24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Oversized Head Base Shape (1:2 Character Ratio) -->
+    <circle cx="50" cy="28" r="18" fill="var(--avatar-skin-color)" stroke="#1E1E24" stroke-width="2" />
+    
+    <!-- Hair Front Layer (Clean 2D Vector Silhouette) -->
+    <path d="M 32,20 C 35,14 65,14 68,20 C 70,26 64,24 60,22 C 54,20 46,26 40,22 C 36,20 30,24 32,20 Z" fill="var(--avatar-hair-color)" stroke="#1E1E24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Minimalist Expressions (Managed via CSS Variable Displays) -->
+    <g class="expression-eyes-neutral" style="display: var(--eye-neutral-display);">
+      <circle cx="43" cy="26" r="2.5" fill="#1E1E24" />
+      <circle cx="57" cy="26" r="2.5" fill="#1E1E24" />
+    </g>
+    <g class="expression-eyes-success" style="display: var(--eye-success-display);">
+      <path d="M40,26 Q43,23 46,26" fill="none" stroke="#1E1E24" stroke-width="2.5" stroke-linecap="round" />
+      <path d="M54,26 Q57,23 60,26" fill="none" stroke="#1E1E24" stroke-width="2.5" stroke-linecap="round" />
+    </g>
+    <g class="expression-eyes-thinking" style="display: var(--eye-thinking-display);">
+      <path d="M40,26 L46,26" stroke="#1E1E24" stroke-width="2.5" stroke-linecap="round" />
+      <path d="M54,26 L60,26" stroke="#1E1E24" stroke-width="2.5" stroke-linecap="round" />
+    </g>
+    
+    <!-- Inclusive Marks Layer (Freckles/Moles) -->
+    <g class="avatar-skin-marks" style="display: var(--avatar-marks-display);">
+      <circle cx="40" cy="30" r="0.75" fill="#8B4513" opacity="0.6" />
+      <circle cx="42" cy="31" r="0.75" fill="#8B4513" opacity="0.6" />
+      <circle cx="58" cy="30" r="0.75" fill="#8B4513" opacity="0.6" />
+      <circle cx="60" cy="31" r="0.75" fill="#8B4513" opacity="0.6" />
+    </g>
+    
+    <!-- Single Weight Smooth Mouth Stroke -->
+    <path d="M44,34 Q50,38 56,34" fill="none" stroke="#1E1E24" stroke-width="2" stroke-linecap="round" />
+    
+    <!-- Thick Noodle Arms -->
+    <path d="M28,55 Q18,62 25,68" fill="none" stroke="#1E1E24" stroke-width="6" stroke-linecap="round" />
+    <path d="M72,55 Q82,62 75,68" fill="none" stroke="#1E1E24" stroke-width="6" stroke-linecap="round" />
+    
+    <!-- Chunky Rounded Footwear Base -->
+    <path d="M31,85 L29,93 C29,95 33,95 37,93 L41,85 Z" fill="var(--avatar-shoe-color)" stroke="#1E1E24" stroke-width="2" stroke-linejoin="round" />
+    <path d="M59,85 L59,93 C59,95 63,95 67,93 L69,85 Z" fill="var(--avatar-shoe-color)" stroke="#1E1E24" stroke-width="2" stroke-linejoin="round" />
+  </svg>
+</div>
+
+=========================================
+2. CORE STYLESHEET (style.css - Replace Content)
+=========================================
+:root {
+  /* Isolated Avatar Palette (Strictly Independent of Website/UI Themes) */
+  --avatar-skin-color: #FFE0B2;
+  --avatar-outfit-color: #5a7a5a;
+  --avatar-hair-color: #8b0000;
+  --avatar-shoe-color: #4a3b63;
+  
+  /* Layout Interaction Displays */
+  --eye-neutral-display: block;
+  --eye-success-display: none;
+  --eye-thinking-display: none;
+  --avatar-marks-display: block;
+}
+
+/* Cross-Platform Fluid Vector Scaler (iOS, Android, Tablet, macOS, PC) */
+.avatar-view-container {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.pastel-avatar-vector {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+=========================================
+3. APPLICATION ENGINE (script.js - Replace Content)
+=========================================
+// Centralized Asynchronous Cache to solve cross-platform browser voice load lag
+let platformVoices = [];
+
+function loadSystemVoices() {
+  const synthesisEngine = window.speechSynthesis;
+  if (!synthesisEngine) return;
+  
+  platformVoices = synthesisEngine.getVoices();
+  
+  if (synthesisEngine.onvoiceschanged !== undefined) {
+    synthesisEngine.onvoiceschanged = () => {
+      platformVoices = synthesisEngine.getVoices();
+    };
+  }
+}
+
+loadSystemVoices();
+
+function speakPlatformVocabulary(rawWord) {
+  const synthesisEngine = window.speechSynthesis;
+  if (!synthesisEngine || parseFloat(localStorage.getItem('global_audio_state') || '1') === 0) return;
+
+  const universalPhoneticMap = {
+    "aberration": "ab-er-AY-shun",
+    "benevolent": "beh-NEV-oh-lent",
+    "capricious": "kah-PREE-shus",
+    "ephemeral": "eh-FEM-er-al",
+    "garrulous": "GAIR-yoo-lus",
+    "loquacious": "loh-KWAY-shus",
+    "nefarious": "neh-FAIR-ee-us",
+    "obfuscate": "OB-fus-kayt",
+    "paradigmatic": "pair-ah-dig-MAT-ik",
+    "cacophony": "kah-KOF-oh-nee"
+  };
+
+  const formattedKey = rawWord.toLowerCase().trim();
+  const phoneticTargetText = universalPhoneticMap[formattedKey] || rawWord;
+  const wordUtteranceInstance = new SpeechSynthesisUtterance(phoneticTargetText);
+
+  if (platformVoices.length === 0) {
+    platformVoices = synthesisEngine.getVoices();
+  }
+
+  const targetedPremiumVoice = platformVoices.find(voice => 
+    voice.name.includes("Google US English") || 
+    voice.name.includes("Natural") || 
+    voice.name.includes("Microsoft Aria") ||
+    (voice.lang === "en-US" && voice.localService === true)
+  );
+
+  if (targetedPremiumVoice) {
+    wordUtteranceInstance.voice = targetedPremiumVoice;
+  }
+
+  wordUtteranceInstance.rate = 0.82;  
+  wordUtteranceInstance.pitch = 1.0; 
+  
+  const modVolumeSetting = localStorage.getItem('moderator_bot_volume') || '2';
+  const volumeMap = { '1': 0.33, '2': 0.66, '3': 1.0 };
+  wordUtteranceInstance.volume = volumeMap[modVolumeSetting] || 0.66;
+
+  synthesisEngine.cancel();
+  synthesisEngine.speak(wordUtteranceInstance);
+}
+
+// Interactive Color Customizer Hook Function (Prevents Palette Corruption)
+function updateAvatarColorProperty(targetAssetType, hexColorValue) {
+  const hexValidationPattern = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+  if (!hexValidationPattern.test(hexColorValue)) return; // Strict typo guard
+  
+  const documentRoot = document.documentElement;
+  if (targetAssetType === 'clothes' || targetAssetType === 'scrubs' || targetAssetType === 'clothing') {
+    documentRoot.style.setProperty('--avatar-outfit-color', hexColorValue);
+  } else if (targetAssetType === 'hair') {
+    documentRoot.style.setProperty('--avatar-hair-color', hexColorValue);
+  } else if (targetAssetType === 'skin') {
+    documentRoot.style.setProperty('--avatar-skin-color', hexColorValue);
+  } else if (targetAssetType === 'shoes') {
+    documentRoot.style.setProperty('--avatar-shoe-color', hexColorValue);
+  }
+  
+  // Play a tactile click pop on every color selection update
+  playInterfaceClickSound();
+}
+
+// Procedural Mathematical Ambient Drone Synth to aid learning focus without audio files
+let focusAudioCtx = null;
+let focusOscillator = null;
+let focusGainNode = null;
+
+function toggleConcentrationMusic(stateFlag) {
+  if (!stateFlag) {
+    if (focusOscillator) { focusOscillator.stop(); focusOscillator.disconnect(); }
+    return;
+  }
+  
+  if (!focusAudioCtx) focusAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  
+  focusOscillator = focusAudioCtx.createOscillator();
+  focusGainNode = focusAudioCtx.createGain();
+  
+  focusOscillator.type = 'sine';
+  focusOscillator.frequency.value = 85; 
+  
+  const musicSetting = localStorage.getItem('moderator_music_volume') || '2';
+  const musicVolumeMap = { '1': 0.02, '2': 0.05, '3': 0.09 };
+  focusGainNode.gain.value = musicVolumeMap[musicSetting] || 0.05;
+  
+  focusOscillator.connect(focusGainNode);
+  focusGainNode.connect(focusAudioCtx.destination);
+  focusOscillator.start();
+}
+
+// Procedural Tactile Click/Pop Sound Generator
+function playInterfaceClickSound() {
+  const clickAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const clickOsc = clickAudioCtx.createOscillator();
+  const clickGain = clickAudioCtx.createGain();
+  
+  clickOsc.type = 'sine';
+  clickOsc.frequency.setValueAtTime(400, clickAudioCtx.currentTime);
+  clickOsc.frequency.exponentialRampToValueAtTime(80, clickAudioCtx.currentTime + 0.04);
+  
+  const clickSetting = localStorage.getItem('click_sound_volume_level') || '2';
+  const clickVolumeMap = { '1': 0.1, '2': 0.25, '3': 0.4 };
+  clickGain.gain.setValueAtTime(clickVolumeMap[clickSetting] || 0.25, clickAudioCtx.currentTime);
+  clickGain.gain.exponentialRampToValueAtTime(0.01, clickAudioCtx.currentTime + 0.04);
+  
+  clickOsc.connect(clickGain);
+  clickGain.connect(clickAudioCtx.destination);
+  clickOsc.start();
+  clickOsc.stop(clickAudioCtx.currentTime + 0.04);
+}
+
+// AUTOMATED INTERFACE WIRE-UP HARNESS (Bypasses Replit Speculation Loop)
+document.addEventListener('DOMContentLoaded', () => {
